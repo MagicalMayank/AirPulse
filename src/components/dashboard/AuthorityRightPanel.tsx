@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { ClipboardList, BarChart3, Users, Bell, Clock, CheckCircle, AlertTriangle, ArrowRight, MapPin } from 'lucide-react';
+import { ClipboardList, BarChart3, Users, Bell, Clock, CheckCircle, ArrowRight, MapPin } from 'lucide-react';
 import styles from './AuthorityPanels.module.css';
 
 type TabType = 'actions' | 'analytics' | 'teams';

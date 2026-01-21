@@ -10,7 +10,6 @@ interface TrendChartProps {
     data: DataPoint[];
     height?: number;
     color?: string;
-    showArea?: boolean;
     className?: string;
 }
 
@@ -18,13 +17,12 @@ export const TrendChart: React.FC<TrendChartProps> = ({
     data,
     height = 100,
     color = 'var(--brand-secondary)',
-    showArea = true,
     className
 }) => {
     // Process data for bar chart rendering
-    const { bars, maxVal, minVal } = useMemo(() => {
+    const { bars } = useMemo(() => {
         if (!data || data.length === 0) {
-            return { bars: [], maxVal: 0, minVal: 0 };
+            return { bars: [] };
         }
 
         const width = 300; // SVG viewBox width
@@ -52,7 +50,7 @@ export const TrendChart: React.FC<TrendChartProps> = ({
             };
         });
 
-        return { bars: barData, maxVal: max, minVal: min };
+        return { bars: barData };
     }, [data, height]);
 
     if (!data.length) {

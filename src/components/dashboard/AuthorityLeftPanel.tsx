@@ -15,7 +15,7 @@ export const AuthorityLeftPanel = ({ selectedWard }: AuthorityLeftPanelProps) =>
         teams: false
     });
 
-    const wardName = selectedWard?.Ward_Nane || 'All Wards';
+    const wardName = selectedWard?.Ward_Name || 'All Wards';
 
     const toggleSection = (section: 'hotspots' | 'teams') => {
         setExpandedSections(prev => ({ ...prev, [section]: !prev[section] }));

@@ -3,7 +3,7 @@ import { MapContainer, TileLayer, GeoJSON, useMap, CircleMarker, Popup } from 'r
 import type { Map as LeafletMap } from 'leaflet';
 import 'leaflet/dist/leaflet.css';
 import { useAirQuality } from '../../context/AirQualityContext';
-import { getAQIColor, getAQIStatus } from '../../utils/aqiCalculator';
+import { getAQIColor } from '../../utils/aqiCalculator';
 import type { WardProperties } from '../../types';
 import styles from './InteractiveMap.module.css';
 
@@ -68,7 +68,6 @@ export const InteractiveMap = forwardRef<InteractiveMapHandle, InteractiveMapPro
         lastUpdated,
         filters,
         setGeoData: setContextGeoData,
-        getActivePollutants,
         refetch
     } = useAirQuality();
 

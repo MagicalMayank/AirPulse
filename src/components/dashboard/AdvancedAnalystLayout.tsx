@@ -97,7 +97,7 @@ export const AdvancedAnalystLayout = ({ selectedWard, onWardSelect, onExitAdvanc
                 <div className={styles.canvasArea}>
                     <AnalysisCanvas
                         onClose={onExitAdvanced}
-                        selectedWard={selectedWard?.Ward_Nane || 'Connaught Place'}
+                        selectedWard={selectedWard?.Ward_Name || 'Connaught Place'}
                     />
                 </div>
             </div>
