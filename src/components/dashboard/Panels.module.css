@@ -1,0 +1,511 @@
+.panelContainer {
+    display: flex;
+    flex-direction: column;
+    gap: 1.5rem;
+}
+
+.searchBox {
+    position: relative;
+    background: #1F2229;
+    border-radius: 8px;
+    border: 1px solid #333;
+}
+
+.searchIcon {
+    position: absolute;
+    left: 12px;
+    top: 50%;
+    transform: translateY(-50%);
+    color: #888;
+}
+
+.searchInput {
+    width: 100%;
+    background: transparent;
+    border: none;
+    padding: 0.75rem 0.75rem 0.75rem 2.5rem;
+    color: white;
+    font-family: var(--font-main);
+}
+
+.searchInput:focus {
+    outline: none;
+    border-color: var(--brand-primary);
+}
+
+.timeFilter {
+    display: flex;
+    gap: 0.25rem;
+    background: #1F2229;
+    padding: 4px;
+    border-radius: 8px;
+}
+
+.timeBtn {
+    flex: 1;
+    background: transparent;
+    border: none;
+    color: #888;
+    padding: 0.5rem 0.75rem;
+    border-radius: 6px;
+    font-size: 0.8rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.timeBtn:hover {
+    background: rgba(255, 255, 255, 0.05);
+    color: #CCC;
+}
+
+.timeBtnActive {
+    background: var(--brand-primary);
+    color: white;
+}
+
+.activeFilter {
+    background: var(--brand-primary) !important;
+    color: white !important;
+}
+
+/* Base Card (Panel specific override) */
+.card {
+    background: #1F2229;
+    border-radius: 12px;
+    padding: 1rem;
+    border: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+.aqiCard {
+    background: linear-gradient(135deg, #2D1B36 0%, #1F2229 100%);
+    border-left: 4px solid var(--aqi-very-poor);
+}
+
+.cardHeader {
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 0.5rem;
+}
+
+.statusLabel {
+    color: var(--aqi-very-poor);
+    font-weight: 700;
+    font-size: 0.75rem;
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+}
+
+.aqiValue {
+    font-size: 4rem;
+    font-weight: 800;
+    line-height: 1;
+    color: #FFFFFF;
+    margin: 0.5rem 0;
+}
+
+.aqiSub {
+    color: #CCCCCC;
+    font-size: 0.85rem;
+    margin-bottom: 0.25rem;
+}
+
+.locationSubSmall {
+    color: #888;
+    font-size: 0.75rem;
+    margin-bottom: 1rem;
+}
+
+.progressBar {
+    height: 6px;
+    background: rgba(255, 255, 255, 0.1);
+    border-radius: 3px;
+    overflow: hidden;
+}
+
+.sectionHeader {
+    color: #AAAAAA;
+    font-size: 0.75rem;
+    font-weight: 700;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    margin-top: 0.5rem;
+    margin-bottom: 0.75rem;
+}
+
+.pollutantGrid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 0.75rem;
+}
+
+.pollutantCard {
+    background: #252830;
+    padding: 0.75rem;
+    border-radius: 8px;
+}
+
+/* Pollutant Item Styles */
+.pollutantItem {
+    background: #252830;
+    padding: 0.75rem 1rem;
+    border-radius: 10px;
+    border: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+.pHeader {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 0.5rem;
+}
+
+.pName {
+    color: #CCCCCC;
+    font-size: 0.8rem;
+    font-weight: 500;
+}
+
+.pDot {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+}
+
+.pTrend {
+    font-size: 0.75rem;
+    font-weight: 600;
+}
+
+.pTrendRow {
+    margin-top: 0.25rem;
+}
+
+.pValueContainer {
+    display: flex;
+    align-items: baseline;
+    gap: 0.25rem;
+}
+
+.pValue {
+    font-size: 1.75rem;
+    font-weight: 700;
+    line-height: 1;
+}
+
+.pUnit {
+    color: #888888;
+    font-size: 0.7rem;
+}
+
+.polHeader {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    color: #aaa;
+    font-size: 0.75rem;
+    margin-bottom: 4px;
+}
+
+.dot {
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+}
+
+.polValue {
+    font-size: 1.25rem;
+    font-weight: 700;
+    color: white;
+}
+
+.polMeta {
+    font-size: 0.7rem;
+    color: #666;
+}
+
+.healthCard {
+    background: rgba(106, 0, 244, 0.15);
+    border: 1px solid rgba(106, 0, 244, 0.3);
+    border-left: 4px solid var(--brand-primary);
+}
+
+.cardTitle {
+    color: #FFFFFF;
+    font-weight: 600;
+    margin-bottom: 0.75rem;
+    font-size: 0.85rem;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.cardTitle::before {
+    content: '💧';
+}
+
+.healthHeader {
+    color: #E0E0FF;
+    font-weight: 600;
+    margin-bottom: 0.5rem;
+    font-size: 0.9rem;
+}
+
+.healthText {
+    color: #CCCCCC;
+    font-size: 0.8rem;
+    line-height: 1.4;
+}
+
+.healthList {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+}
+
+.healthList li {
+    color: #CCCCCC;
+    font-size: 0.8rem;
+    line-height: 1.6;
+    padding-left: 1rem;
+    position: relative;
+}
+
+.healthList li::before {
+    content: '•';
+    position: absolute;
+    left: 0;
+    color: var(--brand-primary);
+}
+
+/* Right Panel */
+.tabs {
+    display: flex;
+    border-bottom: 1px solid #333;
+    margin-bottom: 0.5rem;
+}
+
+.tab {
+    flex: 1;
+    background: transparent;
+    color: #666;
+    padding: 0.75rem;
+    font-size: 0.85rem;
+    font-weight: 600;
+    border-bottom: 2px solid transparent;
+}
+
+.activeTab {
+    color: white;
+    border-bottom-color: var(--brand-primary);
+}
+
+.chartPlaceholder {
+    height: 120px;
+    display: flex;
+    align-items: flex-end;
+    gap: 4px;
+    padding-top: 10px;
+}
+
+.bar {
+    flex: 1;
+    border-radius: 2px 2px 0 0;
+    opacity: 0.8;
+}
+
+.cardHeaderFlex {
+    display: flex;
+    justify-content: space-between;
+    font-size: 0.7rem;
+    color: #888;
+    font-weight: 700;
+}
+
+.badgeRed {
+    background: rgba(255, 77, 109, 0.1);
+    color: var(--aqi-very-poor);
+    padding: 2px 6px;
+    border-radius: 4px;
+}
+
+.sentimentFeed {
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+}
+
+.sentimentItem {
+    background: #1F2229;
+    border-left: 3px solid #555;
+    padding: 0.75rem;
+    border-radius: 0 8px 8px 0;
+}
+
+.sentHeader {
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 4px;
+}
+
+.user {
+    color: var(--brand-hover);
+    font-weight: 600;
+    font-size: 0.8rem;
+}
+
+.time {
+    color: #555;
+    font-size: 0.7rem;
+}
+
+.sentText {
+    color: #bbb;
+    font-size: 0.8rem;
+    line-height: 1.3;
+}
+
+.headerFlex {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.link {
+    color: var(--brand-secondary);
+    font-size: 0.75rem;
+}
+
+.reportList {
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+}
+
+.reportItem {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    background: #1F2229;
+    padding: 0.75rem;
+    border-radius: 8px;
+}
+
+.reportIcon {
+    background: #333;
+    padding: 0.5rem;
+    border-radius: 8px;
+    color: #ccc;
+}
+
+.reportContent {
+    flex: 1;
+}
+
+.reportTitle {
+    color: white;
+    font-size: 0.85rem;
+    font-weight: 600;
+}
+
+.reportLoc {
+    color: #666;
+    font-size: 0.75rem;
+}
+
+.statusBadge {
+    font-size: 0.7rem;
+    border: 1px solid;
+    padding: 2px 6px;
+    border-radius: 4px;
+}
+
+/* Search Results Dropdown */
+.searchResults {
+    position: absolute;
+    top: 100%;
+    left: 0;
+    right: 0;
+    background: #1F2229;
+    border: 1px solid #333;
+    border-top: none;
+    border-radius: 0 0 8px 8px;
+    max-height: 200px;
+    overflow-y: auto;
+    z-index: 100;
+}
+
+.searchResultItem {
+    display: block;
+    width: 100%;
+    text-align: left;
+    padding: 0.75rem 1rem;
+    background: none;
+    border: none;
+    color: #CCC;
+    font-size: 0.85rem;
+    cursor: pointer;
+    transition: background 0.2s;
+}
+
+.searchResultItem:hover {
+    background: rgba(255, 255, 255, 0.05);
+    color: white;
+}
+
+/* Loading Indicator */
+.loadingIndicator {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.5rem 0.75rem;
+    background: rgba(106, 0, 244, 0.1);
+    border-radius: 6px;
+    font-size: 0.75rem;
+    color: var(--brand-primary);
+}
+
+.loadingDot {
+    width: 8px;
+    height: 8px;
+    background: var(--brand-primary);
+    border-radius: 50%;
+    animation: pulse 1s ease-in-out infinite;
+}
+
+@keyframes pulse {
+
+    0%,
+    100% {
+        opacity: 0.3;
+    }
+
+    50% {
+        opacity: 1;
+    }
+}
+
+/* Dominant Pollutant */
+.dominantPollutant {
+    font-size: 0.75rem;
+    color: #888;
+    margin-bottom: 0.5rem;
+}
+
+.dominantPollutant strong {
+    color: var(--brand-secondary);
+}
+
+/* Last Updated Small */
+.lastUpdatedSmall {
+    font-size: 0.65rem;
+    color: #555;
+    margin-top: 0.5rem;
+}
+
+/* Progress Fill */
+.progressFill {
+    height: 100%;
+    border-radius: 3px;
+    transition: width 0.5s ease;
+}

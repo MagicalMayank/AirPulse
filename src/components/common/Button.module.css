@@ -1,0 +1,64 @@
+.btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 8px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    border: 1px solid transparent;
+    gap: 0.5rem;
+}
+
+.primary {
+    background-color: var(--brand-primary);
+    color: var(--text-inverse);
+}
+
+.primary:hover {
+    background-color: #481E9A;
+    /* Darker Indigo */
+}
+
+.secondary {
+    background-color: var(--brand-secondary);
+    color: #000;
+}
+
+.secondary:hover {
+    background-color: #14B88A;
+}
+
+.outline {
+    background-color: transparent;
+    border-color: var(--text-secondary);
+    color: var(--text-primary);
+}
+
+.outline:hover {
+    border-color: var(--text-primary);
+}
+
+.danger {
+    background-color: var(--status-error);
+    color: white;
+}
+
+.sm {
+    padding: 0.25rem 0.75rem;
+    font-size: 0.875rem;
+}
+
+.md {
+    padding: 0.5rem 1rem;
+    font-size: 1rem;
+}
+
+.lg {
+    padding: 0.75rem 1.5rem;
+    font-size: 1.125rem;
+}
+
+.full {
+    width: 100%;
+}

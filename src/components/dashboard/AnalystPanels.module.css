@@ -1,0 +1,770 @@
+/* Analyst Panel Styles */
+.panelContainer {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+}
+
+/* Search Box */
+.searchBox {
+    position: relative;
+    background: #1A1D24;
+    border-radius: 8px;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.searchIcon {
+    position: absolute;
+    left: 12px;
+    top: 50%;
+    transform: translateY(-50%);
+    color: #666;
+}
+
+.searchInput {
+    width: 100%;
+    background: transparent;
+    border: none;
+    padding: 0.75rem 0.75rem 0.75rem 2.5rem;
+    color: white;
+    font-family: var(--font-main);
+    font-size: 0.875rem;
+}
+
+.searchInput:focus {
+    outline: none;
+}
+
+.searchInput::placeholder {
+    color: #666;
+}
+
+/* Ward Card */
+.wardCard {
+    background: linear-gradient(135deg, #1A1D24 0%, #252830 100%);
+    border-radius: 12px;
+    padding: 1rem;
+    border: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+.wardHeader {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 0.5rem;
+}
+
+.wardLabel {
+    font-size: 0.65rem;
+    letter-spacing: 0.1em;
+    color: #888;
+    font-weight: 600;
+}
+
+.statusBadge {
+    font-size: 0.65rem;
+    font-weight: 700;
+    padding: 3px 8px;
+    border-radius: 4px;
+    color: white;
+    text-transform: uppercase;
+}
+
+.wardName {
+    font-size: 1.25rem;
+    font-weight: 700;
+    color: white;
+    margin: 0;
+}
+
+.wardMeta {
+    font-size: 0.75rem;
+    color: #888;
+    margin-bottom: 0.75rem;
+}
+
+.aqiDisplay {
+    display: flex;
+    align-items: baseline;
+    gap: 0.5rem;
+    margin-bottom: 0.5rem;
+}
+
+.aqiBig {
+    font-size: 2.5rem;
+    font-weight: 800;
+    color: white;
+    line-height: 1;
+}
+
+.aqiLabel {
+    font-size: 0.75rem;
+    color: #888;
+}
+
+.aqiScale {
+    margin-top: 0.5rem;
+}
+
+.scaleTrack {
+    height: 6px;
+    background: linear-gradient(to right,
+            var(--aqi-good) 0%,
+            var(--aqi-satisfactory) 20%,
+            var(--aqi-moderate) 40%,
+            var(--aqi-poor) 60%,
+            var(--aqi-very-poor) 80%,
+            var(--aqi-severe) 100%);
+    border-radius: 3px;
+    position: relative;
+}
+
+.scaleIndicator {
+    position: absolute;
+    top: -4px;
+    width: 4px;
+    height: 14px;
+    background: white;
+    border-radius: 2px;
+    transform: translateX(-50%);
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+}
+
+.scaleLabels {
+    display: flex;
+    justify-content: space-between;
+    font-size: 0.65rem;
+    color: #666;
+    margin-top: 4px;
+}
+
+/* Section */
+.section {
+    background: #1A1D24;
+    border-radius: 10px;
+    padding: 0.875rem;
+    border: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+.sectionHeader {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    font-size: 0.75rem;
+    font-weight: 600;
+    color: #AAA;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    margin-bottom: 0.75rem;
+}
+
+.selectAllBtn {
+    margin-left: auto;
+    background: none;
+    border: none;
+    color: var(--brand-secondary);
+    font-size: 0.7rem;
+    cursor: pointer;
+}
+
+/* Pollutant Grid */
+.pollutantGrid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 0.5rem;
+}
+
+.pollutantCheck {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    background: #252830;
+    padding: 0.5rem 0.75rem;
+    border-radius: 6px;
+    cursor: pointer;
+    transition: background 0.2s;
+}
+
+.pollutantCheck:hover {
+    background: #2A2E38;
+}
+
+.pollutantCheck input[type="checkbox"] {
+    accent-color: var(--brand-secondary);
+    width: 14px;
+    height: 14px;
+}
+
+.checkLabel {
+    font-size: 0.8rem;
+    color: #CCC;
+    font-weight: 500;
+}
+
+/* Time Buttons */
+.timeButtons {
+    display: flex;
+    gap: 0.5rem;
+    margin-bottom: 0.75rem;
+}
+
+.timeBtn {
+    flex: 1;
+    background: #252830;
+    border: none;
+    color: #888;
+    padding: 0.5rem;
+    border-radius: 6px;
+    font-size: 0.75rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.timeBtn:hover {
+    background: #2A2E38;
+}
+
+.timeBtnActive {
+    background: var(--brand-primary);
+    color: white;
+}
+
+.dateInputs {
+    display: flex;
+    gap: 0.5rem;
+}
+
+.dateInput {
+    flex: 1;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    background: #252830;
+    padding: 0.5rem 0.75rem;
+    border-radius: 6px;
+    color: #AAA;
+    font-size: 0.75rem;
+}
+
+/* Collapsible */
+.collapsible {
+    background: #1A1D24;
+    border-radius: 10px;
+    border: 1px solid rgba(255, 255, 255, 0.05);
+    overflow: hidden;
+}
+
+.collapseHeader {
+    width: 100%;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.875rem;
+    background: none;
+    border: none;
+    color: #AAA;
+    font-size: 0.8rem;
+    font-weight: 500;
+    cursor: pointer;
+    text-align: left;
+}
+
+.collapseHeader svg:last-child {
+    margin-left: auto;
+}
+
+.collapseContent {
+    padding: 0 0.875rem 0.875rem;
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+}
+
+.layerCheck {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    font-size: 0.8rem;
+    color: #CCC;
+    cursor: pointer;
+}
+
+.layerCheck input {
+    accent-color: var(--brand-secondary);
+}
+
+.addBtn {
+    width: 100%;
+}
+
+/* ===== RIGHT PANEL STYLES ===== */
+
+/* Policy Simulation Lab Button */
+.simulationLabBtn {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+    width: 100%;
+    padding: 0.75rem 1rem;
+    margin-bottom: 1rem;
+    background: linear-gradient(135deg, rgba(139, 92, 246, 0.2) 0%, rgba(6, 182, 212, 0.15) 100%);
+    border: 1px solid rgba(139, 92, 246, 0.3);
+    border-radius: 10px;
+    color: white;
+    font-size: 0.85rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.simulationLabBtn:hover {
+    background: linear-gradient(135deg, rgba(139, 92, 246, 0.35) 0%, rgba(6, 182, 212, 0.25) 100%);
+    border-color: rgba(139, 92, 246, 0.5);
+    transform: translateY(-1px);
+    box-shadow: 0 4px 20px rgba(139, 92, 246, 0.25);
+}
+
+.simulationLabBtn svg {
+    color: var(--brand-secondary);
+}
+
+/* Tabs */
+.tabs {
+    display: flex;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+    margin-bottom: 1rem;
+}
+
+.tab {
+    flex: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.35rem;
+    background: transparent;
+    color: #666;
+    padding: 0.75rem 0.5rem;
+    font-size: 0.75rem;
+    font-weight: 600;
+    border: none;
+    border-bottom: 2px solid transparent;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.tab:hover {
+    color: #AAA;
+}
+
+.activeTab {
+    color: white;
+    border-bottom-color: var(--brand-secondary);
+}
+
+/* Card */
+.card {
+    background: #1A1D24;
+    border-radius: 12px;
+    padding: 1rem;
+    border: 1px solid rgba(255, 255, 255, 0.05);
+    margin-bottom: 1rem;
+}
+
+.cardHeader {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 0.75rem;
+}
+
+.cardTitle {
+    font-size: 0.8rem;
+    font-weight: 600;
+    color: #CCC;
+}
+
+.toggleGroup {
+    display: flex;
+    background: #252830;
+    border-radius: 6px;
+    overflow: hidden;
+}
+
+.toggleBtn {
+    background: none;
+    border: none;
+    padding: 0.35rem 0.75rem;
+    font-size: 0.65rem;
+    font-weight: 600;
+    color: #888;
+    cursor: pointer;
+}
+
+.toggleActive {
+    background: var(--brand-secondary);
+    color: white;
+}
+
+/* Chart Area */
+.chartArea {
+    position: relative;
+    height: 120px;
+}
+
+.trendChart {
+    width: 100%;
+    height: 100%;
+}
+
+/* Line Chart */
+.lineChartContainer {
+    width: 100%;
+    height: 100%;
+    min-height: 140px;
+}
+
+.lineChart {
+    width: 100%;
+    height: 100%;
+}
+
+.chartValue {
+    position: absolute;
+    top: 10px;
+    right: 10px;
+    text-align: right;
+}
+
+.valueTime {
+    display: block;
+    font-size: 0.65rem;
+    color: #888;
+}
+
+.valueBig {
+    font-size: 1.25rem;
+    font-weight: 700;
+    color: var(--brand-secondary);
+}
+
+.valueBig small {
+    font-size: 0.7rem;
+    font-weight: 400;
+    color: #888;
+}
+
+/* Stats Grid */
+.statsGrid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 0.5rem;
+    margin-bottom: 1rem;
+}
+
+.statCard {
+    background: #1A1D24;
+    border-radius: 8px;
+    padding: 0.75rem;
+    text-align: center;
+    border: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+.statLabel {
+    display: block;
+    font-size: 0.65rem;
+    color: #888;
+    margin-bottom: 0.25rem;
+}
+
+.statValue {
+    font-size: 1.1rem;
+    font-weight: 700;
+    color: white;
+}
+
+/* Section Title */
+.sectionTitle {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    font-size: 0.75rem;
+    font-weight: 600;
+    color: #AAA;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    margin-bottom: 0.75rem;
+}
+
+/* Anomaly List */
+.anomalyList {
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+}
+
+.anomalyItem {
+    background: #1A1D24;
+    border-radius: 8px;
+    padding: 0.875rem;
+    border-left: 3px solid;
+    border: 1px solid rgba(255, 255, 255, 0.05);
+    border-left-width: 3px;
+}
+
+.anomalyHeader {
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 0.25rem;
+}
+
+.anomalyTitle {
+    font-size: 0.85rem;
+    font-weight: 600;
+    color: white;
+}
+
+.anomalyTime {
+    font-size: 0.7rem;
+    color: #888;
+}
+
+.anomalyDesc {
+    font-size: 0.75rem;
+    color: #AAA;
+    margin: 0 0 0.75rem 0;
+    line-height: 1.4;
+}
+
+.confidenceBar {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.confidenceLabel {
+    font-size: 0.65rem;
+    color: #666;
+    white-space: nowrap;
+}
+
+.confidenceTrack {
+    flex: 1;
+    height: 4px;
+    background: rgba(255, 255, 255, 0.1);
+    border-radius: 2px;
+    overflow: hidden;
+}
+
+.confidenceFill {
+    height: 100%;
+    border-radius: 2px;
+}
+
+.confidenceValue {
+    font-size: 0.7rem;
+    font-weight: 600;
+    color: #CCC;
+}
+
+/* Model Badge */
+.modelBadge {
+    display: flex;
+    align-items: center;
+    gap: 0.35rem;
+    font-size: 0.65rem;
+    color: var(--brand-primary);
+    background: rgba(95, 39, 205, 0.15);
+    padding: 0.25rem 0.5rem;
+    border-radius: 4px;
+}
+
+/* Forecast Grid */
+.forecastGrid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 0.5rem;
+}
+
+.forecastCard {
+    background: #252830;
+    border-radius: 8px;
+    padding: 0.75rem;
+    text-align: center;
+}
+
+.forecastPeriod {
+    display: block;
+    font-size: 0.65rem;
+    color: #888;
+    margin-bottom: 0.25rem;
+}
+
+.forecastStatus {
+    font-size: 1rem;
+    font-weight: 700;
+}
+
+/* Factors List */
+.factorsList {
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+}
+
+.factorRow {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+}
+
+.factorLabel {
+    font-size: 0.75rem;
+    color: #AAA;
+    width: 120px;
+}
+
+.factorBarTrack {
+    flex: 1;
+    height: 6px;
+    background: rgba(255, 255, 255, 0.1);
+    border-radius: 3px;
+    overflow: hidden;
+}
+
+.factorBarFill {
+    height: 100%;
+    border-radius: 3px;
+}
+
+.factorValue {
+    font-size: 0.75rem;
+    font-weight: 600;
+    color: #CCC;
+    width: 35px;
+    text-align: right;
+}
+
+/* Model List */
+.modelList {
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+    margin-bottom: 1rem;
+}
+
+.modelCard {
+    background: #1A1D24;
+    border-radius: 8px;
+    padding: 0.875rem;
+    border: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+.modelHeader {
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 0.35rem;
+}
+
+.modelName {
+    font-size: 0.85rem;
+    font-weight: 600;
+    color: white;
+}
+
+.modelStatus {
+    font-size: 0.7rem;
+    font-weight: 500;
+}
+
+.modelMeta {
+    display: flex;
+    gap: 1rem;
+    font-size: 0.7rem;
+    color: #888;
+}
+
+.modelMeta strong {
+    color: #CCC;
+}
+
+/* Performance Grid */
+.perfGrid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 0.75rem;
+}
+
+.perfItem {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.25rem;
+    background: #252830;
+    padding: 0.75rem;
+    border-radius: 8px;
+}
+
+.perfLabel {
+    font-size: 0.7rem;
+    color: #888;
+}
+
+.perfValue {
+    font-size: 1.25rem;
+    font-weight: 700;
+    color: white;
+}
+
+/* Search Results Dropdown */
+.searchResults {
+    position: absolute;
+    top: 100%;
+    left: 0;
+    right: 0;
+    background: #1A1D24;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-top: none;
+    border-radius: 0 0 8px 8px;
+    max-height: 200px;
+    overflow-y: auto;
+    z-index: 100;
+}
+
+.searchResultItem {
+    display: block;
+    width: 100%;
+    text-align: left;
+    padding: 0.75rem 1rem;
+    background: none;
+    border: none;
+    color: #CCC;
+    font-size: 0.85rem;
+    cursor: pointer;
+    transition: background 0.2s;
+}
+
+.searchResultItem:hover {
+    background: rgba(255, 255, 255, 0.05);
+    color: white;
+}
+
+/* Station Info */
+.stationInfo {
+    font-size: 0.7rem;
+    color: #888;
+    margin-top: 0.25rem;
+}
+
+/* Date Display */
+.dateDisplay {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    background: #252830;
+    padding: 0.5rem 0.75rem;
+    border-radius: 6px;
+    color: #AAA;
+    font-size: 0.75rem;
+}

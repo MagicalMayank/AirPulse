@@ -1,0 +1,102 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap');
+
+:root {
+  /* Typography */
+  --font-main: 'Inter', system-ui, -apple-system, sans-serif;
+  
+  /* Smog Pop Palette - Base */
+  --bg-main: #F3EFFA; /* Dusty Lilac */
+  --bg-card: #FFFFFF; /* White */
+  --bg-dark: #14161C; /* Midnight Asphalt */
+  
+  /* Text */
+  --text-primary: #1F2937;
+  --text-secondary: #6B7280;
+  --text-inverse: #FFFFFF;
+
+  /* AQI Status Colors */
+  --aqi-good: #2ED3A3;
+  --aqi-satisfactory: #B8F500;
+  --aqi-moderate: #FFD23F;
+  --aqi-poor: #FF8C42;
+  --aqi-very-poor: #FF4D6D;
+  --aqi-severe: #6A00F4;
+
+  /* Brand Colors */
+  --brand-primary: #5F27CD; /* Electric Indigo */
+  --brand-secondary: #1DD1A1; /* Skyline Teal */
+  --brand-focus: #FF6F61; /* Neon Peach */
+  --brand-hover: #3B82F6; /* Blueberry Pop */
+
+  /* Sources */
+  --source-traffic: #FF3B3B;
+  --source-construction: #FFC857;
+  --source-industry: #3DD6D0;
+  --source-biomass: #C44569;
+  
+  /* Engagement / Sentiment */
+  --sentiment-hotspot: #8E44AD;
+  --sentiment-positive: #27AE60;
+  --sentiment-neutral: #95A5A6;
+  --sentiment-angry: #E84118;
+
+  /* System */
+  --status-warning: #FFB703;
+  --status-error: #D90429;
+  --status-success: #00C897;
+  --status-info: #4D96FF;
+}
+
+/* Dark Mode Theme */
+.dark {
+  --bg-main: #14161C;
+  --bg-card: #1F2937;
+  --text-primary: #F3EFFA;
+  --text-secondary: #9CA3AF;
+  --text-inverse: #14161C;
+}
+
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+body {
+  font-family: var(--font-main);
+  background-color: var(--bg-main);
+  color: var(--text-primary);
+  min-height: 100vh;
+  -webkit-font-smoothing: antialiased;
+}
+
+button {
+  font-family: inherit;
+  cursor: pointer;
+  border: none;
+}
+
+a {
+  text-decoration: none;
+  color: inherit;
+}
+
+/* Utilities */
+.container {
+  max-width: 1440px;
+  margin: 0 auto;
+  padding: 0 1rem;
+}
+
+.flex-center {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.card {
+  background: var(--bg-card);
+  border-radius: 12px;
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+  overflow: hidden;
+}

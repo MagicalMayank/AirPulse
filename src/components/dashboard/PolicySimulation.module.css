@@ -1,0 +1,690 @@
+/* Policy Simulation Lab Styles */
+
+/* Backdrop */
+.backdrop {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(0, 0, 0, 0.5);
+    backdrop-filter: blur(2px);
+    z-index: 999;
+}
+
+/* Sliding Panel */
+.panel {
+    position: fixed;
+    top: 0;
+    right: -52vw;
+    width: 50vw;
+    min-width: 500px;
+    max-width: 800px;
+    height: 100vh;
+    background: linear-gradient(180deg, #13151A 0%, #1A1D24 100%);
+    border-left: 1px solid rgba(255, 255, 255, 0.1);
+    z-index: 1000;
+    display: flex;
+    flex-direction: column;
+    transition: right 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    box-shadow: -10px 0 40px rgba(0, 0, 0, 0.5);
+}
+
+.panelOpen {
+    right: 0;
+}
+
+/* Header */
+.header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 1rem 1.25rem;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+    background: rgba(139, 92, 246, 0.1);
+}
+
+.headerTitle {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    font-size: 1rem;
+    font-weight: 700;
+    color: white;
+}
+
+.headerTitle svg {
+    color: var(--brand-secondary);
+}
+
+.closeBtn {
+    background: none;
+    border: none;
+    color: #888;
+    cursor: pointer;
+    padding: 0.25rem;
+    border-radius: 4px;
+    transition: all 0.2s;
+}
+
+.closeBtn:hover {
+    background: rgba(255, 255, 255, 0.1);
+    color: white;
+}
+
+/* Disclaimer */
+.disclaimer {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.5rem 1rem;
+    background: rgba(245, 158, 11, 0.1);
+    border-bottom: 1px solid rgba(245, 158, 11, 0.2);
+    font-size: 0.7rem;
+    color: #F59E0B;
+}
+
+/* Content */
+.content {
+    flex: 1;
+    overflow-y: auto;
+    padding: 1rem 1.25rem;
+    display: flex;
+    flex-direction: column;
+    gap: 1.25rem;
+}
+
+/* Sections */
+.section {
+    background: #1A1D24;
+    border-radius: 12px;
+    padding: 1rem;
+    border: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+.sectionTitle {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    font-size: 0.8rem;
+    font-weight: 600;
+    color: #CCC;
+    margin: 0 0 0.75rem 0;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+}
+
+.iconGreen {
+    color: var(--aqi-good);
+}
+
+.iconRed {
+    color: var(--aqi-very-poor);
+}
+
+/* Ward Card */
+.wardCard {
+    background: #252830;
+    border-radius: 8px;
+    padding: 0.875rem;
+}
+
+.wardInfo {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 0.75rem;
+}
+
+.wardName {
+    font-size: 1rem;
+    font-weight: 600;
+    color: white;
+}
+
+.aqiDisplay {
+    text-align: right;
+}
+
+.aqiValue {
+    font-size: 1.75rem;
+    font-weight: 800;
+    color: var(--aqi-poor);
+    line-height: 1;
+}
+
+.aqiLabel {
+    display: block;
+    font-size: 0.65rem;
+    color: #888;
+}
+
+.sourcesGrid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 0.5rem;
+}
+
+.sourceItem {
+    display: flex;
+    align-items: center;
+    gap: 0.4rem;
+    font-size: 0.75rem;
+    color: #AAA;
+    background: rgba(255, 255, 255, 0.03);
+    padding: 0.4rem 0.5rem;
+    border-radius: 4px;
+}
+
+.sourceItem svg {
+    color: #666;
+}
+
+/* Slider Groups */
+.sliderGroup {
+    margin-bottom: 1rem;
+}
+
+.sliderHeader {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    margin-bottom: 0.5rem;
+    font-size: 0.8rem;
+    color: #CCC;
+}
+
+.sliderIcon {
+    color: var(--brand-secondary);
+}
+
+.sliderValue {
+    margin-left: auto;
+    font-weight: 700;
+    color: var(--brand-secondary);
+    background: rgba(139, 92, 246, 0.15);
+    padding: 0.15rem 0.5rem;
+    border-radius: 4px;
+    font-size: 0.75rem;
+}
+
+.slider {
+    width: 100%;
+    height: 6px;
+    border-radius: 3px;
+    background: #252830;
+    outline: none;
+    appearance: none;
+    cursor: pointer;
+}
+
+.slider::-webkit-slider-thumb {
+    appearance: none;
+    width: 16px;
+    height: 16px;
+    background: var(--brand-secondary);
+    border-radius: 50%;
+    cursor: pointer;
+    box-shadow: 0 2px 8px rgba(139, 92, 246, 0.4);
+    transition: transform 0.2s;
+}
+
+.slider::-webkit-slider-thumb:hover {
+    transform: scale(1.1);
+}
+
+.sliderLabels {
+    display: flex;
+    justify-content: space-between;
+    font-size: 0.65rem;
+    color: #666;
+    margin-top: 0.25rem;
+}
+
+/* Toggle */
+.toggleGroup {
+    margin-bottom: 1rem;
+}
+
+.toggleHeader {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    margin-bottom: 0.5rem;
+    font-size: 0.8rem;
+    color: #CCC;
+}
+
+.toggleIcon {
+    color: #F97316;
+}
+
+.toggle {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    cursor: pointer;
+}
+
+.toggle input {
+    display: none;
+}
+
+.toggleSlider {
+    width: 44px;
+    height: 24px;
+    background: #252830;
+    border-radius: 12px;
+    position: relative;
+    transition: background 0.3s;
+}
+
+.toggleSlider::after {
+    content: '';
+    position: absolute;
+    width: 18px;
+    height: 18px;
+    background: #666;
+    border-radius: 50%;
+    top: 3px;
+    left: 3px;
+    transition: all 0.3s;
+}
+
+.toggle input:checked+.toggleSlider {
+    background: var(--aqi-good);
+}
+
+.toggle input:checked+.toggleSlider::after {
+    left: 23px;
+    background: white;
+}
+
+.toggleLabel {
+    font-size: 0.8rem;
+    color: #888;
+}
+
+/* Weather Group */
+.weatherGroup {
+    margin-bottom: 0.5rem;
+}
+
+.weatherHeader {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    margin-bottom: 0.5rem;
+    font-size: 0.8rem;
+    color: #CCC;
+}
+
+.weatherHeader svg {
+    color: #06B6D4;
+}
+
+.infoTag {
+    display: flex;
+    align-items: center;
+    gap: 0.25rem;
+    margin-left: auto;
+    font-size: 0.65rem;
+    color: #888;
+    background: rgba(255, 255, 255, 0.05);
+    padding: 0.15rem 0.4rem;
+    border-radius: 4px;
+}
+
+.weatherBtns {
+    display: flex;
+    gap: 0.5rem;
+}
+
+.weatherBtn {
+    flex: 1;
+    padding: 0.5rem;
+    background: #252830;
+    border: 1px solid transparent;
+    border-radius: 6px;
+    color: #888;
+    font-size: 0.75rem;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.weatherBtn:hover {
+    background: #2A2E38;
+}
+
+.weatherBtnActive {
+    background: rgba(6, 182, 212, 0.15);
+    border-color: rgba(6, 182, 212, 0.3);
+    color: #06B6D4;
+}
+
+/* Comparison Card */
+.comparisonCard {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    margin-bottom: 0.75rem;
+}
+
+.compareBox {
+    flex: 1;
+    background: #252830;
+    border-radius: 10px;
+    padding: 1rem;
+    text-align: center;
+    border: 2px solid transparent;
+}
+
+.compareBoxGreen {
+    border-color: rgba(34, 197, 94, 0.3);
+    background: rgba(34, 197, 94, 0.08);
+}
+
+.compareLabel {
+    display: block;
+    font-size: 0.65rem;
+    color: #888;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    margin-bottom: 0.25rem;
+}
+
+.compareValue {
+    font-size: 2rem;
+    font-weight: 800;
+    color: white;
+    line-height: 1.1;
+}
+
+.compareUnit {
+    display: block;
+    font-size: 0.7rem;
+    color: #666;
+}
+
+.compareArrow {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    color: #666;
+}
+
+.deltaTag {
+    font-size: 0.7rem;
+    font-weight: 700;
+    color: var(--aqi-good);
+    background: rgba(34, 197, 94, 0.15);
+    padding: 0.15rem 0.4rem;
+    border-radius: 4px;
+}
+
+/* Change Indicator */
+.changeIndicator {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.35rem;
+    padding: 0.5rem;
+    background: rgba(34, 197, 94, 0.1);
+    border-radius: 6px;
+    color: var(--aqi-good);
+    font-size: 0.8rem;
+    font-weight: 600;
+    margin-bottom: 0.75rem;
+}
+
+/* Projections */
+.projectionRow {
+    display: flex;
+    gap: 0.5rem;
+    margin-bottom: 0.75rem;
+}
+
+.projectionItem {
+    flex: 1;
+    background: #252830;
+    border-radius: 6px;
+    padding: 0.5rem;
+    text-align: center;
+}
+
+.projLabel {
+    display: block;
+    font-size: 0.65rem;
+    color: #888;
+}
+
+.projValue {
+    font-size: 1.1rem;
+    font-weight: 700;
+    color: white;
+}
+
+/* Impact Statement */
+.impactStatement {
+    font-size: 0.8rem;
+    color: #AAA;
+    line-height: 1.5;
+    margin: 0;
+    padding: 0.75rem;
+    background: rgba(139, 92, 246, 0.08);
+    border-radius: 6px;
+    border-left: 3px solid var(--brand-secondary);
+}
+
+.impactStatement strong {
+    color: white;
+}
+
+/* Confidence Card */
+.confidenceCard {
+    background: #252830;
+    border-radius: 8px;
+    padding: 0.875rem;
+}
+
+.confidenceHeader {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 0.5rem;
+}
+
+.confidenceLabel {
+    font-size: 0.75rem;
+    color: #AAA;
+}
+
+.confidenceBadge {
+    font-size: 0.65rem;
+    font-weight: 700;
+    padding: 0.2rem 0.5rem;
+    border-radius: 4px;
+}
+
+.confidenceLow {
+    background: rgba(239, 68, 68, 0.15);
+    color: #EF4444;
+}
+
+.confidenceMedium {
+    background: rgba(245, 158, 11, 0.15);
+    color: #F59E0B;
+}
+
+.confidenceHigh {
+    background: rgba(34, 197, 94, 0.15);
+    color: #22C55E;
+}
+
+.confidenceBar {
+    height: 6px;
+    background: #1A1D24;
+    border-radius: 3px;
+    overflow: hidden;
+    margin-bottom: 0.25rem;
+}
+
+.confidenceFill {
+    height: 100%;
+    background: linear-gradient(90deg, var(--brand-secondary), var(--brand-primary));
+    border-radius: 3px;
+    transition: width 0.5s ease;
+}
+
+.confidenceScore {
+    font-size: 0.65rem;
+    color: #666;
+}
+
+.basisList {
+    margin-top: 0.75rem;
+    padding-top: 0.75rem;
+    border-top: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+.basisTitle {
+    font-size: 0.7rem;
+    color: #888;
+    display: block;
+    margin-bottom: 0.35rem;
+}
+
+.basisList ul {
+    margin: 0;
+    padding-left: 1rem;
+    font-size: 0.75rem;
+    color: #AAA;
+}
+
+.basisList li {
+    margin-bottom: 0.15rem;
+}
+
+/* Recommendation Card */
+.recommendCard {
+    background: #252830;
+    border-radius: 8px;
+    padding: 0.875rem;
+    margin-bottom: 0.75rem;
+}
+
+.recommendRow {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 0.4rem 0;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.03);
+}
+
+.recommendRow:last-of-type {
+    border-bottom: none;
+}
+
+.recommendLabel {
+    font-size: 0.75rem;
+    color: #888;
+}
+
+.recommendValue {
+    font-size: 0.8rem;
+    font-weight: 600;
+    color: white;
+    text-align: right;
+}
+
+.riskBadge {
+    font-size: 0.65rem;
+    font-weight: 700;
+    padding: 0.2rem 0.5rem;
+    border-radius: 4px;
+}
+
+.riskLow {
+    background: rgba(34, 197, 94, 0.15);
+    color: #22C55E;
+}
+
+.riskMedium {
+    background: rgba(245, 158, 11, 0.15);
+    color: #F59E0B;
+}
+
+.riskHigh {
+    background: rgba(239, 68, 68, 0.15);
+    color: #EF4444;
+}
+
+.recommendFooter {
+    margin-top: 0.75rem;
+    padding-top: 0.5rem;
+    border-top: 1px solid rgba(255, 255, 255, 0.05);
+    font-size: 0.7rem;
+    color: #666;
+    text-align: center;
+}
+
+/* Export Buttons */
+.exportBtns {
+    display: flex;
+    gap: 0.5rem;
+}
+
+.exportBtn,
+.viewBtn {
+    flex: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.4rem;
+    padding: 0.625rem;
+    border-radius: 8px;
+    font-size: 0.75rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.exportBtn {
+    background: var(--brand-primary);
+    border: none;
+    color: white;
+}
+
+.exportBtn:hover {
+    background: var(--brand-hover);
+}
+
+.viewBtn {
+    background: transparent;
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    color: #CCC;
+}
+
+.viewBtn:hover {
+    background: rgba(255, 255, 255, 0.05);
+    border-color: rgba(255, 255, 255, 0.3);
+}
+
+/* Scrollbar */
+.content::-webkit-scrollbar {
+    width: 6px;
+}
+
+.content::-webkit-scrollbar-track {
+    background: transparent;
+}
+
+.content::-webkit-scrollbar-thumb {
+    background: #333;
+    border-radius: 3px;
+}
+
+.content::-webkit-scrollbar-thumb:hover {
+    background: #444;
+}

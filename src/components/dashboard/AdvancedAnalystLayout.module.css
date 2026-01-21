@@ -1,0 +1,188 @@
+/* Advanced Analyst Layout Styles */
+.advancedLayout {
+    display: flex;
+    flex-direction: column;
+    height: calc(100vh - 60px);
+    background: #0D0F13;
+}
+
+/* Slim Control Bar */
+.controlBar {
+    display: flex;
+    align-items: center;
+    gap: 1.5rem;
+    padding: 0.5rem 1rem;
+    background: #14161C;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+    transition: all 0.3s ease;
+}
+
+.controlBar.collapsed {
+    padding: 0.5rem 1rem;
+}
+
+.collapseToggle {
+    display: flex;
+    align-items: center;
+    gap: 0.35rem;
+    background: rgba(255, 255, 255, 0.05);
+    border: none;
+    color: #888;
+    padding: 0.35rem 0.5rem;
+    border-radius: 6px;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.collapseToggle:hover {
+    background: rgba(255, 255, 255, 0.1);
+    color: white;
+}
+
+.controlContent {
+    display: flex;
+    align-items: center;
+    gap: 2rem;
+    flex: 1;
+}
+
+/* Search Mini */
+.searchMini {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    background: rgba(255, 255, 255, 0.05);
+    padding: 0.35rem 0.75rem;
+    border-radius: 6px;
+    color: #666;
+}
+
+.searchMini input {
+    background: none;
+    border: none;
+    color: white;
+    width: 100px;
+    font-size: 0.75rem;
+}
+
+.searchMini input::placeholder {
+    color: #666;
+}
+
+.searchMini input:focus {
+    outline: none;
+}
+
+/* Control Labels */
+.controlLabel {
+    display: flex;
+    align-items: center;
+    gap: 0.35rem;
+    font-size: 0.65rem;
+    color: #666;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    margin-bottom: 0.35rem;
+}
+
+/* Pollutant Toggles */
+.pollutantToggles,
+.layerToggles {
+    display: flex;
+    flex-direction: column;
+}
+
+.toggleRow {
+    display: flex;
+    gap: 0.25rem;
+}
+
+.pollutantToggle,
+.layerToggle {
+    padding: 0.3rem 0.6rem;
+    background: rgba(255, 255, 255, 0.03);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    border-radius: 4px;
+    color: #666;
+    font-size: 0.65rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.pollutantToggle:hover,
+.layerToggle:hover {
+    background: rgba(255, 255, 255, 0.08);
+    color: #AAA;
+}
+
+.pollutantToggle.active {
+    background: rgba(0, 176, 255, 0.15);
+    border-color: var(--brand-secondary);
+    color: var(--brand-secondary);
+}
+
+.layerToggle.active {
+    background: rgba(95, 39, 205, 0.15);
+    border-color: var(--brand-primary);
+    color: var(--brand-primary);
+}
+
+/* Main Content */
+.mainContent {
+    display: flex;
+    flex: 1;
+    gap: 1px;
+    min-height: 0;
+}
+
+/* Context Map - Left side, larger for map visibility */
+.contextMap {
+    flex: 1.2;
+    min-width: 0;
+    display: flex;
+    flex-direction: column;
+    background: #14161C;
+    border-right: 4px solid #00FF66;
+}
+
+.mapHeader {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 0.75rem 1rem;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+.mapLabel {
+    font-size: 0.7rem;
+    font-weight: 600;
+    color: #888;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+}
+
+.wardInfo {
+    font-size: 0.75rem;
+    color: var(--brand-secondary);
+    font-weight: 500;
+}
+
+.mapWrapper {
+    flex: 1;
+    min-height: 0;
+    position: relative;
+}
+
+.mapWrapper>div {
+    height: 100% !important;
+}
+
+/* Canvas Area - Right side, constrained for analysis workspace */
+.canvasArea {
+    flex: 1;
+    min-width: 380px;
+    max-width: 45%;
+    display: flex;
+    flex-direction: column;
+}

@@ -1,0 +1,680 @@
+/* Authority Panel Styles */
+.panelContainer {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+}
+
+/* Search Box */
+.searchBox {
+    position: relative;
+    background: #1A1D24;
+    border-radius: 8px;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.searchIcon {
+    position: absolute;
+    left: 12px;
+    top: 50%;
+    transform: translateY(-50%);
+    color: #666;
+}
+
+.searchInput {
+    width: 100%;
+    background: transparent;
+    border: none;
+    padding: 0.75rem 0.75rem 0.75rem 2.5rem;
+    color: white;
+    font-family: var(--font-main);
+    font-size: 0.875rem;
+}
+
+.searchInput:focus {
+    outline: none;
+}
+
+.searchInput::placeholder {
+    color: #666;
+}
+
+/* Overview Card */
+.overviewCard {
+    background: linear-gradient(135deg, #1A1D24 0%, #252830 100%);
+    border-radius: 12px;
+    padding: 1rem;
+    border: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+.overviewHeader {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 0.75rem;
+}
+
+.overviewLabel {
+    font-size: 0.65rem;
+    letter-spacing: 0.1em;
+    color: #888;
+    font-weight: 600;
+}
+
+.wardBadge {
+    font-size: 0.65rem;
+    font-weight: 600;
+    padding: 3px 8px;
+    border-radius: 4px;
+    background: rgba(95, 39, 205, 0.2);
+    color: var(--brand-primary);
+}
+
+.statsRow {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 0.5rem;
+    margin-bottom: 0.5rem;
+}
+
+.statsRow:last-child {
+    margin-bottom: 0;
+}
+
+.statBox {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    background: rgba(0, 0, 0, 0.2);
+    padding: 0.6rem;
+    border-radius: 8px;
+}
+
+.statIcon {
+    opacity: 0.8;
+}
+
+.statContent {
+    display: flex;
+    flex-direction: column;
+}
+
+.statValue {
+    font-size: 1.25rem;
+    font-weight: 700;
+    color: white;
+    line-height: 1;
+}
+
+.statLabel {
+    font-size: 0.6rem;
+    color: #888;
+}
+
+/* Section */
+.section {
+    background: #1A1D24;
+    border-radius: 10px;
+    padding: 0.875rem;
+    border: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+.sectionHeader {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    font-size: 0.75rem;
+    font-weight: 600;
+    color: #AAA;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    margin-bottom: 0.75rem;
+}
+
+/* Filter Buttons */
+.filterButtons {
+    display: flex;
+    gap: 0.5rem;
+    flex-wrap: wrap;
+}
+
+.filterBtn {
+    flex: 1;
+    min-width: 70px;
+    background: #252830;
+    border: none;
+    color: #888;
+    padding: 0.5rem;
+    border-radius: 6px;
+    font-size: 0.7rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.filterBtn:hover {
+    background: #2A2E38;
+}
+
+.filterBtnActive {
+    background: var(--brand-primary);
+    color: white;
+}
+
+/* Collapsible */
+.collapsible {
+    background: #1A1D24;
+    border-radius: 10px;
+    border: 1px solid rgba(255, 255, 255, 0.05);
+    overflow: hidden;
+}
+
+.collapseHeader {
+    width: 100%;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.875rem;
+    background: none;
+    border: none;
+    color: #AAA;
+    font-size: 0.8rem;
+    font-weight: 500;
+    cursor: pointer;
+    text-align: left;
+}
+
+.collapseHeader svg:last-child {
+    margin-left: auto;
+}
+
+.alertCount {
+    background: var(--status-error);
+    color: white;
+    font-size: 0.65rem;
+    font-weight: 700;
+    padding: 2px 6px;
+    border-radius: 10px;
+}
+
+.collapseContent {
+    padding: 0 0.875rem 0.875rem;
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+}
+
+/* Hotspot Item */
+.hotspotItem {
+    background: #252830;
+    padding: 0.6rem 0.75rem;
+    border-radius: 6px;
+    border-left: 3px solid;
+}
+
+.hotspotHeader {
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 0.2rem;
+}
+
+.hotspotWard {
+    font-size: 0.8rem;
+    font-weight: 600;
+    color: white;
+}
+
+.hotspotCount {
+    font-size: 0.65rem;
+    color: #888;
+}
+
+.hotspotIssue {
+    font-size: 0.7rem;
+    color: #AAA;
+}
+
+/* Team Item */
+.teamItem {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    background: #252830;
+    padding: 0.6rem 0.75rem;
+    border-radius: 6px;
+}
+
+.teamInfo {
+    display: flex;
+    flex-direction: column;
+}
+
+.teamName {
+    font-size: 0.8rem;
+    font-weight: 600;
+    color: white;
+}
+
+.teamLocation {
+    font-size: 0.65rem;
+    color: #888;
+    display: flex;
+    align-items: center;
+    gap: 0.25rem;
+}
+
+.teamStatus {
+    font-size: 0.7rem;
+    font-weight: 500;
+}
+
+.deployBtn {
+    width: 100%;
+    margin-top: 0.25rem;
+}
+
+/* Quick Actions */
+.quickActions {
+    display: flex;
+    gap: 0.5rem;
+}
+
+.actionBtn {
+    flex: 1;
+    font-size: 0.75rem !important;
+}
+
+/* ===== RIGHT PANEL STYLES ===== */
+
+/* Tabs */
+.tabs {
+    display: flex;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+    margin-bottom: 1rem;
+}
+
+.tab {
+    flex: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.35rem;
+    background: transparent;
+    color: #666;
+    padding: 0.75rem 0.5rem;
+    font-size: 0.75rem;
+    font-weight: 600;
+    border: none;
+    border-bottom: 2px solid transparent;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.tab:hover {
+    color: #AAA;
+}
+
+.activeTab {
+    color: white;
+    border-bottom-color: var(--status-warning);
+}
+
+/* Card */
+.card {
+    background: #1A1D24;
+    border-radius: 12px;
+    padding: 1rem;
+    border: 1px solid rgba(255, 255, 255, 0.05);
+    margin-bottom: 1rem;
+}
+
+.cardHeader {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 0.75rem;
+}
+
+.cardTitle {
+    font-size: 0.8rem;
+    font-weight: 600;
+    color: #CCC;
+}
+
+.queueCount {
+    font-size: 0.65rem;
+    font-weight: 600;
+    color: var(--status-error);
+    background: rgba(217, 4, 41, 0.15);
+    padding: 3px 8px;
+    border-radius: 4px;
+}
+
+.viewAllLink {
+    font-size: 0.7rem;
+    color: var(--brand-secondary);
+    text-decoration: none;
+}
+
+/* Action List */
+.actionList {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+}
+
+.actionItem {
+    background: #252830;
+    padding: 0.75rem;
+    border-radius: 8px;
+    border-left: 3px solid;
+}
+
+.actionHeader {
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 0.25rem;
+}
+
+.actionTitle {
+    font-size: 0.8rem;
+    font-weight: 600;
+    color: white;
+}
+
+.actionStatus {
+    font-size: 0.65rem;
+}
+
+.actionTime {
+    display: flex;
+    align-items: center;
+    gap: 0.35rem;
+    font-size: 0.65rem;
+    color: #888;
+}
+
+/* Resolution List */
+.resolutionList {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+}
+
+.resolutionItem {
+    display: flex;
+    align-items: flex-start;
+    gap: 0.5rem;
+    padding: 0.5rem;
+    background: #252830;
+    border-radius: 6px;
+}
+
+.resolutionContent {
+    display: flex;
+    flex-direction: column;
+}
+
+.resolutionTitle {
+    font-size: 0.8rem;
+    color: white;
+}
+
+.resolutionMeta {
+    font-size: 0.65rem;
+    color: #888;
+}
+
+/* Alert Card */
+.alertCard {
+    background: rgba(217, 4, 41, 0.1);
+    border: 1px solid rgba(217, 4, 41, 0.3);
+    border-radius: 12px;
+    padding: 1rem;
+}
+
+.alertHeader {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    font-size: 0.8rem;
+    font-weight: 600;
+    color: var(--status-error);
+    margin-bottom: 0.5rem;
+}
+
+.alertText {
+    font-size: 0.75rem;
+    color: #CCC;
+    margin: 0 0 0.75rem 0;
+    line-height: 1.4;
+}
+
+.alertBtn {
+    display: flex;
+    align-items: center;
+    gap: 0.35rem;
+    background: var(--status-error);
+    color: white;
+    padding: 0.5rem 1rem;
+    border-radius: 6px;
+    font-size: 0.75rem;
+    font-weight: 600;
+    border: none;
+    cursor: pointer;
+}
+
+/* Metric Display */
+.metricDisplay {
+    text-align: center;
+    padding: 1rem 0;
+}
+
+.metricValue {
+    font-size: 3rem;
+    font-weight: 800;
+    color: white;
+}
+
+.metricUnit {
+    font-size: 1rem;
+    color: #888;
+    margin-left: 0.25rem;
+}
+
+.metricChange {
+    display: block;
+    font-size: 0.75rem;
+    margin-top: 0.5rem;
+}
+
+.metricBadge {
+    font-size: 0.65rem;
+    color: #888;
+    background: #252830;
+    padding: 3px 8px;
+    border-radius: 4px;
+}
+
+/* Category Bars */
+.categoryList {
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+}
+
+.categoryRow {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+}
+
+.categoryLabel {
+    font-size: 0.75rem;
+    color: #AAA;
+    width: 110px;
+}
+
+.categoryBarTrack {
+    flex: 1;
+    height: 8px;
+    background: rgba(255, 255, 255, 0.1);
+    border-radius: 4px;
+    overflow: hidden;
+}
+
+.categoryBarFill {
+    height: 100%;
+    border-radius: 4px;
+}
+
+.categoryValue {
+    font-size: 0.75rem;
+    font-weight: 600;
+    color: #CCC;
+    width: 35px;
+    text-align: right;
+}
+
+/* Ward List */
+.wardList {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+}
+
+.wardItem {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    background: #252830;
+    padding: 0.75rem;
+    border-radius: 8px;
+}
+
+.wardInfo {
+    display: flex;
+    flex-direction: column;
+}
+
+.wardName {
+    font-size: 0.85rem;
+    font-weight: 600;
+    color: white;
+}
+
+.wardStats {
+    font-size: 0.65rem;
+    color: #888;
+}
+
+.wardScore {
+    font-size: 1.25rem;
+    font-weight: 700;
+}
+
+/* Team Overview */
+.teamOverview {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 0.5rem;
+    margin-bottom: 1rem;
+}
+
+.teamStat {
+    background: #1A1D24;
+    border-radius: 10px;
+    padding: 0.75rem;
+    text-align: center;
+    border: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+.teamStatValue {
+    display: block;
+    font-size: 1.5rem;
+    font-weight: 700;
+    color: white;
+}
+
+.teamStatLabel {
+    font-size: 0.65rem;
+    color: #888;
+}
+
+/* Deployment List */
+.deploymentList {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+}
+
+.deploymentCard {
+    background: #252830;
+    padding: 0.75rem;
+    border-radius: 8px;
+}
+
+.deploymentHeader {
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 0.35rem;
+}
+
+.deploymentTeam {
+    font-size: 0.85rem;
+    font-weight: 600;
+    color: white;
+}
+
+.deploymentEta {
+    font-size: 0.65rem;
+    color: var(--status-success);
+    font-weight: 600;
+}
+
+.deploymentLocation {
+    display: flex;
+    align-items: center;
+    gap: 0.35rem;
+    font-size: 0.7rem;
+    color: #AAA;
+    margin-bottom: 0.25rem;
+}
+
+.deploymentTask {
+    font-size: 0.7rem;
+    color: #666;
+}
+
+/* Efficiency List */
+.efficiencyList {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+}
+
+.efficiencyRow {
+    display: flex;
+    align-items: center;
+    background: #252830;
+    padding: 0.6rem 0.75rem;
+    border-radius: 6px;
+}
+
+.efficiencyTeam {
+    font-size: 0.8rem;
+    font-weight: 600;
+    color: white;
+    flex: 1;
+}
+
+.efficiencyResolutions {
+    font-size: 0.7rem;
+    color: var(--status-success);
+    margin-right: 1rem;
+}
+
+.efficiencyTime {
+    font-size: 0.7rem;
+    color: #888;
+}

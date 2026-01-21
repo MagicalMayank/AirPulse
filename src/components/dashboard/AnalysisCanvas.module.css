@@ -1,0 +1,605 @@
+/* Analysis Canvas Styles */
+.canvas {
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+    background: #12141A;
+    border-radius: 12px;
+    overflow: hidden;
+    transition: all 0.3s ease;
+}
+
+.canvas.focusMode {
+    position: fixed;
+    top: 60px;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    z-index: 100;
+    border-radius: 0;
+}
+
+/* Header */
+.header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 1rem 1.25rem;
+    background: rgba(0, 0, 0, 0.3);
+    border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+.headerLeft {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+}
+
+.title {
+    font-family: 'Inter', 'SF Pro Display', sans-serif;
+    font-size: 1rem;
+    font-weight: 600;
+    color: white;
+    margin: 0;
+}
+
+.wardContext {
+    display: flex;
+    align-items: center;
+    gap: 0.35rem;
+    font-size: 0.75rem;
+    color: #888;
+    background: rgba(255, 255, 255, 0.05);
+    padding: 0.35rem 0.75rem;
+    border-radius: 20px;
+}
+
+.headerActions {
+    display: flex;
+    gap: 0.5rem;
+}
+
+.actionBtn {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 32px;
+    height: 32px;
+    background: rgba(255, 255, 255, 0.05);
+    border: none;
+    border-radius: 6px;
+    color: #888;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.actionBtn:hover {
+    background: rgba(255, 255, 255, 0.1);
+    color: white;
+}
+
+.closeBtn {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 32px;
+    height: 32px;
+    background: rgba(217, 4, 41, 0.1);
+    border: none;
+    border-radius: 6px;
+    color: var(--status-error);
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.closeBtn:hover {
+    background: rgba(217, 4, 41, 0.2);
+}
+
+/* Tab Bar */
+.tabBar {
+    display: flex;
+    padding: 0 1rem;
+    background: rgba(0, 0, 0, 0.2);
+    border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+    overflow-x: auto;
+}
+
+.tab {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.875rem 1rem;
+    background: none;
+    border: none;
+    border-bottom: 2px solid transparent;
+    color: #666;
+    font-size: 0.8rem;
+    font-weight: 500;
+    white-space: nowrap;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.tab:hover {
+    color: #AAA;
+}
+
+.activeTab {
+    color: white;
+    border-bottom-color: var(--brand-primary);
+}
+
+/* Content Area */
+.content {
+    flex: 1;
+    padding: 1.25rem;
+    overflow-y: auto;
+}
+
+.tabContent {
+    height: 100%;
+}
+
+/* Chart Header */
+.chartHeader {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 1rem;
+}
+
+.chartHeader h3 {
+    font-size: 0.9rem;
+    font-weight: 600;
+    color: #CCC;
+    margin: 0;
+}
+
+.timeSelector {
+    display: flex;
+    gap: 0.25rem;
+    background: rgba(255, 255, 255, 0.05);
+    padding: 3px;
+    border-radius: 6px;
+}
+
+.timeBtn {
+    padding: 0.35rem 0.75rem;
+    background: none;
+    border: none;
+    color: #888;
+    font-size: 0.7rem;
+    font-weight: 600;
+    border-radius: 4px;
+    cursor: pointer;
+}
+
+.timeBtnActive {
+    background: var(--brand-primary);
+    color: white;
+}
+
+/* Chart Area */
+.chartArea {
+    background: rgba(0, 0, 0, 0.2);
+    border-radius: 10px;
+    padding: 1rem;
+    margin-bottom: 1rem;
+}
+
+.areaChart,
+.lineChart,
+.scatter {
+    width: 100%;
+    height: auto;
+}
+
+/* Legend */
+.legend {
+    display: flex;
+    gap: 1.5rem;
+    justify-content: center;
+}
+
+.legendItem {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.legendDot {
+    width: 10px;
+    height: 10px;
+    border-radius: 2px;
+}
+
+.legendLabel {
+    font-size: 0.75rem;
+    color: #AAA;
+}
+
+.legendValue {
+    font-size: 0.75rem;
+    font-weight: 600;
+    color: white;
+}
+
+.legendInline {
+    display: flex;
+    gap: 1rem;
+    font-size: 0.75rem;
+    color: #888;
+}
+
+.dot {
+    display: inline-block;
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    margin-right: 0.35rem;
+}
+
+/* Correlation Layout */
+.correlationLayout {
+    display: grid;
+    grid-template-columns: 240px 1fr;
+    gap: 1.5rem;
+    height: 100%;
+}
+
+.pairSelector h4 {
+    font-size: 0.75rem;
+    font-weight: 600;
+    color: #888;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    margin: 0 0 0.75rem 0;
+}
+
+.pairBtn {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    width: 100%;
+    padding: 0.75rem;
+    background: rgba(255, 255, 255, 0.03);
+    border: 1px solid rgba(255, 255, 255, 0.05);
+    border-radius: 8px;
+    color: #CCC;
+    font-size: 0.8rem;
+    cursor: pointer;
+    margin-bottom: 0.5rem;
+    transition: all 0.2s;
+}
+
+.pairBtn:hover {
+    background: rgba(255, 255, 255, 0.06);
+}
+
+.pairBtnActive {
+    background: rgba(95, 39, 205, 0.15);
+    border-color: var(--brand-primary);
+}
+
+.rValue {
+    font-weight: 600;
+    font-size: 0.75rem;
+}
+
+.scatterPlot {
+    background: rgba(0, 0, 0, 0.2);
+    border-radius: 10px;
+    padding: 1rem;
+}
+
+.plotHeader {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 0.75rem;
+}
+
+.plotHeader h3 {
+    font-size: 0.9rem;
+    font-weight: 600;
+    color: #CCC;
+    margin: 0;
+}
+
+.correlationBadge {
+    font-size: 0.75rem;
+    color: #AAA;
+    background: rgba(255, 255, 255, 0.05);
+    padding: 0.35rem 0.75rem;
+    border-radius: 4px;
+}
+
+.correlationBadge strong {
+    color: var(--brand-secondary);
+}
+
+.correlationExplain {
+    font-size: 0.8rem;
+    color: #AAA;
+    margin: 1rem 0 0 0;
+    line-height: 1.5;
+}
+
+/* Anomaly Cards */
+.anomalyCards {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 1rem;
+}
+
+.anomalyCard {
+    background: rgba(0, 0, 0, 0.2);
+    border-radius: 10px;
+    padding: 1rem;
+    border-left: 3px solid var(--status-warning);
+}
+
+.anomalyCard:first-child {
+    border-left-color: var(--status-error);
+}
+
+.anomalyHeader {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    font-size: 0.8rem;
+    font-weight: 600;
+    color: white;
+    margin-bottom: 0.5rem;
+}
+
+.anomalyCard p {
+    font-size: 0.8rem;
+    color: #AAA;
+    margin: 0 0 0.5rem 0;
+    line-height: 1.4;
+}
+
+.anomalyCard strong {
+    color: white;
+}
+
+.anomalyMeta {
+    font-size: 0.65rem;
+    color: #666;
+}
+
+/* Spillover Layout */
+.spilloverLayout {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 1.5rem;
+}
+
+.matrixPanel h4,
+.spilloverInsights h4 {
+    font-size: 0.8rem;
+    font-weight: 600;
+    color: #CCC;
+    margin: 0 0 1rem 0;
+}
+
+.gradientMatrix {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    background: rgba(0, 0, 0, 0.3);
+    padding: 1rem;
+    border-radius: 10px;
+}
+
+.matrixRow {
+    display: flex;
+    gap: 4px;
+}
+
+.matrixCell {
+    flex: 1;
+    aspect-ratio: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    border-radius: 8px;
+    font-size: 0.9rem;
+    font-weight: 700;
+    color: white;
+}
+
+.centerCell {
+    border: 2px solid white;
+}
+
+.centerCell span {
+    font-size: 0.6rem;
+    font-weight: 400;
+    opacity: 0.8;
+}
+
+.matrixCaption {
+    font-size: 0.7rem;
+    color: #666;
+    text-align: center;
+    margin: 0.75rem 0 0 0;
+}
+
+.insightCard {
+    background: rgba(0, 0, 0, 0.2);
+    border-radius: 8px;
+    padding: 0.875rem;
+    margin-bottom: 0.75rem;
+}
+
+.insightHeader {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    font-size: 0.8rem;
+    font-weight: 600;
+    color: white;
+    margin-bottom: 0.5rem;
+}
+
+.insightIcon {
+    font-size: 1rem;
+}
+
+.insightCard p {
+    font-size: 0.8rem;
+    color: #AAA;
+    margin: 0;
+    line-height: 1.4;
+}
+
+.insightCard strong {
+    color: white;
+}
+
+.transportIndicator {
+    margin-top: 1rem;
+}
+
+.transportLabel {
+    font-size: 0.7rem;
+    color: #888;
+    display: block;
+    margin-bottom: 0.5rem;
+}
+
+.transportBar {
+    display: flex;
+    height: 24px;
+    border-radius: 4px;
+    overflow: hidden;
+}
+
+.transportLocal {
+    background: var(--brand-primary);
+    color: white;
+    font-size: 0.65rem;
+    font-weight: 600;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.transportExt {
+    background: #444;
+    color: #AAA;
+    font-size: 0.65rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+/* Explain Panel */
+.explainPanel {
+    max-width: 800px;
+}
+
+.aiHeader {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    font-size: 0.85rem;
+    font-weight: 600;
+    color: white;
+    margin-bottom: 1.5rem;
+    padding-bottom: 1rem;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.confidence {
+    margin-left: auto;
+    font-size: 0.7rem;
+    font-weight: 500;
+    color: var(--aqi-good);
+    background: rgba(0, 176, 80, 0.1);
+    padding: 0.25rem 0.75rem;
+    border-radius: 20px;
+}
+
+.reportSection {
+    margin-bottom: 1.5rem;
+}
+
+.reportSection h3 {
+    font-size: 0.9rem;
+    font-weight: 600;
+    color: white;
+    margin: 0 0 0.75rem 0;
+}
+
+.reportSection p {
+    font-size: 0.85rem;
+    color: #AAA;
+    line-height: 1.6;
+    margin: 0;
+}
+
+.reportSection strong {
+    color: white;
+}
+
+.factorList {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+}
+
+.factorList li {
+    font-size: 0.85rem;
+    color: #AAA;
+    line-height: 1.5;
+    padding: 0.5rem 0;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+.factorList li:last-child {
+    border-bottom: none;
+}
+
+.factorList strong {
+    color: white;
+}
+
+.weatherGrid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 0.75rem;
+}
+
+.weatherItem {
+    background: rgba(255, 255, 255, 0.03);
+    padding: 0.75rem;
+    border-radius: 8px;
+    text-align: center;
+}
+
+.weatherLabel {
+    display: block;
+    font-size: 0.65rem;
+    color: #666;
+    margin-bottom: 0.25rem;
+}
+
+.weatherValue {
+    font-size: 0.9rem;
+    font-weight: 600;
+    color: white;
+}
+
+.modelInfo {
+    display: flex;
+    justify-content: space-between;
+    font-size: 0.65rem;
+    color: #555;
+    padding-top: 1rem;
+    border-top: 1px solid rgba(255, 255, 255, 0.05);
+}

@@ -1,0 +1,333 @@
+.mapContainer {
+    width: 100%;
+    height: 100%;
+    position: relative;
+    background: #2A2D35;
+    flex: 1;
+    min-height: 0;
+}
+
+.mapWrapper {
+    width: 100%;
+    height: 100%;
+    position: absolute;
+    top: 0;
+    left: 0;
+    z-index: 1;
+}
+
+/* Controls Overlay - IMPORTANT: This must be above the map */
+.controlsOverlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    z-index: 10;
+    pointer-events: none;
+    /* Allow clicks to pass through to map */
+}
+
+/* Make child elements clickable */
+.controlsOverlay>* {
+    pointer-events: auto;
+}
+
+.label {
+    color: white;
+    background: rgba(0, 0, 0, 0.5);
+    padding: 1rem;
+    border-radius: 8px;
+}
+
+.controlsLeft {
+    position: absolute;
+    top: 1.5rem;
+    left: 1.5rem;
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+}
+
+.controlBtn {
+    width: 40px;
+    height: 40px;
+    background: #1F2229;
+    color: white;
+    border-radius: 8px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+}
+
+.controlBtn:hover {
+    background: #333;
+}
+
+.spacer {
+    height: 10px;
+}
+
+.layersWidget {
+    position: absolute;
+    top: 1.5rem;
+    right: 1.5rem;
+    background: #1F2229;
+    padding: 1rem;
+    border-radius: 12px;
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+    width: 180px;
+}
+
+.layerOption {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    font-size: 0.8rem;
+    color: white;
+}
+
+.layerOption input {
+    accent-color: var(--brand-primary);
+}
+
+.fabContainer {
+    position: absolute;
+    bottom: 2rem;
+    left: 50%;
+    transform: translateX(-50%);
+}
+
+.fab {
+    border-radius: 50px !important;
+    box-shadow: 0 8px 24px rgba(95, 39, 205, 0.4);
+    padding: 0.75rem 2rem !important;
+    font-size: 1rem !important;
+}
+
+/* AQI Legend */
+.aqiLegend {
+    position: absolute;
+    bottom: 5rem;
+    right: 1.5rem;
+    background: rgba(31, 34, 41, 0.95);
+    padding: 0.875rem;
+    border-radius: 10px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+    backdrop-filter: blur(8px);
+    border: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+.legendTitle {
+    font-size: 0.65rem;
+    font-weight: 600;
+    color: #888;
+    letter-spacing: 0.1em;
+    margin-bottom: 0.5rem;
+}
+
+.legendItems {
+    display: flex;
+    flex-direction: column;
+    gap: 0.35rem;
+}
+
+.legendItem {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    font-size: 0.7rem;
+    color: #AAA;
+}
+
+.legendColor {
+    width: 14px;
+    height: 14px;
+    border-radius: 3px;
+}
+
+/* Modal Overlay */
+.modalOverlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(0, 0, 0, 0.7);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 1000;
+    backdrop-filter: blur(4px);
+}
+
+.modal {
+    background: #1A1D24;
+    border-radius: 16px;
+    width: 90%;
+    max-width: 420px;
+    max-height: 90vh;
+    overflow-y: auto;
+    box-shadow: 0 24px 48px rgba(0, 0, 0, 0.4);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.modalHeader {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 1.25rem 1.5rem;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.modalHeader h3 {
+    margin: 0;
+    font-size: 1.1rem;
+    font-weight: 600;
+    color: white;
+}
+
+.closeBtn {
+    background: rgba(255, 255, 255, 0.05);
+    border: none;
+    color: #888;
+    width: 32px;
+    height: 32px;
+    border-radius: 6px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+}
+
+.closeBtn:hover {
+    background: rgba(255, 255, 255, 0.1);
+    color: white;
+}
+
+.modalForm {
+    padding: 1.5rem;
+    display: flex;
+    flex-direction: column;
+    gap: 1.25rem;
+}
+
+.formGroup {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+}
+
+.formGroup label {
+    font-size: 0.8rem;
+    font-weight: 500;
+    color: #AAA;
+}
+
+.formGroup select,
+.formGroup input,
+.formGroup textarea {
+    background: #252830;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 8px;
+    padding: 0.75rem;
+    color: white;
+    font-family: inherit;
+    font-size: 0.875rem;
+}
+
+.formGroup select:focus,
+.formGroup input:focus,
+.formGroup textarea:focus {
+    outline: none;
+    border-color: var(--brand-primary);
+}
+
+.formGroup textarea {
+    resize: none;
+}
+
+.locationInput {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    background: #252830;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 8px;
+    padding: 0 0.75rem;
+    color: #666;
+}
+
+.locationInput input {
+    background: transparent;
+    border: none;
+    padding: 0.75rem 0;
+    flex: 1;
+}
+
+.locationInput input:focus {
+    border: none;
+}
+
+.photoUpload {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 1.5rem;
+    border: 2px dashed rgba(255, 255, 255, 0.15);
+    border-radius: 8px;
+    color: #666;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.photoUpload:hover {
+    border-color: var(--brand-primary);
+    color: var(--brand-primary);
+}
+
+.photoUpload span {
+    font-size: 0.8rem;
+}
+
+.submitBtn {
+    width: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.successMessage {
+    padding: 3rem 2rem;
+    text-align: center;
+}
+
+.successIcon {
+    width: 60px;
+    height: 60px;
+    background: var(--aqi-good);
+    color: white;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 2rem;
+    margin: 0 auto 1rem;
+}
+
+.successMessage h4 {
+    color: white;
+    font-size: 1.25rem;
+    margin: 0 0 0.5rem 0;
+}
+
+.successMessage p {
+    color: #888;
+    margin: 0;
+    font-size: 0.9rem;
+}

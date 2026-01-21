@@ -1,0 +1,52 @@
+.container {
+    display: flex;
+    flex-direction: column;
+    height: 100vh;
+    background-color: var(--bg-dark);
+    /* Dashboard usually implies dark background based on image */
+    overflow: hidden;
+}
+
+.content {
+    display: grid;
+    grid-template-columns: 320px 1fr 340px;
+    /* Fixed sidebars, flexible map */
+    flex: 1;
+    overflow: hidden;
+    gap: 1.5rem;
+    padding: 1.5rem;
+}
+
+.leftPanel,
+.rightPanel {
+    display: flex;
+    flex-direction: column;
+    gap: 1.5rem;
+    overflow-y: auto;
+    padding-right: 0.5rem;
+    /* Space for scrollbar */
+}
+
+/* Custom Scrollbar */
+.leftPanel::-webkit-scrollbar,
+.rightPanel::-webkit-scrollbar {
+    width: 6px;
+}
+
+.leftPanel::-webkit-scrollbar-thumb,
+.rightPanel::-webkit-scrollbar-thumb {
+    background-color: rgba(255, 255, 255, 0.1);
+    border-radius: 3px;
+}
+
+.centerPanel {
+    position: relative;
+    border-radius: 16px;
+    overflow: hidden;
+    background-color: #2A2D35;
+    /* Map placeholder bg */
+    display: flex;
+    flex-direction: column;
+    flex: 1;
+    min-height: 0;
+}
