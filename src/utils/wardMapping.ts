@@ -55,7 +55,7 @@ function findNearbyStations(
     lat: number,
     lng: number,
     stations: StationData[],
-    maxRadiusKm: number = 15
+    maxRadiusKm: number = 25
 ): Array<{ station: StationData; distance: number }> {
     const nearby: Array<{ station: StationData; distance: number }> = [];
 

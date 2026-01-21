@@ -4,7 +4,8 @@ export default async function handler(
     request: VercelRequest,
     response: VercelResponse
 ) {
-    const { path } = request.query;
+    // Extract the API path from the query
+    const { path, ...queryParams } = request.query;
     const apiPath = Array.isArray(path) ? path[0] : path;
 
     if (!apiPath) {
@@ -13,7 +14,19 @@ export default async function handler(
 
     // Support both local env and Vercel env
     const apiKey = process.env.OPENAQ_API_KEY || '753261b7373fb2d136fa60f4fa2a43de72550a0a5110ebea5ab0de7d0d9acbb8';
-    const openaqUrl = `https://api.openaq.org/${apiPath.replace(/^\//, '')}`;
+
+    // Reconstruct query parameters
+    const searchParams = new URLSearchParams();
+    Object.entries(queryParams).forEach(([key, value]) => {
+        if (Array.isArray(value)) {
+            value.forEach(v => searchParams.append(key, v));
+        } else {
+            searchParams.append(key, value || '');
+        }
+    });
+
+    const queryString = searchParams.toString();
+    const openaqUrl = `https://api.openaq.org/${apiPath.replace(/^\//, '')}${queryString ? `?${queryString}` : ''}`;
 
     // Log for debugging on Vercel
     console.log(`Proxying request to: ${openaqUrl}`);

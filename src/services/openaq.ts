@@ -10,7 +10,7 @@ const BASE_URL = '/api/openaq/v3';
 const DELHI_NCR = {
     centerLat: 28.6139,
     centerLng: 77.2090,
-    radius: 25000, // 25km radius (max allowed by OpenAQ API)
+    radius: 40000, // Increased to 40km to cover all wards
 };
 
 // Cache configuration
