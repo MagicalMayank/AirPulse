@@ -1,0 +1,8 @@
+{
+    "rewrites": [
+        {
+            "source": "/api/openaq/(.*)",
+            "destination": "/api/proxy?path=$1"
+        }
+    ]
+}
