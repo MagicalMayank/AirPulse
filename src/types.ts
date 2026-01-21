@@ -11,9 +11,10 @@ export interface WardProperties {
     aqi?: number;
     aqiStatus?: string;
     dominantPollutant?: string;
-    lastUpdated?: string;
-    stationCount?: number;
     nearestStation?: string;
+    nearestStationId?: number;
+    isEstimated?: boolean;
+    stationCount?: number;
     pollutants?: {
         pm25: number;
         pm10: number;

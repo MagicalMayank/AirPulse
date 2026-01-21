@@ -182,7 +182,7 @@ const TrendsTab = () => {
             <div className={styles.card}>
                 <div className={styles.cardHeader}>
                     <span className={styles.cardTitle}>
-                        {selectedWardData?.nearestStation ? `${selectedWardData.nearestStation} Trend` : 'Delhi NCR PM2.5 Trend'}
+                        {selectedWardData?.nearestStation ? `${selectedWardData.nearestStation}${selectedWardData.isEstimated ? ' (Estimated)' : ''} Trend` : 'Delhi NCR PM2.5 Trend'}
                     </span>
                     <div className={styles.toggleGroup}>
                         <button className={`${styles.toggleBtn} ${styles.toggleActive}`}>24h</button>

@@ -33,7 +33,7 @@ export const AuthorityLeftPanel = ({ selectedWard }: AuthorityLeftPanelProps) =>
             <div className={styles.overviewCard}>
                 <div className={styles.overviewHeader}>
                     <span className={styles.overviewLabel}>COMPLAINTS OVERVIEW</span>
-                    <span className={styles.wardBadge}>{wardName}</span>
+                    <span className={styles.wardBadge}>{wardName}{selectedWard?.isEstimated ? ' (Estimated)' : ''}</span>
                 </div>
 
                 <div className={styles.statsRow}>

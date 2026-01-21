@@ -84,14 +84,14 @@ export const AnalystLeftPanel = ({ selectedWard }: AnalystLeftPanelProps) => {
         const query = searchQuery.toLowerCase();
         const results = geoData.features
             .filter(f => {
-                const wardName = f.properties?.Ward_Nane?.toLowerCase() || '';
+                const wardName = (f.properties?.Ward_Name || f.properties?.Ward_Nane)?.toLowerCase() || '';
                 const wardNo = String(f.properties?.Ward_No || '');
                 return wardName.includes(query) || wardNo.includes(query);
             })
             .slice(0, 5)
             .map(f => ({
                 wardId: f.properties?.Ward_No || f.properties?.FID,
-                name: f.properties?.Ward_Nane || `Ward ${f.properties?.Ward_No}`
+                name: f.properties?.Ward_Name || f.properties?.Ward_Nane || `Ward ${f.properties?.Ward_No}`
             }));
 
         setSearchResults(results);

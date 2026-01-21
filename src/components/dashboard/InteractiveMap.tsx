@@ -68,6 +68,7 @@ export const InteractiveMap = forwardRef<InteractiveMapHandle, InteractiveMapPro
         lastUpdated,
         filters,
         setGeoData: setContextGeoData,
+        selectWard,
         refetch
     } = useAirQuality();
 
@@ -122,8 +123,8 @@ export const InteractiveMap = forwardRef<InteractiveMapHandle, InteractiveMapPro
     }, [wardData, filters.pollutants]);
 
     const onEachFeature = useCallback((feature: any, layer: any) => {
-        const wardId = feature.properties?.Ward_No || feature.properties?.FID;
-        const wardName = feature.properties?.Ward_Name || `Ward ${wardId}`;
+        const wardId = feature.properties?.Ward_No || feature.properties?.FID || 'YAMUNA_RIVER';
+        const wardName = feature.properties?.Ward_Name || (wardId === 'YAMUNA_RIVER' ? 'Yamuna River' : `Ward ${wardId}`);
 
         // Get real AQI data from context
         const aqiData = wardData.get(wardId);
@@ -144,16 +145,21 @@ export const InteractiveMap = forwardRef<InteractiveMapHandle, InteractiveMapPro
         // Click Handler
         layer.on({
             click: () => {
+                const wardId = feature.properties?.Ward_No || feature.properties?.FID || 'YAMUNA_RIVER';
                 const wardData_ = wardData.get(wardId);
+                const wardName = feature.properties?.Ward_Name || feature.properties?.Ward_Nane || (wardId === 'YAMUNA_RIVER' ? 'Yamuna River' : 'Unknown Ward');
 
                 const wardProperties: WardProperties = {
                     ...feature.properties,
+                    Ward_Name: wardName,
                     aqi: wardData_?.aqi ?? 0,
                     aqiStatus: wardData_?.status ?? 'Unknown',
                     dominantPollutant: wardData_?.dominantPollutant ?? undefined,
                     lastUpdated: wardData_?.lastUpdated,
                     stationCount: wardData_?.stationCount,
                     nearestStation: wardData_?.nearestStation ?? undefined,
+                    nearestStationId: wardData_?.nearestStationId,
+                    isEstimated: wardData_?.isEstimated ?? false,
                     pollutants: wardData_?.pollutants ? {
                         pm25: wardData_.pollutants.pm25 ?? 0,
                         pm10: wardData_.pollutants.pm10 ?? 0,
@@ -168,6 +174,9 @@ export const InteractiveMap = forwardRef<InteractiveMapHandle, InteractiveMapPro
                     onWardSelect(wardProperties);
                 }
 
+                // Sync with context for hooks like useWardData(selectedWardId)
+                selectWard(wardId);
+
                 layer.setStyle({ weight: 3, color: '#fff', fillOpacity: 0.8 });
             },
             mouseover: (e: any) => {
@@ -177,6 +186,7 @@ export const InteractiveMap = forwardRef<InteractiveMapHandle, InteractiveMapPro
             },
             mouseout: (e: any) => {
                 const l = e.target;
+                const wardId = feature.properties?.Ward_No || feature.properties?.FID || 'YAMUNA_RIVER';
                 const aqiData = wardData.get(wardId);
                 const aqi = aqiData?.aqi ?? 0;
                 l.setStyle({
@@ -190,7 +200,7 @@ export const InteractiveMap = forwardRef<InteractiveMapHandle, InteractiveMapPro
     }, [wardData, onWardSelect]);
 
     const mapStyle = useCallback((feature: any) => {
-        const wardId = feature.properties?.Ward_No || feature.properties?.FID;
+        const wardId = feature.properties?.Ward_No || feature.properties?.FID || 'YAMUNA_RIVER';
         const aqiData = wardData.get(wardId);
         const aqi = aqiData?.aqi ?? 0;
 

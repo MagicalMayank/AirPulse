@@ -4,6 +4,7 @@ import styles from './Panels.module.css';
 import { useAirQuality, useWardData } from '../../context/AirQualityContext';
 import { TrendChart } from './TrendChart';
 import { fetchSensorHistory, type HistoryDataPoint } from '../../services/openaq';
+import { calculateSubIndex } from '../../utils/aqiCalculator';
 
 // Generate mock 24h trend data based on a base AQI value
 function generateMockTrendData(baseAqi: number): HistoryDataPoint[] {
@@ -62,15 +63,28 @@ export const RightPanel: React.FC = () => {
         return 285; // Default fallback
     }, [selectedWardData, wardData]);
 
-    // Find sensor ID (reusing logic)
-    const sensorId = useMemo(() => {
-        if (!selectedWardData?.nearestStationId) return null;
-        const station = stations.find(s => s.id === selectedWardData.nearestStationId);
-        return station?.sensorIds?.pm25 || station?.sensorIds?.pm10;
+    // Find sensor ID and pollutant type (reusing logic)
+    const sensorInfo = useMemo(() => {
+        let targetStationId = selectedWardData?.nearestStationId;
+
+        // If no ward is selected or no station found, pick 1st available station with PM2.5
+        if (!targetStationId && stations.length > 0) {
+            const defaultStation = stations.find(s => s.sensorIds?.pm25) || stations[0];
+            targetStationId = defaultStation.id;
+        }
+
+        if (!targetStationId) return { id: null, type: 'pm25' as const };
+
+        const station = stations.find(s => s.id === targetStationId);
+
+        if (station?.sensorIds?.pm25) return { id: station.sensorIds.pm25, type: 'pm25' as const };
+        if (station?.sensorIds?.pm10) return { id: station.sensorIds.pm10, type: 'pm10' as const };
+
+        return { id: null, type: 'pm25' as const };
     }, [selectedWardData, stations]);
 
     useEffect(() => {
-        if (!sensorId) {
+        if (!sensorInfo.id) {
             // Use mock data when no sensor is selected
             setHistory(generateMockTrendData(overallAqi));
             return;
@@ -78,9 +92,14 @@ export const RightPanel: React.FC = () => {
         const loadHistory = async () => {
             setLoading(true);
             try {
-                const data = await fetchSensorHistory(sensorId);
+                const data = await fetchSensorHistory(sensorInfo.id!);
                 if (data.length > 0) {
-                    setHistory(data);
+                    // Convert raw mass to AQI index using the correct pollutant type
+                    const aqiHistory = data.map(pt => ({
+                        ...pt,
+                        value: calculateSubIndex(sensorInfo.type, pt.value)
+                    }));
+                    setHistory(aqiHistory);
                 } else {
                     // Fallback to mock data if API returns empty
                     setHistory(generateMockTrendData(overallAqi));
@@ -93,7 +112,7 @@ export const RightPanel: React.FC = () => {
             }
         };
         loadHistory();
-    }, [sensorId, overallAqi]);
+    }, [sensorInfo, overallAqi]);
 
     const trendDirection = useMemo(() => {
         if (history.length < 2) return 'STABLE';
@@ -116,7 +135,7 @@ export const RightPanel: React.FC = () => {
             {/* AQI Trend Graph */}
             <div className={styles.card}>
                 <div className={styles.cardHeaderFlex}>
-                    <span>AQI TREND {selectedWardId ? `(${selectedWardData?.nearestStation || 'Ward'})` : '(Delhi NCR Avg)'}</span>
+                    <span>AQI TREND {selectedWardId ? (`${selectedWardData?.nearestStation || 'Ward'}${selectedWardData?.isEstimated ? ' (Estimated)' : ''}`) : '(Delhi NCR Avg)'}</span>
                     <span className={trendDirection === 'RISING' ? styles.badgeRed : styles.badgeGreen}>
                         {trendDirection}
                     </span>

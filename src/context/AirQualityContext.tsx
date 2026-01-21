@@ -50,7 +50,7 @@ export interface AirQualityState {
     filters: AirQualityFilters;
 
     // Selected ward for panels
-    selectedWardId: number | null;
+    selectedWardId: number | string | null;
 }
 
 // Context actions type
@@ -66,7 +66,7 @@ export interface AirQualityActions {
     setSearchQuery: (query: string) => void;
 
     // Selection actions
-    selectWard: (wardId: number | null) => void;
+    selectWard: (wardId: number | string | null) => void;
 
     // Helpers
     getWardAQI: (wardId: string | number) => WardAQIData | undefined;
@@ -112,7 +112,7 @@ export function AirQualityProvider({ children }: { children: ReactNode }) {
     const [lastUpdated, setLastUpdated] = useState<Date | null>(null);
     const [isStale, setIsStale] = useState(false);
     const [filters, setFilters] = useState<AirQualityFilters>(defaultFilters);
-    const [selectedWardId, setSelectedWardId] = useState<number | null>(null);
+    const [selectedWardId, setSelectedWardId] = useState<number | string | null>(null);
 
     // Fetch data function (with graceful fallback)
     const fetchData = useCallback(async (isBackgroundRefresh = false) => {
@@ -204,7 +204,7 @@ export function AirQualityProvider({ children }: { children: ReactNode }) {
         setFilters(prev => ({ ...prev, searchQuery: query }));
     }, []);
 
-    const selectWard = useCallback((wardId: number | null) => {
+    const selectWard = useCallback((wardId: number | string | null) => {
         setSelectedWardId(wardId);
     }, []);
 
@@ -274,7 +274,7 @@ export function useAirQuality(): AirQualityContextType {
 }
 
 // Hook for components that only need ward data
-export function useWardData(wardId: number | null): WardAQIData | null {
+export function useWardData(wardId: number | string | null): WardAQIData | null {
     const { getWardAQI } = useAirQuality();
-    return wardId ? getWardAQI(wardId) ?? null : null;
+    return (wardId !== null && wardId !== undefined) ? getWardAQI(wardId) ?? null : null;
 }

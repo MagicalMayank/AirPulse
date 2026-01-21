@@ -18,7 +18,7 @@ export const Home: React.FC = () => {
             <header className={styles.header}>
                 <div className={styles.logo}>
                     <img
-                        src="/airpulse-logo.png"
+                        src="/Mask group.svg"
                         alt="AirPulse Logo"
                         className={styles.logoImage}
                     />

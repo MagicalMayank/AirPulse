@@ -18,6 +18,7 @@ export interface WardAQIData {
     nearestStation: string | null;
     nearestStationId?: number; // Added for fetching history
     lastUpdated: string;
+    isEstimated?: boolean; // True if data is interpolated from neighbors
 }
 
 /**
@@ -112,15 +113,6 @@ function aggregatePollutants(
     return result;
 }
 
-/**
- * Check if a ward is the Yamuna River (special case)
- */
-function isYamunaRiver(feature: GeoJSON.Feature): boolean {
-    const wardName = feature.properties?.Ward_Name?.toLowerCase() || '';
-    const wardNo = feature.properties?.Ward_No;
-    // Yamuna River might not have a ward number or has a special name
-    return wardName.includes('yamuna') || wardName.includes('river') || wardNo === undefined || wardNo === null;
-}
 
 /**
  * Map all wards to their AQI data based on nearby stations
@@ -135,16 +127,13 @@ export function mapWardsToAQI(
         return wardAQIMap;
     }
 
-    // First pass: process all regular wards
-    const yamunaFeatures: GeoJSON.Feature[] = [];
-
+    // First pass: process all wards with direct sensor data
     for (const feature of geoData.features) {
-        const wardId = feature.properties?.Ward_No || feature.properties?.FID;
+        let wardId = feature.properties?.Ward_No || feature.properties?.FID;
 
-        // Detect Yamuna River - process separately
-        if (isYamunaRiver(feature as GeoJSON.Feature)) {
-            yamunaFeatures.push(feature as GeoJSON.Feature);
-            continue;
+        // Special case for Yamuna River (null properties in GeoJSON)
+        if (wardId === undefined || wardId === null) {
+            wardId = 'YAMUNA_RIVER';
         }
 
         if (wardId === undefined) continue;
@@ -158,82 +147,106 @@ export function mapWardsToAQI(
         // Find nearby stations
         const nearbyStations = findNearbyStations(lat, lng, stations);
 
-        // Aggregate pollutant values
-        const pollutants = aggregatePollutants(nearbyStations);
+        if (nearbyStations.length > 0) {
+            // Aggregate pollutant values
+            const pollutants = aggregatePollutants(nearbyStations);
 
-        // Calculate AQI
-        const aqiResult: AQIResult = calculateAQI(pollutants);
+            // Calculate AQI
+            const aqiResult: AQIResult = calculateAQI(pollutants);
 
-        // Get latest update time from nearest station
-        const lastUpdated = nearbyStations[0]?.station.lastUpdated || new Date().toISOString();
+            // Get latest update time from nearest station
+            const lastUpdated = nearbyStations[0]?.station.lastUpdated || new Date().toISOString();
 
-        wardAQIMap.set(wardId, {
-            wardId,
-            aqi: aqiResult.aqi,
-            status: aqiResult.status,
-            statusColor: aqiResult.statusColor,
-            dominantPollutant: aqiResult.dominantPollutant,
-            pollutants,
-            stationCount: nearbyStations.length,
-            nearestStation: nearbyStations[0]?.station.name || null,
-            nearestStationId: nearbyStations[0]?.station.id,
-            lastUpdated,
-        });
+            wardAQIMap.set(wardId, {
+                wardId,
+                aqi: aqiResult.aqi,
+                status: aqiResult.status,
+                statusColor: aqiResult.statusColor,
+                dominantPollutant: aqiResult.dominantPollutant,
+                pollutants,
+                stationCount: nearbyStations.length,
+                nearestStation: nearbyStations[0]?.station.name || null,
+                nearestStationId: nearbyStations[0]?.station.id,
+                lastUpdated,
+                isEstimated: false
+            });
+        }
     }
 
-    // Second pass: handle Yamuna River by averaging nearby wards
-    for (const yamunaFeature of yamunaFeatures) {
-        const yamunaId = yamunaFeature.properties?.Ward_No || yamunaFeature.properties?.FID || 'YAMUNA';
-        const centroid = getPolygonCentroid(yamunaFeature);
+    // Second pass: handle wards with no data (silent wards)
+    const silentWards: string[] = [];
+    geoData.features.forEach(feature => {
+        const wardId = feature.properties?.Ward_No || feature.properties?.FID;
+        if (wardId !== undefined && !wardAQIMap.has(wardId)) {
+            silentWards.push(wardId);
+        }
+    });
 
-        if (centroid) {
-            const [lat, lng] = centroid;
+    if (silentWards.length > 0) {
+        // Collect centroids for all wards with data for distance calculation
+        const wardsWithData = Array.from(wardAQIMap.entries()).map(([id, data]) => {
+            const feature = geoData.features.find(f => (f.properties?.Ward_No || f.properties?.FID) === id);
+            return { id, data, centroid: feature ? getPolygonCentroid(feature) : null };
+        }).filter(w => w.centroid !== null);
 
-            // Find nearby stations within extended radius for river
-            const nearbyStations = findNearbyStations(lat, lng, stations, 20); // Extended radius
+        for (const silentId of silentWards) {
+            const feature = geoData.features.find(f => {
+                const id = f.properties?.Ward_No || f.properties?.FID;
+                return (id === silentId) || (silentId === 'YAMUNA_RIVER' && (id === undefined || id === null));
+            });
+            const centroid = feature ? getPolygonCentroid(feature) : null;
 
-            if (nearbyStations.length > 0) {
-                const pollutants = aggregatePollutants(nearbyStations);
-                const aqiResult = calculateAQI(pollutants);
+            if (centroid) {
+                const [lat, lng] = centroid;
 
-                wardAQIMap.set(yamunaId, {
-                    wardId: yamunaId,
-                    aqi: aqiResult.aqi,
-                    status: aqiResult.status,
-                    statusColor: aqiResult.statusColor,
-                    dominantPollutant: aqiResult.dominantPollutant,
-                    pollutants,
-                    stationCount: nearbyStations.length,
-                    nearestStation: nearbyStations[0]?.station.name || null,
-                    nearestStationId: nearbyStations[0]?.station.id,
-                    lastUpdated: nearbyStations[0]?.station.lastUpdated || new Date().toISOString(),
-                });
-            } else {
-                // Estimate from all wards average if no stations found
-                const allAQIs = [...wardAQIMap.values()];
-                if (allAQIs.length > 0) {
-                    const avgAQI = Math.round(allAQIs.reduce((sum, w) => sum + w.aqi, 0) / allAQIs.length);
-                    const avgPollutants: PollutantData = {};
+                let nearbyWards: any[] = [];
 
-                    for (const p of ['pm25', 'pm10', 'no2', 'o3', 'so2', 'co'] as (keyof PollutantData)[]) {
-                        const values = allAQIs.map(w => w.pollutants[p]).filter(v => v !== undefined) as number[];
-                        if (values.length > 0) {
-                            avgPollutants[p] = Math.round(values.reduce((a, b) => a + b, 0) / values.length);
-                        }
-                    }
+                // Special handling for Yamuna River estimation using user-specified neighbors
+                if (silentId === 'YAMUNA_RIVER') {
+                    const requestedNeighbors = [154, 153, 80, 77, 272].map(String);
+                    nearbyWards = wardsWithData.filter(w => requestedNeighbors.includes(String(w.id)));
+                }
 
-                    const aqiResult = calculateAQI(avgPollutants);
+                // Fallback to spatial nearest if requested neighbors not found or for other silent wards
+                if (nearbyWards.length === 0) {
+                    nearbyWards = wardsWithData
+                        .map(w => ({ ...w, distance: haversineDistance(lat, lng, w.centroid![0], w.centroid![1]) }))
+                        .sort((a, b) => a.distance - b.distance)
+                        .slice(0, 3);
+                }
 
-                    wardAQIMap.set(yamunaId, {
-                        wardId: yamunaId,
-                        aqi: avgAQI,
+                if (nearbyWards.length > 0) {
+                    // Average pollutant values from nearby wards
+                    const pollutants: PollutantData = {};
+                    const params: (keyof PollutantData)[] = ['pm25', 'pm10', 'no2', 'o3', 'so2', 'co'];
+
+                    params.forEach(p => {
+                        let sum = 0;
+                        let count = 0;
+                        nearbyWards.forEach(w => {
+                            const val = w.data.pollutants[p];
+                            if (val !== undefined) {
+                                sum += val;
+                                count++;
+                            }
+                        });
+                        if (count > 0) pollutants[p] = Math.round(sum / count);
+                    });
+
+                    const aqiResult = calculateAQI(pollutants);
+
+                    wardAQIMap.set(silentId, {
+                        wardId: silentId,
+                        aqi: aqiResult.aqi,
                         status: aqiResult.status,
                         statusColor: aqiResult.statusColor,
                         dominantPollutant: aqiResult.dominantPollutant,
-                        pollutants: avgPollutants,
+                        pollutants,
                         stationCount: 0,
-                        nearestStation: 'Estimated from nearby wards',
-                        lastUpdated: new Date().toISOString(),
+                        nearestStation: `Estimated from neighbors (${nearbyWards[0].id})`,
+                        nearestStationId: (nearbyWards[0].data as any).nearestStationId,
+                        lastUpdated: nearbyWards[0].data.lastUpdated,
+                        isEstimated: true
                     });
                 }
             }

@@ -13,7 +13,7 @@ export const Navbar = ({ role = 'citizen', onRoleChange, advancedMode = false, o
         <nav className={styles.navbar}>
             <div className={styles.left}>
                 <div className={styles.logo}>
-                    <img src="/airpulse-logo.png" alt="AirPulse" className={styles.logoImage} />
+                    <img src="/Mask group.svg" alt="AirPulse" className={styles.logoImage} />
                     <span className={styles.logoText}>AirPulse</span>
                 </div>
                 <div className={styles.location}>
