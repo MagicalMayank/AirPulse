@@ -127,7 +127,7 @@ export const RightPanel: React.FC = () => {
                             <RefreshCw className="spin" size={20} color="#666" />
                         </div>
                     ) : history.length > 0 ? (
-                        <TrendChart data={history} height={120} showArea={true} />
+                        <TrendChart data={history} height={120} />
                     ) : (
                         <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '100%', color: '#666', fontSize: '0.8rem' }}>
                             Loading trend data...
