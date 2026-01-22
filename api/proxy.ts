@@ -13,8 +13,12 @@ export default async function handler(
     }
 
     // Support both local env and Vercel env
-    const apiKey = process.env.OPENAQ_API_KEY || '753261b7373fb2d136fa60f4fa2a43de72550a0a5110ebea5ab0de7d0d9acbb8';
-    const isUsingFallback = !process.env.OPENAQ_API_KEY;
+    const apiKey = process.env.OPENAQ_API_KEY;
+    const isUsingFallback = !apiKey;
+
+    if (isUsingFallback) {
+        console.warn('OPENAQ_API_KEY is not set. Requests may fail.');
+    }
 
     // Reconstruct query parameters
     const searchParams = new URLSearchParams();
@@ -37,17 +41,24 @@ export default async function handler(
             method: request.method,
             headers: {
                 'Accept': 'application/json',
-                'X-API-Key': apiKey,
-                'Authorization': `Bearer ${apiKey}` // Try both authentication methods
-            }
+                'X-API-Key': apiKey || '',
+                'Authorization': `Bearer ${apiKey || ''}`
+            } as any
         });
+
+        if (!apiResponse.ok) {
+            const errorBody = await apiResponse.text();
+            console.error(`OpenAQ API Error (${apiResponse.status}):`, errorBody);
+            // Return the exact error from OpenAQ to help user debug
+            return response.status(apiResponse.status).json(JSON.parse(errorBody));
+        }
 
         const data = await apiResponse.json();
 
         // Set CORS headers just in case
         response.setHeader('Access-Control-Allow-Origin', '*');
         response.setHeader('Access-Control-Allow-Methods', 'GET, OPTIONS');
-        response.setHeader('Access-Control-Allow-Headers', 'Content-Type, X-API-Key');
+        response.setHeader('Access-Control-Allow-Headers', 'Content-Type, X-API-Key, Authorization');
 
         if (request.method === 'OPTIONS') {
             return response.status(200).end();
