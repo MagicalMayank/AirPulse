@@ -48,6 +48,9 @@ async function apiRequest<T>(endpoint: string): Promise<T> {
     });
 
     if (!response.ok) {
+        if (response.status === 401) {
+            throw new Error('Authentication failed (401). Please check your OpenAQ API Key in environment variables.');
+        }
         throw new Error(`OpenAQ API error: ${response.status} ${response.statusText}`);
     }
 

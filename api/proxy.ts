@@ -14,6 +14,7 @@ export default async function handler(
 
     // Support both local env and Vercel env
     const apiKey = process.env.OPENAQ_API_KEY || '753261b7373fb2d136fa60f4fa2a43de72550a0a5110ebea5ab0de7d0d9acbb8';
+    const isUsingFallback = !process.env.OPENAQ_API_KEY;
 
     // Reconstruct query parameters
     const searchParams = new URLSearchParams();
@@ -29,7 +30,7 @@ export default async function handler(
     const openaqUrl = `https://api.openaq.org/${apiPath.replace(/^\//, '')}${queryString ? `?${queryString}` : ''}`;
 
     // Log for debugging on Vercel
-    console.log(`Proxying request to: ${openaqUrl}`);
+    console.log(`Proxying request to: ${openaqUrl} (Using fallback key: ${isUsingFallback})`);
 
     try {
         const apiResponse = await fetch(openaqUrl, {
@@ -37,6 +38,7 @@ export default async function handler(
             headers: {
                 'Accept': 'application/json',
                 'X-API-Key': apiKey,
+                'Authorization': `Bearer ${apiKey}` // Try both authentication methods
             }
         });
 

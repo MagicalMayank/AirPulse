@@ -15,7 +15,8 @@ export default defineConfig({
         changeOrigin: true,
         rewrite: (path) => path.replace(/^\/api\/openaq/, ''),
         headers: {
-          'X-API-Key': '753261b7373fb2d136fa60f4fa2a43de72550a0a5110ebea5ab0de7d0d9acbb8'
+          'X-API-Key': '753261b7373fb2d136fa60f4fa2a43de72550a0a5110ebea5ab0de7d0d9acbb8',
+          'Authorization': 'Bearer 753261b7373fb2d136fa60f4fa2a43de72550a0a5110ebea5ab0de7d0d9acbb8'
         }
       }
     }
