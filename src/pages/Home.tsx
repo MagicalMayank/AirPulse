@@ -1,3 +1,12 @@
+/**
+ * Home Page
+ * 
+ * UPDATED: All CTAs require authentication before accessing the dashboard
+ * - "Explore Live AQI" opens login modal
+ * - "Get Started" buttons open login modal
+ * - After login, user is redirected to their role-appropriate dashboard
+ */
+
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
 import {
@@ -13,13 +22,51 @@ import {
     ShieldCheck
 } from 'lucide-react';
 import StarryBackground from '../components/common/StarryBackground';
+import { AuthModal } from '../components/common/AuthModal';
+import { useAuth } from '../context/AuthContext';
 import styles from './Home.module.css';
 
 export const Home: React.FC = () => {
     const navigate = useNavigate();
+    const { isAuthenticated, userRole } = useAuth();
 
+    const [isAuthModalOpen, setIsAuthModalOpen] = React.useState(false);
+    const [authMode, setAuthMode] = React.useState<'login' | 'signup'>('login');
+
+    /**
+     * Handle CTA click - requires authentication
+     * If logged in, navigate to dashboard with appropriate role
+     * If not logged in, open login modal
+     */
+    const handleCTAClick = (targetRole?: string) => {
+        if (isAuthenticated) {
+            // Use the user's actual role, or the target role if specified
+            const role = userRole || targetRole || 'citizen';
+            navigate(`/dashboard?mode=${role}`);
+        } else {
+            setAuthMode('login');
+            setIsAuthModalOpen(true);
+        }
+    };
+
+    /**
+     * Handle "Get Started" click for specific roles
+     */
     const handleRoleSelect = (role: string) => {
-        navigate(`/dashboard?mode=${role}`);
+        if (isAuthenticated) {
+            // If already logged in, check if user has permission for this role
+            if (userRole === role) {
+                navigate(`/dashboard?mode=${role}`);
+            } else {
+                // User is logged in but trying to access a different role's dashboard
+                alert(`You are logged in as ${userRole}. Please login with a ${role} account to access this dashboard.`);
+                setAuthMode('login');
+                setIsAuthModalOpen(true);
+            }
+        } else {
+            setAuthMode('login');
+            setIsAuthModalOpen(true);
+        }
     };
 
     const whyChooseCards = [
@@ -73,8 +120,24 @@ export const Home: React.FC = () => {
                         <span className={styles.logoText}>AirPulse</span>
                     </div>
                     <div className={styles.navButtons}>
-                        <button className={styles.ghostButton}>Login</button>
-                        <button className={styles.solidButton}>Sign Up</button>
+                        {isAuthenticated ? (
+                            <>
+                                <span className={styles.welcomeText}>
+                                    Welcome back!
+                                </span>
+                                <button
+                                    className={styles.solidButton}
+                                    onClick={() => navigate(`/dashboard?mode=${userRole || 'citizen'}`)}
+                                >
+                                    Go to Dashboard
+                                </button>
+                            </>
+                        ) : (
+                            <>
+                                <button className={styles.ghostButton} onClick={() => { setAuthMode('login'); setIsAuthModalOpen(true); }}>Login</button>
+                                <button className={styles.solidButton} onClick={() => { setAuthMode('signup'); setIsAuthModalOpen(true); }}>Sign Up</button>
+                            </>
+                        )}
                     </div>
                 </nav>
 
@@ -83,10 +146,10 @@ export const Home: React.FC = () => {
                     <h1 className={styles.headline}>Understand and Act on Your City's Air Quality</h1>
                     <p className={styles.subheadline}>Real-time ward-level air pollution intelligence for everyone.</p>
                     <div className={styles.heroCtas}>
-                        <button className={styles.gradientCta} onClick={() => navigate('/dashboard?mode=citizen')}>
+                        <button className={styles.gradientCta} onClick={() => handleCTAClick('citizen')}>
                             Explore Live AQI <ArrowRight size={20} />
                         </button>
-                        <button className={styles.outlineCta} onClick={() => navigate('/dashboard')}>
+                        <button className={styles.outlineCta} onClick={() => { setAuthMode('login'); setIsAuthModalOpen(true); }}>
                             Sign in to Dashboard
                         </button>
                     </div>
@@ -153,7 +216,12 @@ export const Home: React.FC = () => {
                     <p>© 2026 AirPulse Smart City Initiative. All rights reserved.</p>
                 </footer>
             </div>
+
+            <AuthModal
+                isOpen={isAuthModalOpen}
+                onClose={() => setIsAuthModalOpen(false)}
+                initialMode={authMode}
+            />
         </div>
     );
 };
-
