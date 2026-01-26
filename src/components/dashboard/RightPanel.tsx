@@ -3,7 +3,7 @@ import { ThumbsUp, ThumbsDown, RefreshCw } from 'lucide-react';
 import styles from './Panels.module.css';
 import { useAirQuality, useWardData } from '../../context/AirQualityContext';
 import { TrendChart } from './TrendChart';
-import { fetchSensorHistory, type HistoryDataPoint } from '../../services/openaq';
+import { getStationHistory, type HistoryDataPoint } from '../../services/aqiService';
 import { calculateSubIndex } from '../../utils/aqiCalculator';
 
 // Generate mock 24h trend data based on a base AQI value
@@ -63,41 +63,36 @@ export const RightPanel: React.FC = () => {
         return 285; // Default fallback
     }, [selectedWardData, wardData]);
 
-    // Find sensor ID and pollutant type (reusing logic)
-    const sensorInfo = useMemo(() => {
+    // Find station info for history fetching
+    const stationInfo = useMemo(() => {
         let targetStationId = selectedWardData?.nearestStationId;
 
-        // If no ward is selected or no station found, pick 1st available station with PM2.5
+        // If no ward is selected or no station found, pick 1st available station
         if (!targetStationId && stations.length > 0) {
-            const defaultStation = stations.find(s => s.sensorIds?.pm25) || stations[0];
-            targetStationId = defaultStation.id;
+            targetStationId = stations[0].id;
         }
 
-        if (!targetStationId) return { id: null, type: 'pm25' as const };
+        if (!targetStationId) return null;
 
         const station = stations.find(s => s.id === targetStationId);
-
-        if (station?.sensorIds?.pm25) return { id: station.sensorIds.pm25, type: 'pm25' as const };
-        if (station?.sensorIds?.pm10) return { id: station.sensorIds.pm10, type: 'pm10' as const };
-
-        return { id: null, type: 'pm25' as const };
+        return station ? { id: station.id, lat: station.lat, lng: station.lng } : null;
     }, [selectedWardData, stations]);
 
     useEffect(() => {
-        if (!sensorInfo.id) {
-            // Use mock data when no sensor is selected
+        if (!stationInfo) {
+            // Use mock data when no station is selected
             setHistory(generateMockTrendData(overallAqi));
             return;
         }
         const loadHistory = async () => {
             setLoading(true);
             try {
-                const data = await fetchSensorHistory(sensorInfo.id!);
+                const data = await getStationHistory(stationInfo.id, stationInfo.lat, stationInfo.lng);
                 if (data.length > 0) {
-                    // Convert raw mass to AQI index using the correct pollutant type
+                    // Convert raw mass to AQI index (defaulting to PM2.5)
                     const aqiHistory = data.map(pt => ({
                         ...pt,
-                        value: calculateSubIndex(sensorInfo.type, pt.value)
+                        value: calculateSubIndex('pm25', pt.value)
                     }));
                     setHistory(aqiHistory);
                 } else {
@@ -112,7 +107,7 @@ export const RightPanel: React.FC = () => {
             }
         };
         loadHistory();
-    }, [sensorInfo, overallAqi]);
+    }, [stationInfo, overallAqi]);
 
     const trendDirection = useMemo(() => {
         if (history.length < 2) return 'STABLE';
@@ -192,6 +187,11 @@ export const RightPanel: React.FC = () => {
                     statusColor="var(--status-success)"
                     icon={<ThumbsUp size={14} />}
                 />
+            </div>
+
+            {/* Attribution */}
+            <div style={{ marginTop: 'auto', paddingTop: '20px', fontSize: '0.65rem', opacity: 0.5, textAlign: 'center', fontStyle: 'italic' }}>
+                Data provided by World Air Quality Index Project & EPA. Fallback via Open-Meteo.
             </div>
         </div>
     );

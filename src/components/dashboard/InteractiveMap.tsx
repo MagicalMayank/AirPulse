@@ -1,11 +1,21 @@
 import { useEffect, useState, useRef, useCallback, forwardRef, useImperativeHandle } from 'react';
-import { MapContainer, TileLayer, GeoJSON, useMap, CircleMarker, Popup } from 'react-leaflet';
+import { MapContainer, TileLayer, GeoJSON, useMap, CircleMarker, Popup, Marker } from 'react-leaflet';
 import type { Map as LeafletMap } from 'leaflet';
+import L from 'leaflet';
 import 'leaflet/dist/leaflet.css';
 import { useAirQuality } from '../../context/AirQualityContext';
 import { getAQIColor } from '../../utils/aqiCalculator';
 import type { WardProperties } from '../../types';
 import styles from './InteractiveMap.module.css';
+import { AlertCircle, MapPin, ExternalLink } from 'lucide-react';
+
+// Custom icons for complaints
+const complaintIcon = L.divIcon({
+    html: `<div class="${styles.complaintMarker}"><svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-alert-circle"><circle cx="12" cy="12" r="10"/><line x1="12" x2="12" y1="8" y2="12"/><line x1="12" x2="12.01" y1="16" y2="16"/></svg></div>`,
+    className: '',
+    iconSize: [24, 24],
+    iconAnchor: [12, 12],
+});
 
 interface InteractiveMapProps {
     onWardSelect?: (ward: WardProperties | null) => void;
@@ -63,6 +73,7 @@ export const InteractiveMap = forwardRef<InteractiveMapHandle, InteractiveMapPro
     const {
         wardData,
         stations,
+        complaints,
         loading,
         error,
         lastUpdated,
@@ -115,12 +126,10 @@ export const InteractiveMap = forwardRef<InteractiveMapHandle, InteractiveMapPro
             .catch(err => console.error('Failed to load GeoJSON:', err));
     }, [setContextGeoData]);
 
-    // Force GeoJSON re-render when ward data updates
+    // Force GeoJSON re-render when ward data updates or heat toggle changes
     useEffect(() => {
-        if (wardData.size > 0) {
-            setGeoKey(prev => prev + 1);
-        }
-    }, [wardData, filters.pollutants]);
+        setGeoKey(prev => prev + 1);
+    }, [wardData, filters.pollutants, filters.layers.heat]);
 
     const onEachFeature = useCallback((feature: any, layer: any) => {
         const wardId = feature.properties?.Ward_No || feature.properties?.FID || 'YAMUNA_RIVER';
@@ -177,11 +186,11 @@ export const InteractiveMap = forwardRef<InteractiveMapHandle, InteractiveMapPro
                 // Sync with context for hooks like useWardData(selectedWardId)
                 selectWard(wardId);
 
-                layer.setStyle({ weight: 3, color: '#fff', fillOpacity: 0.8 });
+                layer.setStyle({ weight: 3, color: '#fff', fillOpacity: filters.layers.heat ? 0.8 : 0.2 });
             },
             mouseover: (e: any) => {
                 const l = e.target;
-                l.setStyle({ weight: 2, color: '#666', fillOpacity: 0.7 });
+                l.setStyle({ weight: 2, color: '#666', fillOpacity: filters.layers.heat ? 0.7 : 0.15 });
                 l.bringToFront();
             },
             mouseout: (e: any) => {
@@ -192,12 +201,12 @@ export const InteractiveMap = forwardRef<InteractiveMapHandle, InteractiveMapPro
                 l.setStyle({
                     weight: 1,
                     color: 'white',
-                    fillColor: getAQIColor(aqi),
-                    fillOpacity: 0.6
+                    fillColor: filters.layers.heat ? getAQIColor(aqi) : 'transparent',
+                    fillOpacity: filters.layers.heat ? 0.6 : 0.1
                 });
             }
         });
-    }, [wardData, onWardSelect]);
+    }, [wardData, onWardSelect, filters.layers.heat]);
 
     const mapStyle = useCallback((feature: any) => {
         const wardId = feature.properties?.Ward_No || feature.properties?.FID || 'YAMUNA_RIVER';
@@ -205,16 +214,16 @@ export const InteractiveMap = forwardRef<InteractiveMapHandle, InteractiveMapPro
         const aqi = aqiData?.aqi ?? 0;
 
         return {
-            fillColor: getAQIColor(aqi),
+            fillColor: filters.layers.heat ? getAQIColor(aqi) : 'transparent',
             weight: 1,
             opacity: 1,
             color: 'white',
-            fillOpacity: 0.6
+            fillOpacity: filters.layers.heat ? 0.6 : 0.1
         };
-    }, [wardData]);
+    }, [wardData, filters.layers.heat]);
 
-    // Show sensors layer if enabled
     const showSensors = filters.layers.sensors;
+    const showComplaints = filters.layers.complaints;
 
     return (
         <div className={styles.interactiveMap}>
@@ -261,12 +270,52 @@ export const InteractiveMap = forwardRef<InteractiveMapHandle, InteractiveMapPro
                         fillOpacity={0.8}
                     >
                         <Popup>
-                            <strong>{station.name}</strong><br />
-                            PM2.5: {station.measurements.pm25 ?? 'N/A'}<br />
-                            PM10: {station.measurements.pm10 ?? 'N/A'}<br />
-                            <small>Updated: {new Date(station.lastUpdated).toLocaleString()}</small>
+                            <div className={styles.popupContent}>
+                                <strong>{station.name}</strong><br />
+                                PM2.5: {station.measurements.pm25 ?? 'N/A'}<br />
+                                PM10: {station.measurements.pm10 ?? 'N/A'}<br />
+                                <small>Updated: {new Date(station.lastUpdated).toLocaleString()}</small>
+                                {station.attribution && (
+                                    <div style={{ fontSize: '0.7rem', marginTop: '4px', opacity: 0.7, fontStyle: 'italic' }}>
+                                        {station.attribution}
+                                    </div>
+                                )}
+                            </div>
                         </Popup>
                     </CircleMarker>
+                ))}
+
+                {/* Complaint markers layer */}
+                {showComplaints && complaints.map(complaint => (
+                    complaint.latitude && complaint.longitude && (
+                        <Marker
+                            key={complaint.id}
+                            position={[complaint.latitude, complaint.longitude]}
+                            icon={complaintIcon}
+                        >
+                            <Popup>
+                                <div className={styles.popupContent}>
+                                    <div className={styles.complaintPopupHeader}>
+                                        <AlertCircle size={14} color="var(--status-error)" />
+                                        <strong>{complaint.pollution_type}</strong>
+                                    </div>
+                                    <p className={styles.complaintDesc}>{complaint.description}</p>
+                                    <div className={styles.complaintMeta}>
+                                        <MapPin size={10} /> {complaint.location_text}
+                                    </div>
+                                    <div className={styles.complaintStatus} data-status={complaint.status}>
+                                        Status: {complaint.status.replace('_', ' ')}
+                                    </div>
+                                    {complaint.photo_url && (
+                                        <a href={complaint.photo_url} target="_blank" rel="noopener noreferrer" className={styles.viewPhotoBtn}>
+                                            <ExternalLink size={12} /> View Photo
+                                        </a>
+                                    )}
+                                    <small className={styles.popupDate}>{new Date(complaint.created_at).toLocaleString()}</small>
+                                </div>
+                            </Popup>
+                        </Marker>
+                    )
                 ))}
             </MapContainer>
         </div>

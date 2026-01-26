@@ -1,25 +1,51 @@
 import { useState } from 'react';
-import { Search, AlertCircle, Users, CheckCircle, Clock, MapPin, ChevronDown, ChevronUp, Filter } from 'lucide-react';
+import { Search, AlertCircle, Users, CheckCircle, Clock, MapPin, ChevronDown, ChevronUp, Filter, Loader2 } from 'lucide-react';
 import { Button } from '../common/Button';
 import type { WardProperties } from '../../types';
 import styles from './AuthorityPanels.module.css';
+import { useAirQuality } from '../../context/AirQualityContext';
 
 interface AuthorityLeftPanelProps {
     selectedWard?: WardProperties | null;
 }
 
 export const AuthorityLeftPanel = ({ selectedWard }: AuthorityLeftPanelProps) => {
-    const [statusFilter, setStatusFilter] = useState<'all' | 'pending' | 'resolved' | 'escalated'>('all');
+    const { complaints, complaintsLoading: loading, complaintsError: error } = useAirQuality();
+    const [statusFilter, setStatusFilter] = useState<'all' | 'pending' | 'in_progress' | 'resolved'>('all');
     const [expandedSections, setExpandedSections] = useState({
         hotspots: true,
         teams: false
     });
+
+    const activeCount = complaints.filter(c => c.status !== 'resolved').length;
+    const pendingCount = complaints.filter(c => c.status === 'pending').length;
+    const resolvedTodayCount = complaints.filter(c => c.status === 'resolved').length; // Simplified
 
     const wardName = selectedWard?.Ward_Name || 'All Wards';
 
     const toggleSection = (section: 'hotspots' | 'teams') => {
         setExpandedSections(prev => ({ ...prev, [section]: !prev[section] }));
     };
+
+    if (error) return (
+        <div className={styles.panelContainer}>
+            <div style={{ textAlign: 'center', padding: '2rem', color: '#ff6b6b' }}>
+                <AlertCircle size={32} style={{ marginBottom: '0.5rem' }} />
+                <p style={{ fontSize: '0.85rem' }}>Failed to load complaints</p>
+                <p style={{ fontSize: '0.7rem', color: '#888' }}>{error}</p>
+                <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => window.location.reload()}
+                    style={{ marginTop: '1rem' }}
+                >
+                    Retry
+                </Button>
+            </div>
+        </div>
+    );
+
+    if (loading) return <div className={styles.loading}><Loader2 className={styles.spinner} /></div>;
 
     return (
         <div className={styles.panelContainer}>
@@ -39,13 +65,13 @@ export const AuthorityLeftPanel = ({ selectedWard }: AuthorityLeftPanelProps) =>
                 <div className={styles.statsRow}>
                     <StatBox
                         icon={<AlertCircle size={16} />}
-                        value="47"
+                        value={activeCount.toString()}
                         label="Total Active"
                         color="var(--brand-primary)"
                     />
                     <StatBox
                         icon={<Clock size={16} />}
-                        value="23"
+                        value={pendingCount.toString()}
                         label="Pending"
                         color="var(--status-warning)"
                     />
@@ -53,13 +79,13 @@ export const AuthorityLeftPanel = ({ selectedWard }: AuthorityLeftPanelProps) =>
                 <div className={styles.statsRow}>
                     <StatBox
                         icon={<CheckCircle size={16} />}
-                        value="18"
-                        label="Resolved Today"
+                        value={resolvedTodayCount.toString()}
+                        label="Resolved"
                         color="var(--status-success)"
                     />
                     <StatBox
                         icon={<AlertCircle size={16} />}
-                        value="6"
+                        value="0"
                         label="Escalated"
                         color="var(--status-error)"
                     />
@@ -73,13 +99,13 @@ export const AuthorityLeftPanel = ({ selectedWard }: AuthorityLeftPanelProps) =>
                     <span>Filter by Status</span>
                 </div>
                 <div className={styles.filterButtons}>
-                    {(['all', 'pending', 'resolved', 'escalated'] as const).map(status => (
+                    {(['all', 'pending', 'in_progress', 'resolved'] as const).map(status => (
                         <button
                             key={status}
                             className={`${styles.filterBtn} ${statusFilter === status ? styles.filterBtnActive : ''}`}
                             onClick={() => setStatusFilter(status)}
                         >
-                            {status.charAt(0).toUpperCase() + status.slice(1)}
+                            {status === 'in_progress' ? 'In Progress' : status.charAt(0).toUpperCase() + status.slice(1)}
                         </button>
                     ))}
                 </div>

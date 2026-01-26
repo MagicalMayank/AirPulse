@@ -7,6 +7,7 @@ import styles from './Panels.module.css';
 
 interface LeftPanelProps {
     selectedWard?: WardProperties | null;
+    onSearchSelect?: (ward: WardProperties) => void;
 }
 
 const PollutantItem = ({ name, value, unit, trend, color }: { name: string, value: string, unit: string, trend: string, color: string }) => (
@@ -25,8 +26,8 @@ const PollutantItem = ({ name, value, unit, trend, color }: { name: string, valu
     </div>
 );
 
-export const LeftPanel = ({ selectedWard }: LeftPanelProps) => {
-    const { filters, setTimeRange, wardData, loading, lastUpdated, geoData } = useAirQuality();
+export const LeftPanel = ({ selectedWard, onSearchSelect }: LeftPanelProps) => {
+    const { filters, setTimeRange, wardData, loading, lastUpdated, geoData, selectWard } = useAirQuality();
     const [searchQuery, setSearchQuery] = useState('');
     const [searchResults, setSearchResults] = useState<Array<{ wardId: number; name: string }>>([]);
     const [showResults, setShowResults] = useState(false);
@@ -138,7 +139,17 @@ export const LeftPanel = ({ selectedWard }: LeftPanelProps) => {
                                 onClick={() => {
                                     setSearchQuery(result.name);
                                     setShowResults(false);
-                                    // Ward selection is handled by map click
+                                    // Trigger ward selection via context
+                                    selectWard(result.wardId);
+                                    // Also notify parent Dashboard if callback provided
+                                    if (onSearchSelect && geoData) {
+                                        const feature = geoData.features.find(
+                                            f => (f.properties?.Ward_No || f.properties?.FID) === result.wardId
+                                        );
+                                        if (feature?.properties) {
+                                            onSearchSelect(feature.properties as WardProperties);
+                                        }
+                                    }
                                 }}
                             >
                                 {result.name} (Ward {result.wardId})
@@ -244,6 +255,11 @@ export const LeftPanel = ({ selectedWard }: LeftPanelProps) => {
                     {aqiValue > 100 && <li>Run air purifiers indoors.</li>}
                     {aqiValue <= 100 && <li>Air quality is acceptable for most activities.</li>}
                 </ul>
+            </div>
+
+            {/* Attribution */}
+            <div style={{ marginTop: 'auto', paddingTop: '20px', fontSize: '0.6rem', opacity: 0.4, textAlign: 'center', fontStyle: 'italic', color: 'white' }}>
+                Real-time data via World Air Quality Index Project.
             </div>
         </div>
     );

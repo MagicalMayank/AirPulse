@@ -4,7 +4,7 @@ import styles from './AnalystPanels.module.css';
 import { LineChart } from './LineChart';
 import { PolicySimulationLab } from './PolicySimulationLab';
 import { useAirQuality, useWardData } from '../../context/AirQualityContext';
-import { fetchSensorHistory, type HistoryDataPoint } from '../../services/openaq';
+import { getStationHistory, type HistoryDataPoint } from '../../services/aqiService';
 
 type TabType = 'trends' | 'anomalies' | 'predict' | 'models';
 
@@ -65,6 +65,11 @@ export const AnalystRightPanel = () => {
                 isOpen={showSimulation}
                 onClose={() => setShowSimulation(false)}
             />
+
+            {/* Attribution */}
+            <div style={{ marginTop: 'auto', paddingTop: '15px', fontSize: '0.65rem', opacity: 0.5, textAlign: 'center', fontStyle: 'italic' }}>
+                Data provided by World Air Quality Index Project & EPA. Fallback via Open-Meteo.
+            </div>
         </div>
     );
 };
@@ -124,17 +129,17 @@ const TrendsTab = () => {
         return data;
     };
 
-    // Find sensor ID for PM2.5 (primary pollutant)
-    const sensorId = useMemo(() => {
+    // Find station info for history fetching
+    const stationInfo = useMemo(() => {
         if (!selectedWardData?.nearestStationId) return null;
         const station = stations.find(s => s.id === selectedWardData.nearestStationId);
-        return station?.sensorIds?.pm25 || station?.sensorIds?.pm10;
+        return station ? { id: station.id, lat: station.lat, lng: station.lng } : null;
     }, [selectedWardData, stations]);
 
     // Fetch history
     useEffect(() => {
-        if (!sensorId) {
-            // Use mock data when no sensor is selected
+        if (!stationInfo) {
+            // Use mock data when no station is selected
             setHistory(generateMockTrendData(overallAqi));
             return;
         }
@@ -142,7 +147,7 @@ const TrendsTab = () => {
         const loadHistory = async () => {
             setLoading(true);
             try {
-                const data = await fetchSensorHistory(sensorId);
+                const data = await getStationHistory(stationInfo.id, stationInfo.lat, stationInfo.lng);
                 if (data.length > 0) {
                     setHistory(data);
                 } else {
@@ -159,7 +164,7 @@ const TrendsTab = () => {
         };
 
         loadHistory();
-    }, [sensorId, overallAqi]);
+    }, [stationInfo, overallAqi]);
 
     // Calculate stats
     const stats = useMemo(() => {

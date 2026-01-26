@@ -119,3 +119,121 @@
     border-radius: 4px;
     z-index: 500;
 }
+
+/* Complaint Marker */
+.complaintMarker {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: #d90429;
+    color: white;
+    width: 24px;
+    height: 24px;
+    border-radius: 50%;
+    border: 2px solid white;
+    box-shadow: 0 0 10px rgba(217, 4, 41, 0.5);
+    cursor: pointer;
+    animation: pulse-red 2s infinite;
+}
+
+@keyframes pulse-red {
+    0% {
+        transform: scale(0.95);
+        box-shadow: 0 0 0 0 rgba(217, 4, 41, 0.7);
+    }
+
+    70% {
+        transform: scale(1);
+        box-shadow: 0 0 0 10px rgba(217, 4, 41, 0);
+    }
+
+    100% {
+        transform: scale(0.95);
+        box-shadow: 0 0 0 0 rgba(217, 4, 41, 0);
+    }
+}
+
+.popupContent {
+    font-family: inherit;
+    color: #333;
+    min-width: 150px;
+}
+
+.complaintPopupHeader {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    font-size: 0.9rem;
+    margin-bottom: 0.5rem;
+    border-bottom: 1px solid #eee;
+    padding-bottom: 0.25rem;
+}
+
+.complaintDesc {
+    font-size: 0.8rem;
+    color: #666;
+    margin: 0.5rem 0;
+    line-height: 1.4;
+}
+
+.complaintMeta {
+    display: flex;
+    align-items: center;
+    gap: 0.35rem;
+    font-size: 0.7rem;
+    color: #888;
+}
+
+.complaintStatus {
+    display: inline-block;
+    font-size: 0.65rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    padding: 2px 6px;
+    border-radius: 4px;
+    margin-top: 0.5rem;
+    background: #EAEAEA;
+    color: #666;
+}
+
+.complaintStatus[data-status="pending"] {
+    background: rgba(255, 171, 0, 0.15);
+    color: #ffab00;
+}
+
+.complaintStatus[data-status="in_progress"] {
+    background: rgba(0, 176, 255, 0.15);
+    color: #00b0ff;
+}
+
+.complaintStatus[data-status="resolved"] {
+    background: rgba(56, 176, 0, 0.15);
+    color: #38b000;
+}
+
+.viewPhotoBtn {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.35rem;
+    margin-top: 0.75rem;
+    background: #f0f0f0;
+    color: #333;
+    text-decoration: none;
+    padding: 0.4rem;
+    border-radius: 4px;
+    font-size: 0.75rem;
+    font-weight: 600;
+}
+
+.viewPhotoBtn:hover {
+    background: #e0e0e0;
+}
+
+.popupDate {
+    display: block;
+    margin-top: 0.5rem;
+    color: #AAA;
+    font-size: 0.6rem;
+    text-align: right;
+}

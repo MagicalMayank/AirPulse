@@ -291,6 +291,11 @@ export const AnalystLeftPanel = ({ selectedWard }: AnalystLeftPanelProps) => {
                     </div>
                 )}
             </div>
+
+            {/* Attribution */}
+            <div style={{ marginTop: 'auto', paddingTop: '20px', fontSize: '0.6rem', opacity: 0.4, textAlign: 'center', fontStyle: 'italic', color: 'white' }}>
+                Analysis powered by World Air Quality Index Project data.
+            </div>
         </div>
     );
 };

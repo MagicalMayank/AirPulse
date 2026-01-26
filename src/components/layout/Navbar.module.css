@@ -80,6 +80,12 @@
     gap: 0.5rem;
     font-size: 0.75rem;
     color: rgba(255, 255, 255, 0.7);
+    min-width: 120px;
+}
+
+.syncing {
+    color: #f59e0b;
+    font-weight: 500;
 }
 
 .dot {
@@ -110,6 +116,67 @@
     color: white;
     font-weight: 600;
     font-size: 0.875rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border: 2px solid rgba(255, 255, 255, 0.1);
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.profileBtn:hover {
+    transform: scale(1.05);
+    border-color: rgba(255, 255, 255, 0.3);
+}
+
+.profileBtn.guest {
+    background: linear-gradient(135deg, #4b5563, #374151);
+    opacity: 0.8;
+}
+
+.profileBtn.loading {
+    animation: pulse 1.5s infinite ease-in-out;
+    cursor: wait;
+}
+
+@keyframes pulse {
+    0% {
+        opacity: 1;
+    }
+
+    50% {
+        opacity: 0.5;
+    }
+
+    100% {
+        opacity: 1;
+    }
+}
+
+.profileMenu {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    padding-left: 0.75rem;
+    border-left: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.logoutBtn {
+    background: rgba(239, 68, 68, 0.1);
+    border: none;
+    color: #ef4444;
+    cursor: pointer;
+    padding: 0.5rem;
+    border-radius: 8px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.2s;
+}
+
+.logoutBtn:hover {
+    background: rgba(239, 68, 68, 0.2);
+    transform: translateY(-1px);
 }
 
 /* Advanced Mode Toggle */
