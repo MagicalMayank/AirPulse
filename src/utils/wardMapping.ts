@@ -4,8 +4,8 @@
  */
 
 import * as turf from '@turf/turf';
-import type { StationData } from '../services/openaq';
-import { calculateAQI, type AQIResult, type PollutantData } from './aqiCalculator';
+import type { StationData } from '../services/aqiService';
+import { calculateAQI, getAQIStatus, getAQIStatusColor, type AQIResult, type PollutantData } from './aqiCalculator';
 
 export interface WardAQIData {
     wardId: string | number;
@@ -16,7 +16,7 @@ export interface WardAQIData {
     pollutants: PollutantData;
     stationCount: number;
     nearestStation: string | null;
-    nearestStationId?: number; // Added for fetching history
+    nearestStationId?: string | number; // Added for fetching history
     lastUpdated: string;
     isEstimated?: boolean; // True if data is interpolated from neighbors
 }
@@ -56,18 +56,34 @@ function findNearbyStations(
     lat: number,
     lng: number,
     stations: StationData[],
-    maxRadiusKm: number = 25
+    maxRadiusKm: number = 25,
+    wardName?: string
 ): Array<{ station: StationData; distance: number }> {
     const nearby: Array<{ station: StationData; distance: number }> = [];
+
+    // Normalize ward name for comparison
+    const normalizedWardName = wardName?.toLowerCase().trim();
 
     for (const station of stations) {
         const distance = haversineDistance(lat, lng, station.lat, station.lng);
         if (distance <= maxRadiusKm) {
-            nearby.push({ station, distance });
+            // Check if station name contains the ward name (case-insensitive)
+            // If so, give it a significant distance bonus (prioritize matching names)
+            let adjustedDistance = distance;
+            if (normalizedWardName && station.name) {
+                const stationNameLower = station.name.toLowerCase();
+                // Check for exact or partial match (e.g., "Aya Nagar" in "Aya Nagar, Delhi, India")
+                if (stationNameLower.includes(normalizedWardName) ||
+                    normalizedWardName.includes(stationNameLower.split(',')[0].trim())) {
+                    // Give matching stations a 50% distance discount to prioritize them
+                    adjustedDistance = distance * 0.5;
+                }
+            }
+            nearby.push({ station, distance: adjustedDistance });
         }
     }
 
-    // Sort by distance
+    // Sort by adjusted distance (matching names will appear first)
     nearby.sort((a, b) => a.distance - b.distance);
     return nearby;
 }
@@ -138,21 +154,46 @@ export function mapWardsToAQI(
 
         if (wardId === undefined) continue;
 
+        // Wards that must use neighbor averaging (don't have reliable nearby stations)
+        // These are skipped in first pass and processed in second pass with explicit neighbors
+        const wardsNeedingNeighborAvg = ['176', '139']; // Bhati, Dichaon Kalan
+        if (wardsNeedingNeighborAvg.includes(String(wardId))) {
+            continue; // Skip to second pass for neighbor averaging
+        }
+
         // Get ward centroid
         const centroid = getPolygonCentroid(feature as GeoJSON.Feature);
         if (!centroid) continue;
 
         const [lat, lng] = centroid;
 
-        // Find nearby stations
-        const nearbyStations = findNearbyStations(lat, lng, stations);
+        // Get ward name for smart station matching
+        const wardName = feature.properties?.Ward_Name || '';
+
+        // Find nearby stations (prioritizes stations whose name matches the ward name)
+        const nearbyStations = findNearbyStations(lat, lng, stations, 25, wardName);
 
         if (nearbyStations.length > 0) {
             // Aggregate pollutant values
             const pollutants = aggregatePollutants(nearbyStations);
 
-            // Calculate AQI
-            const aqiResult: AQIResult = calculateAQI(pollutants);
+            // Check if nearest station has a pre-calculated official AQI (from WAQI API)
+            const nearestPreCalc = nearbyStations[0]?.station.aqi;
+            let aqiResult: AQIResult;
+
+            // PRIORITY: Use official WAQI AQI when available (more accurate than model-based calculations)
+            if (nearestPreCalc !== undefined && nearestPreCalc > 0) {
+                aqiResult = {
+                    aqi: nearestPreCalc,
+                    status: getAQIStatus(nearestPreCalc),
+                    statusColor: getAQIStatusColor(nearestPreCalc),
+                    dominantPollutant: pollutants.pm25 ? 'pm25' : null,
+                    subIndices: {}
+                };
+            } else {
+                // Fallback: Calculate AQI from raw pollutant data (Open-Meteo or other sources)
+                aqiResult = calculateAQI(pollutants);
+            }
 
             // Get latest update time from nearest station
             const lastUpdated = nearbyStations[0]?.station.lastUpdated || new Date().toISOString();
@@ -205,6 +246,18 @@ export function mapWardsToAQI(
                 if (silentId === 'YAMUNA_RIVER') {
                     const requestedNeighbors = [154, 153, 80, 77, 272].map(String);
                     nearbyWards = wardsWithData.filter(w => requestedNeighbors.includes(String(w.id)));
+                }
+                // Special handling for BHATI (Ward 176) - average of 6 specified neighbor wards
+                else if (String(silentId) === '176') {
+                    // Neighbors: Aya Nagar(175), Chhatarpur(174), Deoli(173), Tigri(179), Sangam Vihar(178), Said Ul Ajaib(177)
+                    const bhatiNeighbors = [175, 174, 173, 179, 178, 177].map(String);
+                    nearbyWards = wardsWithData.filter(w => bhatiNeighbors.includes(String(w.id)));
+                }
+                // Special handling for DICHAON KALAN (Ward 139) - average of 6 specified neighbor wards
+                else if (String(silentId) === '139') {
+                    // Neighbors: Mundaka(30), Khera(140), Najafgarh(138), Roshanpura(137), Hastsal(122), Mohan Garden(125)
+                    const dichaonNeighbors = [30, 140, 138, 137, 122, 125].map(String);
+                    nearbyWards = wardsWithData.filter(w => dichaonNeighbors.includes(String(w.id)));
                 }
 
                 // Fallback to spatial nearest if requested neighbors not found or for other silent wards

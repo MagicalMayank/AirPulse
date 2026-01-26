@@ -1,12 +1,16 @@
 /**
  * Air Quality Context
  * Centralized state management for AQI data, filters, and UI state
+ * 
+ * UPDATED: Uses Firestore for complaints instead of Supabase
  */
 
-import { createContext, useContext, useEffect, useState, useCallback, type ReactNode } from 'react';
-import { fetchDelhiStations, clearCache, type StationData } from '../services/openaq';
+import { createContext, useContext, useEffect, useState, useCallback, useRef, type ReactNode } from 'react';
+import { getAirQualityData, getStationDetails, type StationData } from '../services/aqiService';
 import { mapWardsToAQI, type WardAQIData } from '../utils/wardMapping';
 import type { PollutantData } from '../utils/aqiCalculator';
+import type { Complaint } from '../types';
+import { getComplaints, subscribeToComplaints, updateComplaintStatus } from '../services/complaints';
 
 // Filter state types
 export interface PollutantFilters {
@@ -22,6 +26,7 @@ export interface LayerFilters {
     heat: boolean;
     sensors: boolean;
     traffic: boolean;
+    complaints: boolean;
 }
 
 export type TimeRange = 'live' | '24h' | '7d';
@@ -39,6 +44,9 @@ export interface AirQualityState {
     stations: StationData[];
     wardData: Map<string | number, WardAQIData>;
     geoData: GeoJSON.FeatureCollection | null;
+    complaints: Complaint[];
+    complaintsLoading: boolean;
+    complaintsError: string | null;
 
     // Loading/Error states
     loading: boolean;
@@ -68,6 +76,10 @@ export interface AirQualityActions {
     // Selection actions
     selectWard: (wardId: number | string | null) => void;
 
+    // Complaint actions
+    refreshComplaints: () => Promise<void>;
+    updateComplaintStatus: (id: string, status: 'pending' | 'in_progress' | 'resolved') => Promise<void>;
+
     // Helpers
     getWardAQI: (wardId: string | number) => WardAQIData | undefined;
     getActivePollutants: () => Set<keyof PollutantData>;
@@ -91,6 +103,7 @@ const defaultFilters: AirQualityFilters = {
         heat: true,
         sensors: false,
         traffic: false,
+        complaints: true,
     },
     searchQuery: '',
 };
@@ -107,12 +120,49 @@ export function AirQualityProvider({ children }: { children: ReactNode }) {
     const [stations, setStations] = useState<StationData[]>([]);
     const [wardData, setWardData] = useState<Map<string | number, WardAQIData>>(new Map());
     const [geoData, setGeoData] = useState<GeoJSON.FeatureCollection | null>(null);
+    const [complaints, setComplaints] = useState<Complaint[]>([]);
+    const [complaintsLoading, setComplaintsLoading] = useState(true);
+    const [complaintsError, setComplaintsError] = useState<string | null>(null);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
     const [lastUpdated, setLastUpdated] = useState<Date | null>(null);
     const [isStale, setIsStale] = useState(false);
     const [filters, setFilters] = useState<AirQualityFilters>(defaultFilters);
     const [selectedWardId, setSelectedWardId] = useState<number | string | null>(null);
+    const stationsRef = useRef<StationData[]>([]);
+
+    // Update ref when stations change
+    useEffect(() => {
+        stationsRef.current = stations;
+    }, [stations]);
+
+    // Fetch complaints from Firestore
+    const fetchComplaints = useCallback(async () => {
+        console.log('[AirQualityContext] fetchComplaints started');
+        try {
+            setComplaintsLoading(true);
+            setComplaintsError(null);
+
+            const data = await getComplaints();
+            setComplaints(data);
+            console.log('[AirQualityContext] fetchComplaints success, count:', data.length);
+        } catch (err: any) {
+            console.error('[AirQualityContext] Failed in fetchComplaints:', err);
+            setComplaintsError(err instanceof Error ? err.message : 'Failed to fetch complaints');
+        } finally {
+            setComplaintsLoading(false);
+        }
+    }, []);
+
+    // Update complaint status
+    const handleUpdateComplaintStatus = useCallback(async (id: string, status: 'pending' | 'in_progress' | 'resolved') => {
+        try {
+            await updateComplaintStatus(id, status);
+            // Real-time subscription will auto-refresh
+        } catch (err) {
+            console.error('[AirQualityContext] Failed to update status:', err);
+        }
+    }, []);
 
     // Fetch data function (with graceful fallback)
     const fetchData = useCallback(async (isBackgroundRefresh = false) => {
@@ -123,7 +173,7 @@ export function AirQualityProvider({ children }: { children: ReactNode }) {
         setError(null);
 
         try {
-            const stationData = await fetchDelhiStations();
+            const stationData = await getAirQualityData();
             setStations(stationData);
             setLastUpdated(new Date());
             setIsStale(false); // Fresh data
@@ -137,7 +187,7 @@ export function AirQualityProvider({ children }: { children: ReactNode }) {
             const message = err instanceof Error ? err.message : 'Failed to fetch air quality data';
 
             // Graceful fallback: if we have existing data, mark as stale but keep it
-            if (stations.length > 0) {
+            if (stationsRef.current.length > 0) {
                 console.warn('[AirQuality] Refresh failed, using stale data:', message);
                 setIsStale(true);
                 setError(`Using cached data (refresh failed: ${message})`);
@@ -149,11 +199,29 @@ export function AirQualityProvider({ children }: { children: ReactNode }) {
         } finally {
             setLoading(false);
         }
-    }, [geoData, stations.length]);
+    }, [geoData]);
 
-    // Initial fetch
+    // Initial fetch and real-time subscription
     useEffect(() => {
+        console.log('[AirQualityContext] Initial effect running');
+
         fetchData();
+
+        // Set up Firestore real-time subscription for complaints
+        console.log('[AirQualityContext] Setting up Firestore subscription...');
+        setComplaintsLoading(true);
+
+        const unsubscribe = subscribeToComplaints((data) => {
+            console.log('[AirQualityContext] Real-time update received:', data.length, 'complaints');
+            setComplaints(data);
+            setComplaintsLoading(false);
+            setComplaintsError(null);
+        });
+
+        return () => {
+            console.log('[AirQualityContext] Cleaning up subscriptions');
+            unsubscribe();
+        };
     }, [fetchData]);
 
     // Update ward mapping when geoData or stations change
@@ -168,7 +236,6 @@ export function AirQualityProvider({ children }: { children: ReactNode }) {
     useEffect(() => {
         const interval = setInterval(() => {
             console.log('[AirQuality] Auto-refreshing data...');
-            clearCache();
             fetchData(true); // Background refresh - won't show loading spinner
         }, REFRESH_INTERVAL_MS);
 
@@ -177,7 +244,6 @@ export function AirQualityProvider({ children }: { children: ReactNode }) {
 
     // Actions
     const refetch = useCallback(async () => {
-        clearCache();
         await fetchData();
     }, [fetchData]);
 
@@ -204,9 +270,41 @@ export function AirQualityProvider({ children }: { children: ReactNode }) {
         setFilters(prev => ({ ...prev, searchQuery: query }));
     }, []);
 
-    const selectWard = useCallback((wardId: number | string | null) => {
+    const selectWard = useCallback(async (wardId: number | string | null) => {
         setSelectedWardId(wardId);
-    }, []);
+
+        if (wardId === null) return;
+
+        // Find the nearest station for this ward to fetch detailed official data
+        const data = wardData.get(wardId);
+        if (data && data.nearestStationId && typeof data.nearestStationId === 'number') {
+            const uid = data.nearestStationId;
+
+            // Log for debugging
+            console.log(`[AirQuality] Selection triggered deep fetch for station: ${uid}`);
+
+            try {
+                const details = await getStationDetails(uid);
+                if (details) {
+                    // Update the stations array with detailed measurements
+                    setStations(prev => prev.map(s => {
+                        if (s.id === uid) {
+                            return {
+                                ...s,
+                                measurements: {
+                                    ...s.measurements,
+                                    ...details // Merge in the specific pollutants (PM10, NO2, etc.)
+                                }
+                            };
+                        }
+                        return s;
+                    }));
+                }
+            } catch (err) {
+                console.warn(`[AirQuality] Failed to fetch station details for ${uid}:`, err);
+            }
+        }
+    }, [wardData]);
 
     const getWardAQI = useCallback((wardId: string | number): WardAQIData | undefined => {
         return wardData.get(wardId);
@@ -238,6 +336,9 @@ export function AirQualityProvider({ children }: { children: ReactNode }) {
         stations,
         wardData,
         geoData,
+        complaints,
+        complaintsLoading,
+        complaintsError,
         loading,
         error,
         lastUpdated,
@@ -253,6 +354,8 @@ export function AirQualityProvider({ children }: { children: ReactNode }) {
         setLayerFilter,
         setSearchQuery,
         selectWard,
+        refreshComplaints: fetchComplaints,
+        updateComplaintStatus: handleUpdateComplaintStatus,
         getWardAQI,
         getActivePollutants,
     };

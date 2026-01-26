@@ -7,12 +7,11 @@ export interface WardProperties {
     ASC_NAME: string;
     Area: number;
     Density: number;
-    // Dynamic properties computed at runtime
     aqi?: number;
     aqiStatus?: string;
     dominantPollutant?: string;
     nearestStation?: string;
-    nearestStationId?: number;
+    nearestStationId?: string | number;
     isEstimated?: boolean;
     stationCount?: number;
     pollutants?: {
@@ -23,5 +22,31 @@ export interface WardProperties {
         co: number;
         o3: number;
     };
+}
+
+export type UserRole = 'citizen' | 'authority' | 'analyst';
+
+export interface UserProfile {
+    id: string;
+    role: UserRole;
+    name?: string;
+    email?: string;
+    authority_id?: string;
+    apa_id?: string;
+    created_at?: string;
+}
+
+export interface Complaint {
+    id: string;
+    user_id: string;
+    role: string;
+    pollution_type: string;
+    location_text: string;
+    latitude?: number;
+    longitude?: number;
+    description: string;
+    photo_url?: string;
+    status: 'pending' | 'in_progress' | 'resolved';
+    created_at: string;
 }
 
