@@ -11,7 +11,6 @@ import { InteractiveMap, type InteractiveMapHandle } from './InteractiveMap';
 import type { WardProperties } from '../../types';
 import styles from './MapContainer.module.css';
 import { useAuth } from '../../context/AuthContext';
-import { useAirQuality } from '../../context/AirQualityContext';
 import { uploadToCloudinary } from '../../services/cloudinary';
 import { createComplaint } from '../../services/complaints';
 
