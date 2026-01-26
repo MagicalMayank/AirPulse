@@ -4,69 +4,81 @@ export default async function handler(
     request: VercelRequest,
     response: VercelResponse
 ) {
-    // Extract the API path from the query
-    const { path, ...queryParams } = request.query;
+    // Extract the API path and provider from the query
+    const { path, provider, ...queryParams } = request.query;
     const apiPath = Array.isArray(path) ? path[0] : path;
+    const providerName = Array.isArray(provider) ? provider[0] : provider || 'openaq';
 
     if (!apiPath) {
         return response.status(400).json({ error: 'Missing path parameter' });
     }
 
-    // Support both local env and Vercel env
-    const apiKey = process.env.OPENAQ_API_KEY;
-    const isUsingFallback = !apiKey;
+    // Set CORS headers
+    response.setHeader('Access-Control-Allow-Origin', '*');
+    response.setHeader('Access-Control-Allow-Methods', 'GET, OPTIONS');
+    response.setHeader('Access-Control-Allow-Headers', 'Content-Type, X-API-Key, Authorization');
 
-    if (isUsingFallback) {
-        console.warn('OPENAQ_API_KEY is not set. Requests may fail.');
+    if (request.method === 'OPTIONS') {
+        return response.status(200).end();
     }
 
-    // Reconstruct query parameters
-    const searchParams = new URLSearchParams();
+    let url = '';
+    let headers: Record<string, string> = {
+        'Accept': 'application/json'
+    };
+
+    // Support both local env and Vercel env
+    const baseTarget = providerName === 'waqi' ? 'https://api.waqi.info/' : 'https://api.openaq.org/';
+    const cleanPath = apiPath.replace(/^\//, '');
+    const target = new URL(cleanPath, baseTarget);
+
+    // Add query params from the proxy request
     Object.entries(queryParams).forEach(([key, value]) => {
         if (Array.isArray(value)) {
-            value.forEach(v => searchParams.append(key, v));
+            value.forEach(v => target.searchParams.append(key, v));
         } else {
-            searchParams.append(key, value || '');
+            target.searchParams.append(key, value || '');
         }
     });
 
-    const queryString = searchParams.toString();
-    const openaqUrl = `https://api.openaq.org/${apiPath.replace(/^\//, '')}${queryString ? `?${queryString}` : ''}`;
+    if (providerName === 'waqi') {
+        const waqiToken = process.env.WAQI_TOKEN;
+        if (!waqiToken) {
+            return response.status(500).json({ error: 'WAQI_TOKEN is not configured' });
+        }
+        target.searchParams.append('token', waqiToken);
+    } else {
+        const apiKey = process.env.OPENAQ_API_KEY;
+        if (apiKey) {
+            headers['X-API-Key'] = apiKey;
+            headers['Authorization'] = `Bearer ${apiKey}`;
+        }
+    }
 
-    // Log for debugging on Vercel
-    console.log(`Proxying request to: ${openaqUrl} (Using fallback key: ${isUsingFallback})`);
+    url = target.toString();
+
+    console.log(`Proxying ${providerName} request to: ${url}`);
 
     try {
-        const apiResponse = await fetch(openaqUrl, {
+        const apiResponse = await fetch(url, {
             method: request.method,
-            headers: {
-                'Accept': 'application/json',
-                'X-API-Key': apiKey || '',
-                'Authorization': `Bearer ${apiKey || ''}`
-            } as any
+            headers
         });
 
         if (!apiResponse.ok) {
             const errorBody = await apiResponse.text();
-            console.error(`OpenAQ API Error (${apiResponse.status}):`, errorBody);
-            // Return the exact error from OpenAQ to help user debug
-            return response.status(apiResponse.status).json(JSON.parse(errorBody));
+            console.error(`${providerName} API Error (${apiResponse.status}):`, errorBody);
+            try {
+                return response.status(apiResponse.status).json(JSON.parse(errorBody));
+            } catch (e) {
+                return response.status(apiResponse.status).json({ error: errorBody });
+            }
         }
 
         const data = await apiResponse.json();
-
-        // Set CORS headers just in case
-        response.setHeader('Access-Control-Allow-Origin', '*');
-        response.setHeader('Access-Control-Allow-Methods', 'GET, OPTIONS');
-        response.setHeader('Access-Control-Allow-Headers', 'Content-Type, X-API-Key, Authorization');
-
-        if (request.method === 'OPTIONS') {
-            return response.status(200).end();
-        }
-
-        return response.status(apiResponse.status).json(data);
+        return response.status(200).json(data);
     } catch (error) {
         console.error('Proxy Error:', error);
-        return response.status(500).json({ error: 'Failed to fetch from OpenAQ API' });
+        return response.status(500).json({ error: `Failed to fetch from ${providerName} API` });
     }
 }
