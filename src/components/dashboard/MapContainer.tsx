@@ -38,7 +38,7 @@ export const MapContainer = ({ onWardSelect, role = 'citizen' }: MapContainerPro
     return (
         <div className={styles.mapContainer}>
             <div className={styles.mapWrapper}>
-                <InteractiveMap onWardSelect={onWardSelect} ref={mapRef} />
+                <InteractiveMap onWardSelect={onWardSelect} ref={mapRef} role={role} />
             </div>
 
             {/* Floating Controls Overlay */}
@@ -107,10 +107,13 @@ export const MapContainer = ({ onWardSelect, role = 'citizen' }: MapContainerPro
     );
 };
 
+import { MCD_WARDS } from '../../constants/wards';
+
 /**
  * Report Pollution Modal
  * 
  * Features:
+ * - Ward selection dropdown (from MCD_WARDS)
  * - Pollution type dropdown (garbage_burning, construction_dust, vehicle_emission, industrial_smoke)
  * - Location input with geolocation support
  * - Description textarea
@@ -119,6 +122,7 @@ export const MapContainer = ({ onWardSelect, role = 'citizen' }: MapContainerPro
  */
 const ReportPollutionModal = ({ onClose }: { onClose: () => void }) => {
     const { user } = useAuth();
+    const [ward, setWard] = useState('');
     const [pollutionType, setPollutionType] = useState('');
     const [location, setLocation] = useState('');
     const [description, setDescription] = useState('');
@@ -169,6 +173,11 @@ const ReportPollutionModal = ({ onClose }: { onClose: () => void }) => {
             return;
         }
 
+        if (!ward) {
+            setError('Please select a ward');
+            return;
+        }
+
         if (!pollutionType) {
             setError('Please select a pollution type');
             return;
@@ -192,6 +201,7 @@ const ReportPollutionModal = ({ onClose }: { onClose: () => void }) => {
             setUploadProgress('Saving report...');
             await createComplaint({
                 userId: user.uid,
+                wardName: ward,
                 pollutionType: pollutionType,
                 description: description,
                 location: location,
@@ -234,6 +244,22 @@ const ReportPollutionModal = ({ onClose }: { onClose: () => void }) => {
                     </div>
                 ) : (
                     <form onSubmit={handleSubmit} className={styles.modalForm}>
+                        <div className={styles.formGroup}>
+                            <label>Ward *</label>
+                            <select
+                                value={ward}
+                                onChange={e => setWard(e.target.value)}
+                                required
+                            >
+                                <option value="">Select Ward...</option>
+                                {MCD_WARDS.map(w => (
+                                    <option key={w.number} value={w.name}>
+                                        {w.name} ({w.number})
+                                    </option>
+                                ))}
+                            </select>
+                        </div>
+
                         <div className={styles.formGroup}>
                             <label>Pollution Type *</label>
                             <select

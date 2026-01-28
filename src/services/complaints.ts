@@ -29,6 +29,7 @@ export interface CreateComplaintData {
     latitude?: number;
     longitude?: number;
     imageUrl?: string;
+    wardName?: string;
 }
 
 /**
@@ -45,6 +46,7 @@ export async function createComplaint(data: CreateComplaintData): Promise<string
         latitude: data.latitude || null,
         longitude: data.longitude || null,
         imageUrl: data.imageUrl || null,
+        wardName: data.wardName || null,
         status: 'pending',
         createdAt: serverTimestamp(),
     });
@@ -78,6 +80,7 @@ export async function getComplaints(): Promise<Complaint[]> {
             latitude: data.latitude,
             longitude: data.longitude,
             photo_url: data.imageUrl,
+            ward_name: data.wardName,
             status: data.status,
             created_at: data.createdAt?.toDate?.()?.toISOString() || new Date().toISOString(),
             role: 'citizen', // Default role for display
@@ -130,6 +133,7 @@ export function subscribeToComplaints(
                 latitude: data.latitude,
                 longitude: data.longitude,
                 photo_url: data.imageUrl,
+                ward_name: data.wardName,
                 status: data.status,
                 created_at: data.createdAt?.toDate?.()?.toISOString() || new Date().toISOString(),
                 role: 'citizen',

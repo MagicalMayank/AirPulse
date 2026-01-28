@@ -19,6 +19,7 @@ const complaintIcon = L.divIcon({
 
 interface InteractiveMapProps {
     onWardSelect?: (ward: WardProperties | null) => void;
+    role?: 'citizen' | 'authority' | 'analyst';
 }
 
 export interface InteractiveMapHandle {
@@ -64,7 +65,7 @@ const ErrorOverlay = ({ message, onRetry }: { message: string; onRetry: () => vo
     </div>
 );
 
-export const InteractiveMap = forwardRef<InteractiveMapHandle, InteractiveMapProps>(({ onWardSelect }, ref) => {
+export const InteractiveMap = forwardRef<InteractiveMapHandle, InteractiveMapProps>(({ onWardSelect, role = 'citizen' }, ref) => {
     const [geoData, setGeoData] = useState<GeoJSON.FeatureCollection | null>(null);
     const [geoKey, setGeoKey] = useState(0); // Force re-render of GeoJSON
     const mapInstanceRef = useRef<LeafletMap | null>(null);
@@ -223,7 +224,8 @@ export const InteractiveMap = forwardRef<InteractiveMapHandle, InteractiveMapPro
     }, [wardData, filters.layers.heat]);
 
     const showSensors = filters.layers.sensors;
-    const showComplaints = filters.layers.complaints;
+    // Always show complaints for authority, otherwise follow layer filter
+    const showComplaints = role === 'authority' ? true : filters.layers.complaints;
 
     return (
         <div className={styles.interactiveMap}>

@@ -46,6 +46,7 @@ export interface Complaint {
     longitude?: number;
     description: string;
     photo_url?: string;
+    ward_name?: string;
     status: 'pending' | 'in_progress' | 'resolved';
     created_at: string;
 }
