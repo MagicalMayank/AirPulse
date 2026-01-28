@@ -166,18 +166,18 @@ export const PolicySimulationLab: React.FC<PolicySimulationLabProps> = ({ isOpen
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
 Model: XGBoost Policy Simulator
-Baseline AQI: \${result.currentAQI}
-Predicted AQI: \${result.projectedAQI}
-Total Reduction: ↓\${result.aqiDelta} points (\${result.percentChange}%)
+Baseline AQI: ${result.currentAQI}
+Predicted AQI: ${result.projectedAQI}
+Total Reduction: ↓${result.aqiDelta} points (${result.percentChange}%)
 
 SHAP IMPACT BREAKDOWN
 ────────────────────────────────────────────────
-• Traffic Control Impact: \${impactBreakdown.traffic} AQI reduction
-• Dust Control Impact: \${impactBreakdown.dust} AQI reduction
-• Biomass Enforcement Impact: \${impactBreakdown.biomass} AQI reduction
-• Weather Assistance Impact: \${impactBreakdown.weather} AQI reduction
+• Traffic Control Impact: ${impactBreakdown.traffic} AQI reduction
+• Dust Control Impact: ${impactBreakdown.dust} AQI reduction
+• Biomass Enforcement Impact: ${impactBreakdown.biomass} AQI reduction
+• Weather Assistance Impact: ${impactBreakdown.weather} AQI reduction
 
-Top Contributing Factor: \${(() => {
+Top Contributing Factor: ${(() => {
                     const impacts = [
                         { name: 'Traffic Control', value: impactBreakdown.traffic },
                         { name: 'Dust Control', value: impactBreakdown.dust },
@@ -185,10 +185,10 @@ Top Contributing Factor: \${(() => {
                         { name: 'Weather Assistance', value: impactBreakdown.weather },
                     ];
                     const top = impacts.reduce((a, b) => a.value > b.value ? a : b);
-                    return \`\${top.name} (\${top.value} AQI)\`;
+                    return `${top.name} (${top.value} AQI)`;
                 })()}
 
-Model Confidence: \${result.confidenceScore}%
+Model Confidence: ${result.confidenceScore}%
 
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
   Powered by: AirPulse ML Engine (XGBoost + SHAP)
@@ -201,7 +201,7 @@ Model Confidence: \${result.confidenceScore}%
         const url = URL.createObjectURL(blob);
         const a = document.createElement('a');
         a.href = url;
-        a.download = \`AirPulse_Simulation_\${wardName.replace(/\\s+/g, '_')}_\${new Date().toISOString().split('T')[0]}.txt\`;
+        a.download = `AirPulse_Simulation_${wardName.replace(/\s+/g, '_')}_${new Date().toISOString().split('T')[0]}.txt`;
         a.click();
         URL.revokeObjectURL(url);
     };
@@ -223,7 +223,7 @@ Model Confidence: \${result.confidenceScore}%
             <div className={styles.backdrop} onClick={onClose} />
 
             {/* Sliding Panel */}
-            <div className={\`\${styles.panel} \${isOpen ? styles.panelOpen : ''}\`}>
+            <div className={`${styles.panel} ${isOpen ? styles.panelOpen : ''}`}>
                 {/* Header */}
                 <div className={styles.header}>
                     <div className={styles.headerTitle}>
@@ -303,7 +303,7 @@ Model Confidence: \${result.confidenceScore}%
                                 }))}
                                 className={styles.slider}
                                 style={{
-                                    background: \`linear-gradient(to right, #8B5CF6 0%, #06B6D4 \${(inputs.trafficDiversion / 30) * 100}%, #252830 \${(inputs.trafficDiversion / 30) * 100}%)\`
+                                    background: `linear-gradient(to right, #8B5CF6 0%, #06B6D4 ${(inputs.trafficDiversion / 30) * 100}%, #252830 ${(inputs.trafficDiversion / 30) * 100}%)`
                                 }}
                             />
                             <div className={styles.sliderLabels}>
@@ -330,7 +330,7 @@ Model Confidence: \${result.confidenceScore}%
                                 }))}
                                 className={styles.slider}
                                 style={{
-                                    background: \`linear-gradient(to right, #F97316 0%, #FBBF24 \${(inputs.dustControl / 40) * 100}%, #252830 \${(inputs.dustControl / 40) * 100}%)\`
+                                    background: `linear-gradient(to right, #F97316 0%, #FBBF24 ${(inputs.dustControl / 40) * 100}%, #252830 ${(inputs.dustControl / 40) * 100}%)`
                                 }}
                             />
                             <div className={styles.sliderLabels}>
@@ -375,7 +375,7 @@ Model Confidence: \${result.confidenceScore}%
                                 {(['none', 'moderate', 'strong'] as const).map((level) => (
                                     <button
                                         key={level}
-                                        className={\`\${styles.weatherBtn} \${inputs.weatherAssist === level ? styles.weatherBtnActive : ''}\`}
+                                        className={`${styles.weatherBtn} ${inputs.weatherAssist === level ? styles.weatherBtnActive : ''}`}
                                         onClick={() => setInputs(prev => ({ ...prev, weatherAssist: level }))}
                                     >
                                         {level.charAt(0).toUpperCase() + level.slice(1)}
@@ -386,7 +386,7 @@ Model Confidence: \${result.confidenceScore}%
 
                         {/* Run Simulation Button */}
                         <button
-                            className={\`\${styles.runButton} \${isLoading ? styles.runButtonLoading : ''}\`}
+                            className={`${styles.runButton} ${isLoading ? styles.runButtonLoading : ''}`}
                             onClick={handleSimulate}
                             disabled={isLoading}
                         >
@@ -453,7 +453,7 @@ Model Confidence: \${result.confidenceScore}%
                             </div>
 
                             {/* After */}
-                            <div className={\`\${styles.compareBox} \${result.aqiDelta > 0 ? styles.compareBoxGreen : ''}\`}>
+                            <div className={`${styles.compareBox} ${result.aqiDelta > 0 ? styles.compareBoxGreen : ''}`}>
                                 <span className={styles.compareLabel}>Projected</span>
                                 <span className={styles.compareValue}>{result.projectedAQI}</span>
                                 <span className={styles.compareUnit}>AQI</span>
@@ -502,7 +502,7 @@ Model Confidence: \${result.confidenceScore}%
                                         <div className={styles.shapBar}>
                                             <div
                                                 className={styles.shapFill}
-                                                style={{ width: \`\${Math.min(impactBreakdown.traffic * 10, 100)}%\` }}
+                                                style={{ width: `${Math.min(impactBreakdown.traffic * 10, 100)}%` }}
                                             />
                                         </div>
                                         <span className={styles.shapValue}>{impactBreakdown.traffic}</span>
@@ -513,7 +513,7 @@ Model Confidence: \${result.confidenceScore}%
                                         <div className={styles.shapBar}>
                                             <div
                                                 className={styles.shapFill}
-                                                style={{ width: \`\${Math.min(impactBreakdown.dust * 10, 100)}%\` }}
+                                                style={{ width: `${Math.min(impactBreakdown.dust * 10, 100)}%` }}
                                             />
                                         </div>
                                         <span className={styles.shapValue}>{impactBreakdown.dust}</span>
@@ -524,7 +524,7 @@ Model Confidence: \${result.confidenceScore}%
                                         <div className={styles.shapBar}>
                                             <div
                                                 className={styles.shapFill}
-                                                style={{ width: \`\${Math.min(impactBreakdown.biomass * 10, 100)}%\` }}
+                                                style={{ width: `${Math.min(impactBreakdown.biomass * 10, 100)}%` }}
                                             />
                                         </div>
                                         <span className={styles.shapValue}>{impactBreakdown.biomass}</span>
@@ -535,7 +535,7 @@ Model Confidence: \${result.confidenceScore}%
                                         <div className={styles.shapBar}>
                                             <div
                                                 className={styles.shapFill}
-                                                style={{ width: \`\${Math.min(impactBreakdown.weather * 10, 100)}%\` }}
+                                                style={{ width: `${Math.min(impactBreakdown.weather * 10, 100)}%` }}
                                             />
                                         </div>
                                         <span className={styles.shapValue}>{impactBreakdown.weather}</span>
@@ -555,7 +555,7 @@ Model Confidence: \${result.confidenceScore}%
                         <div className={styles.confidenceCard}>
                             <div className={styles.confidenceHeader}>
                                 <span className={styles.confidenceLabel}>Confidence Level</span>
-                                <span className={\`\${styles.confidenceBadge} \${styles[\`confidence\${result.confidence.charAt(0).toUpperCase() + result.confidence.slice(1)}\`]}\`}>
+                                <span className={`${styles.confidenceBadge} ${styles[`confidence${result.confidence.charAt(0).toUpperCase() + result.confidence.slice(1)}`]}`}>
                                     {result.confidence.toUpperCase()}
                                 </span>
                             </div>
@@ -563,7 +563,7 @@ Model Confidence: \${result.confidenceScore}%
                             <div className={styles.confidenceBar}>
                                 <div
                                     className={styles.confidenceFill}
-                                    style={{ width: \`\${result.confidenceScore}%\` }}
+                                    style={{ width: `${result.confidenceScore}%` }}
                                 />
                             </div>
                             <span className={styles.confidenceScore}>{result.confidenceScore}/100</span>
@@ -601,7 +601,7 @@ Model Confidence: \${result.confidenceScore}%
                                                     { name: 'Weather Assistance', value: impactBreakdown.weather },
                                                 ];
                                                 const top = impacts.reduce((a, b) => a.value > b.value ? a : b);
-                                                return \`\${top.name} (↓\${top.value} AQI)\`;
+                                                return `${top.name} (↓${top.value} AQI)`;
                                             })()}
                                         </span>
                                     </div>
@@ -613,7 +613,7 @@ Model Confidence: \${result.confidenceScore}%
                                     </div>
                                     <div className={styles.recommendRow}>
                                         <span className={styles.recommendLabel}>Model Confidence</span>
-                                        <span className={\`\${styles.riskBadge} \${styles[\`confidence\${result.confidence.charAt(0).toUpperCase() + result.confidence.slice(1)}\`]}\`}>
+                                        <span className={`${styles.riskBadge} ${styles[`confidence${result.confidence.charAt(0).toUpperCase() + result.confidence.slice(1)}`]}`}>
                                             {result.confidenceScore}%
                                         </span>
                                     </div>
@@ -629,7 +629,7 @@ Model Confidence: \${result.confidenceScore}%
                                         <span className={styles.recommendValue}>
                                             {result.recommendation.primaryAction}
                                             {result.recommendation.secondaryActions.length > 0 &&
-                                                \` + \${result.recommendation.secondaryActions.join(', ')}\`}
+                                                ` + ${result.recommendation.secondaryActions.join(', ')}`}
                                         </span>
                                     </div>
                                     <div className={styles.recommendRow}>
@@ -640,7 +640,7 @@ Model Confidence: \${result.confidenceScore}%
                                     </div>
                                     <div className={styles.recommendRow}>
                                         <span className={styles.recommendLabel}>Risk Level</span>
-                                        <span className={\`\${styles.riskBadge} \${styles[\`risk\${result.recommendation.riskLevel.charAt(0).toUpperCase() + result.recommendation.riskLevel.slice(1)}\`]}\`}>
+                                        <span className={`${styles.riskBadge} ${styles[`risk${result.recommendation.riskLevel.charAt(0).toUpperCase() + result.recommendation.riskLevel.slice(1)}`]}`}>
                                             {result.recommendation.riskLevel.toUpperCase()}
                                         </span>
                                     </div>
