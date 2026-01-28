@@ -166,6 +166,7 @@ const ActionItem = ({ complaint, onUpdateStatus }: {
     onUpdateStatus: (id: string, status: 'pending' | 'in_progress' | 'resolved') => void
 }) => {
     const [isUpdating, setIsUpdating] = useState(false);
+    const [showDetails, setShowDetails] = useState(false);
 
     // Format pollution type for display
     const formatPollutionType = (type: string) => {
@@ -187,37 +188,96 @@ const ActionItem = ({ complaint, onUpdateStatus }: {
     };
 
     return (
-        <div className={styles.actionItem} style={{ borderLeftColor: priorityColor }}>
-            <div className={styles.actionHeader}>
-                <span className={styles.actionTitle}>{formatPollutionType(complaint.pollution_type)}</span>
-                <span className={styles.actionStatus} style={{ color: complaint.status === 'in_progress' ? 'var(--aqi-moderate)' : '#888' }}>
-                    {statusLabel}
-                </span>
-            </div>
-            <div style={{ display: 'flex', gap: '0.5rem', marginTop: '0.5rem', alignItems: 'flex-start' }}>
-                <div style={{ flex: 1 }}>
-                    <div className={styles.actionTime} style={{ marginBottom: '0.25rem' }}>
-                        <MapPin size={12} /> {complaint.location_text}
-                    </div>
-                    <p style={{ fontSize: '0.7rem', color: '#AAA', margin: '0 0 0.5rem 0' }}>{complaint.description}</p>
+        <>
+            <div className={styles.actionItem} style={{ borderLeftColor: priorityColor }}>
+                <div className={styles.actionHeader}>
+                    <span className={styles.actionTitle}>{formatPollutionType(complaint.pollution_type)}</span>
+                    <span className={styles.actionStatus} style={{ color: complaint.status === 'in_progress' ? 'var(--aqi-moderate)' : '#888' }}>
+                        {statusLabel}
+                    </span>
                 </div>
-                {complaint.photo_url && (
-                    <a href={complaint.photo_url} target="_blank" rel="noopener noreferrer" className={styles.photoThumb}>
-                        <img src={complaint.photo_url} alt="Proof" style={{ width: '40px', height: '40px', borderRadius: '4px', objectFit: 'cover' }} />
-                        <ExternalLink size={10} className={styles.photoLinkIcon} />
-                    </a>
-                )}
+                <div style={{ display: 'flex', gap: '0.5rem', marginTop: '0.5rem', alignItems: 'flex-start' }}>
+                    <div style={{ flex: 1 }}>
+                        <div className={styles.actionTime} style={{ marginBottom: '0.25rem' }}>
+                            <MapPin size={12} /> {complaint.location_text}
+                        </div>
+                        <p style={{ fontSize: '0.7rem', color: '#AAA', margin: '0 0 0.5rem 0' }}>{complaint.description}</p>
+                    </div>
+                    {complaint.photo_url && (
+                        <a href={complaint.photo_url} target="_blank" rel="noopener noreferrer" className={styles.photoThumb}>
+                            <img src={complaint.photo_url} alt="Proof" style={{ width: '40px', height: '40px', borderRadius: '4px', objectFit: 'cover' }} />
+                            <ExternalLink size={10} className={styles.photoLinkIcon} />
+                        </a>
+                    )}
+                </div>
+                <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '0.5rem', marginTop: '0.5rem' }}>
+                    <button
+                        className={styles.viewBtn}
+                        onClick={() => setShowDetails(true)}
+                    >
+                        View
+                    </button>
+                    <button
+                        className={styles.statusUpdateBtn}
+                        onClick={handleClick}
+                        disabled={isUpdating}
+                    >
+                        {isUpdating ? <Loader2 size={12} className={styles.spinner} /> : `Move to ${nextStatusLabel}`}
+                    </button>
+                </div>
             </div>
-            <div style={{ display: 'flex', justifyContent: 'flex-end', marginTop: '0.5rem' }}>
-                <button
-                    className={styles.statusUpdateBtn}
-                    onClick={handleClick}
-                    disabled={isUpdating}
-                >
-                    {isUpdating ? <Loader2 size={12} className={styles.spinner} /> : `Move to ${nextStatusLabel}`}
-                </button>
-            </div>
-        </div>
+
+            {/* Detail Modal */}
+            {showDetails && (
+                <div className={styles.modalBackdrop} onClick={() => setShowDetails(false)}>
+                    <div className={styles.modalContent} onClick={e => e.stopPropagation()}>
+                        <div className={styles.modalHeader}>
+                            <h3>{formatPollutionType(complaint.pollution_type)}</h3>
+                            <button onClick={() => setShowDetails(false)} className={styles.modalClose}>×</button>
+                        </div>
+                        <div className={styles.modalBody}>
+                            <div className={styles.detailRow}>
+                                <span className={styles.detailLabel}>ID</span>
+                                <span className={styles.detailValue}>{complaint.id}</span>
+                            </div>
+                            <div className={styles.detailRow}>
+                                <span className={styles.detailLabel}>Location</span>
+                                <span className={styles.detailValue}>{complaint.location_text}</span>
+                            </div>
+                            <div className={styles.detailRow}>
+                                <span className={styles.detailLabel}>Description</span>
+                                <span className={styles.detailValue}>{complaint.description}</span>
+                            </div>
+                            <div className={styles.detailRow}>
+                                <span className={styles.detailLabel}>Status</span>
+                                <span className={styles.detailValue} style={{
+                                    color: complaint.status === 'resolved' ? 'var(--status-success)' :
+                                        complaint.status === 'in_progress' ? 'var(--aqi-moderate)' : '#888'
+                                }}>
+                                    {statusLabel}
+                                </span>
+                            </div>
+                            <div className={styles.detailRow}>
+                                <span className={styles.detailLabel}>Submitted</span>
+                                <span className={styles.detailValue}>{new Date(complaint.created_at).toLocaleString()}</span>
+                            </div>
+                            {complaint.photo_url && (
+                                <div className={styles.detailRow}>
+                                    <span className={styles.detailLabel}>Photo Evidence</span>
+                                    <a href={complaint.photo_url} target="_blank" rel="noopener noreferrer">
+                                        <img
+                                            src={complaint.photo_url}
+                                            alt="Evidence"
+                                            style={{ width: '100%', maxWidth: '200px', borderRadius: '8px', marginTop: '0.5rem' }}
+                                        />
+                                    </a>
+                                </div>
+                            )}
+                        </div>
+                    </div>
+                </div>
+            )}
+        </>
     );
 };
 

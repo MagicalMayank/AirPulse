@@ -688,3 +688,256 @@
 .content::-webkit-scrollbar-thumb:hover {
     background: #444;
 }
+
+/* Run Simulation Button */
+.runButton {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+    width: 100%;
+    padding: 0.875rem 1rem;
+    margin-top: 1rem;
+    background: linear-gradient(135deg, #8B5CF6 0%, #06B6D4 100%);
+    border: none;
+    border-radius: 10px;
+    color: white;
+    font-size: 0.9rem;
+    font-weight: 700;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    box-shadow: 0 4px 15px rgba(139, 92, 246, 0.3);
+}
+
+.runButton:hover:not(:disabled) {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(139, 92, 246, 0.4);
+}
+
+.runButton:active:not(:disabled) {
+    transform: translateY(0);
+}
+
+.runButton:disabled {
+    opacity: 0.7;
+    cursor: not-allowed;
+}
+
+.runButtonLoading {
+    background: linear-gradient(135deg, #6D28D9 0%, #0891B2 100%);
+}
+
+/* Spinner Animation */
+.spinner {
+    animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+    from {
+        transform: rotate(0deg);
+    }
+
+    to {
+        transform: rotate(360deg);
+    }
+}
+
+/* Error Toast */
+.errorToast {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.75rem 1rem;
+    margin-top: 0.75rem;
+    background: rgba(239, 68, 68, 0.15);
+    border: 1px solid rgba(239, 68, 68, 0.3);
+    border-radius: 8px;
+    color: #EF4444;
+    font-size: 0.8rem;
+    animation: slideIn 0.3s ease;
+}
+
+.errorToast span {
+    flex: 1;
+}
+
+.errorToast button {
+    background: none;
+    border: none;
+    color: #EF4444;
+    cursor: pointer;
+    padding: 0.25rem;
+    opacity: 0.7;
+    transition: opacity 0.2s;
+}
+
+.errorToast button:hover {
+    opacity: 1;
+}
+
+@keyframes slideIn {
+    from {
+        opacity: 0;
+        transform: translateY(-10px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+/* SHAP Impact Breakdown */
+.shapBreakdown {
+    margin-top: 1rem;
+    padding: 1rem;
+    background: rgba(139, 92, 246, 0.08);
+    border-radius: 10px;
+    border: 1px solid rgba(139, 92, 246, 0.2);
+    animation: fadeIn 0.5s ease;
+}
+
+.shapTitle {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    font-size: 0.75rem;
+    font-weight: 600;
+    color: var(--brand-secondary);
+    margin: 0 0 0.75rem 0;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+}
+
+.shapGrid {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+}
+
+.shapItem {
+    display: grid;
+    grid-template-columns: 20px 60px 1fr 40px;
+    align-items: center;
+    gap: 0.5rem;
+    font-size: 0.8rem;
+    color: #CCC;
+}
+
+.shapItem svg {
+    color: #888;
+}
+
+.shapBar {
+    height: 8px;
+    background: #252830;
+    border-radius: 4px;
+    overflow: hidden;
+}
+
+.shapFill {
+    height: 100%;
+    background: linear-gradient(90deg, #8B5CF6, #06B6D4);
+    border-radius: 4px;
+    transition: width 0.5s ease;
+}
+
+.shapValue {
+    text-align: right;
+    font-weight: 700;
+    color: var(--brand-secondary);
+    font-size: 0.75rem;
+}
+
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+    }
+
+    to {
+        opacity: 1;
+    }
+}
+
+/* Cold Start Notice */
+.coldStartNotice {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.75rem 1rem;
+    background: rgba(139, 92, 246, 0.15);
+    border: 1px solid rgba(139, 92, 246, 0.3);
+    border-radius: 8px;
+    font-size: 0.75rem;
+    color: #A78BFA;
+    animation: pulse 2s ease-in-out infinite;
+}
+
+.coldStartNotice svg {
+    flex-shrink: 0;
+}
+
+@keyframes pulse {
+
+    0%,
+    100% {
+        opacity: 1;
+    }
+
+    50% {
+        opacity: 0.6;
+    }
+}
+
+/* Error Toast */
+.errorToast {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.75rem 1rem;
+    background: rgba(239, 68, 68, 0.15);
+    border: 1px solid rgba(239, 68, 68, 0.3);
+    border-radius: 8px;
+    font-size: 0.75rem;
+    color: #FCA5A5;
+    animation: slideIn 0.3s ease;
+}
+
+.errorToast svg:first-child {
+    color: #EF4444;
+    flex-shrink: 0;
+}
+
+.errorToast span {
+    flex: 1;
+}
+
+.errorToast button {
+    background: none;
+    border: none;
+    color: #888;
+    cursor: pointer;
+    padding: 2px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 4px;
+    transition: all 0.2s;
+}
+
+.errorToast button:hover {
+    background: rgba(255, 255, 255, 0.1);
+    color: white;
+}
+
+@keyframes slideIn {
+    from {
+        opacity: 0;
+        transform: translateY(-10px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
