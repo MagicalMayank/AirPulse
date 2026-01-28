@@ -1,8 +1,8 @@
-import React, { useState, useMemo, useEffect } from 'react';
+import React, { useState, useMemo, useEffect, useCallback } from 'react';
 import {
     X, Beaker, Car, Construction, Flame, Wind,
     TrendingDown, TrendingUp, AlertCircle, FileText, Eye,
-    ChevronRight, Info, BarChart3
+    ChevronRight, Info, BarChart3, Play, Loader2, XCircle
 } from 'lucide-react';
 import styles from './PolicySimulation.module.css';
 import { useAirQuality, useWardData } from '../../context/AirQualityContext';
@@ -13,6 +13,7 @@ import {
     type SimulationInputs,
     type SimulationResult
 } from '../../utils/simulationEngine';
+import { runSimulation, type SimulationAPIResponse, type ImpactBreakdown } from '../../services/simulationService';
 
 interface PolicySimulationLabProps {
     isOpen: boolean;
@@ -30,6 +31,14 @@ export const PolicySimulationLab: React.FC<PolicySimulationLabProps> = ({ isOpen
         burningEnforcement: false,
         weatherAssist: 'none',
     });
+
+    // API/ML simulation states
+    const [isLoading, setIsLoading] = useState(false);
+    const [isColdStart, setIsColdStart] = useState(false);
+    const [apiError, setApiError] = useState<string | null>(null);
+    const [apiResult, setApiResult] = useState<SimulationAPIResponse | null>(null);
+    const [impactBreakdown, setImpactBreakdown] = useState<ImpactBreakdown | null>(null);
+    const [hasRunSimulation, setHasRunSimulation] = useState(false);
 
     // Ward context
     const wardName = selectedWardId
@@ -50,20 +59,119 @@ export const PolicySimulationLab: React.FC<PolicySimulationLabProps> = ({ isOpen
         [wardName, currentAQI]
     );
 
-    // Run simulation
-    const result: SimulationResult = useMemo(() =>
+    // Local heuristic simulation (real-time preview)
+    const localResult: SimulationResult = useMemo(() =>
         simulatePolicy(currentAQI, inputs, sourceContributions),
         [currentAQI, inputs, sourceContributions]
     );
 
+    // Use API result if available, otherwise local preview
+    const result = useMemo(() => {
+        if (hasRunSimulation && apiResult) {
+            // Merge API result into our local result format
+            // Note: baseline_aqi and confidence_score are optional in new API response
+            const baselineAqi = apiResult.baseline_aqi ?? currentAQI;
+            const confidenceScore = apiResult.confidence_score ?? 0.85;
+            return {
+                ...localResult,
+                currentAQI: baselineAqi,
+                projectedAQI: apiResult.projected_aqi,
+                aqiDelta: baselineAqi - apiResult.projected_aqi,
+                percentChange: Math.round(((baselineAqi - apiResult.projected_aqi) / baselineAqi) * 100),
+                confidenceScore: Math.round(confidenceScore * 100),
+                confidence: (confidenceScore >= 0.75 ? 'high' : confidenceScore >= 0.55 ? 'medium' : 'low') as 'low' | 'medium' | 'high',
+            };
+        }
+        return localResult;
+    }, [hasRunSimulation, apiResult, localResult]);
+
+    // Handle Run Simulation button click
+    const handleSimulate = useCallback(async () => {
+        setIsLoading(true);
+        setApiError(null);
+        setIsColdStart(false);
+
+        try {
+            const response = await runSimulation({
+                ward: selectedWardId?.toString() || 'Delhi NCR',
+                baselineAqi: currentAQI,
+                trafficDiversion: inputs.trafficDiversion,
+                dustControl: inputs.dustControl,
+                burningEnforcement: inputs.burningEnforcement,
+                weatherAssist: inputs.weatherAssist,
+            }, () => {
+                // Cold start detected callback
+                setIsColdStart(true);
+            });
+
+            setApiResult(response);
+            setImpactBreakdown(response.impact_breakdown);
+            setHasRunSimulation(true);
+            setIsColdStart(false);
+        } catch (error) {
+            const message = error instanceof Error ? error.message : 'Simulation failed';
+            setApiError(message);
+            console.error('[PolicySimulationLab] API Error:', error);
+        } finally {
+            setIsLoading(false);
+            setIsColdStart(false);
+        }
+    }, [inputs, selectedWardId, currentAQI]);
+
+    // Reset simulation when inputs change
+    useEffect(() => {
+        setHasRunSimulation(false);
+        setApiResult(null);
+        setImpactBreakdown(null);
+    }, [inputs]);
+
     // Handle export
     const handleExport = () => {
-        const summary = generateExportSummary(
+        let summary = generateExportSummary(
             wardName,
             selectedWardId || 'NCR',
             inputs,
             result
         );
+
+        // Add ML results if available
+        if (hasRunSimulation && impactBreakdown) {
+            const mlSection = `
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+  ML MODEL PREDICTION RESULTS
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Model: XGBoost Policy Simulator
+Baseline AQI: ${result.currentAQI}
+Predicted AQI: ${result.projectedAQI}
+Total Reduction: ↓${result.aqiDelta} points (${result.percentChange}%)
+
+SHAP IMPACT BREAKDOWN
+────────────────────────────────────────────────
+• Traffic Control Impact: ${impactBreakdown.traffic} AQI reduction
+• Dust Control Impact: ${impactBreakdown.dust} AQI reduction
+• Biomass Enforcement Impact: ${impactBreakdown.biomass} AQI reduction
+• Weather Assistance Impact: ${impactBreakdown.weather} AQI reduction
+
+Top Contributing Factor: ${(() => {
+                    const impacts = [
+                        { name: 'Traffic Control', value: impactBreakdown.traffic },
+                        { name: 'Dust Control', value: impactBreakdown.dust },
+                        { name: 'Biomass Enforcement', value: impactBreakdown.biomass },
+                        { name: 'Weather Assistance', value: impactBreakdown.weather },
+                    ];
+                    const top = impacts.reduce((a, b) => a.value > b.value ? a : b);
+                    return `${top.name} (${top.value} AQI)`;
+                })()}
+
+Model Confidence: ${result.confidenceScore}%
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+  Powered by: AirPulse ML Engine (XGBoost + SHAP)
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━`;
+            summary += mlSection;
+        }
 
         // Create download
         const blob = new Blob([summary], { type: 'text/plain' });
@@ -171,6 +279,9 @@ export const PolicySimulationLab: React.FC<PolicySimulationLabProps> = ({ isOpen
                                     trafficDiversion: parseInt(e.target.value)
                                 }))}
                                 className={styles.slider}
+                                style={{
+                                    background: `linear-gradient(to right, #8B5CF6 0%, #06B6D4 ${(inputs.trafficDiversion / 30) * 100}%, #252830 ${(inputs.trafficDiversion / 30) * 100}%)`
+                                }}
                             />
                             <div className={styles.sliderLabels}>
                                 <span>0%</span>
@@ -195,6 +306,9 @@ export const PolicySimulationLab: React.FC<PolicySimulationLabProps> = ({ isOpen
                                     dustControl: parseInt(e.target.value)
                                 }))}
                                 className={styles.slider}
+                                style={{
+                                    background: `linear-gradient(to right, #F97316 0%, #FBBF24 ${(inputs.dustControl / 40) * 100}%, #252830 ${(inputs.dustControl / 40) * 100}%)`
+                                }}
                             />
                             <div className={styles.sliderLabels}>
                                 <span>0%</span>
@@ -246,6 +360,44 @@ export const PolicySimulationLab: React.FC<PolicySimulationLabProps> = ({ isOpen
                                 ))}
                             </div>
                         </div>
+
+                        {/* Run Simulation Button */}
+                        <button
+                            className={`${styles.runButton} ${isLoading ? styles.runButtonLoading : ''}`}
+                            onClick={handleSimulate}
+                            disabled={isLoading}
+                        >
+                            {isLoading ? (
+                                <>
+                                    <Loader2 size={18} className={styles.spinner} />
+                                    <span>{isColdStart ? 'Waking up AI Engine...' : 'Running ML Model...'}</span>
+                                </>
+                            ) : (
+                                <>
+                                    <Play size={18} />
+                                    <span>Run Simulation</span>
+                                </>
+                            )}
+                        </button>
+
+                        {/* Cold Start Notice */}
+                        {isColdStart && (
+                            <div className={styles.coldStartNotice}>
+                                <Info size={14} />
+                                <span>Waking up AI Engine (this may take 30s on first load)...</span>
+                            </div>
+                        )}
+
+                        {/* Error Toast */}
+                        {apiError && (
+                            <div className={styles.errorToast}>
+                                <XCircle size={16} />
+                                <span>{apiError}</span>
+                                <button onClick={() => setApiError(null)}>
+                                    <X size={14} />
+                                </button>
+                            </div>
+                        )}
                     </section>
 
                     {/* Section 3: Simulation Output */}
@@ -312,6 +464,62 @@ export const PolicySimulationLab: React.FC<PolicySimulationLabProps> = ({ isOpen
                                 AQI is estimated to reduce by <strong>{result.percentChange}%</strong> within 24–48 hours."
                             </p>
                         )}
+
+                        {/* SHAP Impact Breakdown (ML Results) */}
+                        {hasRunSimulation && impactBreakdown && (
+                            <div className={styles.shapBreakdown}>
+                                <h4 className={styles.shapTitle}>
+                                    <BarChart3 size={14} />
+                                    ML Impact Breakdown (SHAP)
+                                </h4>
+                                <div className={styles.shapGrid}>
+                                    <div className={styles.shapItem}>
+                                        <Car size={14} />
+                                        <span>Traffic</span>
+                                        <div className={styles.shapBar}>
+                                            <div
+                                                className={styles.shapFill}
+                                                style={{ width: `${Math.min(impactBreakdown.traffic * 10, 100)}%` }}
+                                            />
+                                        </div>
+                                        <span className={styles.shapValue}>{impactBreakdown.traffic}</span>
+                                    </div>
+                                    <div className={styles.shapItem}>
+                                        <Construction size={14} />
+                                        <span>Dust</span>
+                                        <div className={styles.shapBar}>
+                                            <div
+                                                className={styles.shapFill}
+                                                style={{ width: `${Math.min(impactBreakdown.dust * 10, 100)}%` }}
+                                            />
+                                        </div>
+                                        <span className={styles.shapValue}>{impactBreakdown.dust}</span>
+                                    </div>
+                                    <div className={styles.shapItem}>
+                                        <Flame size={14} />
+                                        <span>Biomass</span>
+                                        <div className={styles.shapBar}>
+                                            <div
+                                                className={styles.shapFill}
+                                                style={{ width: `${Math.min(impactBreakdown.biomass * 10, 100)}%` }}
+                                            />
+                                        </div>
+                                        <span className={styles.shapValue}>{impactBreakdown.biomass}</span>
+                                    </div>
+                                    <div className={styles.shapItem}>
+                                        <Wind size={14} />
+                                        <span>Weather</span>
+                                        <div className={styles.shapBar}>
+                                            <div
+                                                className={styles.shapFill}
+                                                style={{ width: `${Math.min(impactBreakdown.weather * 10, 100)}%` }}
+                                            />
+                                        </div>
+                                        <span className={styles.shapValue}>{impactBreakdown.weather}</span>
+                                    </div>
+                                </div>
+                            </div>
+                        )}
                     </section>
 
                     {/* Section 4: Confidence */}
@@ -356,28 +564,67 @@ export const PolicySimulationLab: React.FC<PolicySimulationLabProps> = ({ isOpen
                         </h3>
 
                         <div className={styles.recommendCard}>
-                            <div className={styles.recommendRow}>
-                                <span className={styles.recommendLabel}>Recommended Action</span>
-                                <span className={styles.recommendValue}>
-                                    {result.recommendation.primaryAction}
-                                    {result.recommendation.secondaryActions.length > 0 &&
-                                        ` + ${result.recommendation.secondaryActions.join(', ')}`}
-                                </span>
-                            </div>
-                            <div className={styles.recommendRow}>
-                                <span className={styles.recommendLabel}>Est. Improvement</span>
-                                <span className={styles.recommendValue}>
-                                    {result.recommendation.estimatedImprovement}
-                                </span>
-                            </div>
-                            <div className={styles.recommendRow}>
-                                <span className={styles.recommendLabel}>Risk Level</span>
-                                <span className={`${styles.riskBadge} ${styles[`risk${result.recommendation.riskLevel.charAt(0).toUpperCase() + result.recommendation.riskLevel.slice(1)}`]}`}>
-                                    {result.recommendation.riskLevel.toUpperCase()}
-                                </span>
-                            </div>
+                            {/* ML-based Recommendation when available */}
+                            {hasRunSimulation && impactBreakdown ? (
+                                <>
+                                    <div className={styles.recommendRow}>
+                                        <span className={styles.recommendLabel}>Top Impact Factor</span>
+                                        <span className={styles.recommendValue}>
+                                            {(() => {
+                                                const impacts = [
+                                                    { name: 'Traffic Control', value: impactBreakdown.traffic },
+                                                    { name: 'Dust Control', value: impactBreakdown.dust },
+                                                    { name: 'Biomass Enforcement', value: impactBreakdown.biomass },
+                                                    { name: 'Weather Assistance', value: impactBreakdown.weather },
+                                                ];
+                                                const top = impacts.reduce((a, b) => a.value > b.value ? a : b);
+                                                return `${top.name} (↓${top.value} AQI)`;
+                                            })()}
+                                        </span>
+                                    </div>
+                                    <div className={styles.recommendRow}>
+                                        <span className={styles.recommendLabel}>ML Predicted Reduction</span>
+                                        <span className={styles.recommendValue}>
+                                            ↓{result.aqiDelta} AQI ({result.percentChange}%)
+                                        </span>
+                                    </div>
+                                    <div className={styles.recommendRow}>
+                                        <span className={styles.recommendLabel}>Model Confidence</span>
+                                        <span className={`${styles.riskBadge} ${styles[`confidence${result.confidence.charAt(0).toUpperCase() + result.confidence.slice(1)}`]}`}>
+                                            {result.confidenceScore}%
+                                        </span>
+                                    </div>
+                                    <div className={styles.recommendRow}>
+                                        <span className={styles.recommendLabel}>Prediction Source</span>
+                                        <span className={styles.recommendValue}>XGBoost ML Model + SHAP</span>
+                                    </div>
+                                </>
+                            ) : (
+                                <>
+                                    <div className={styles.recommendRow}>
+                                        <span className={styles.recommendLabel}>Recommended Action</span>
+                                        <span className={styles.recommendValue}>
+                                            {result.recommendation.primaryAction}
+                                            {result.recommendation.secondaryActions.length > 0 &&
+                                                ` + ${result.recommendation.secondaryActions.join(', ')}`}
+                                        </span>
+                                    </div>
+                                    <div className={styles.recommendRow}>
+                                        <span className={styles.recommendLabel}>Est. Improvement</span>
+                                        <span className={styles.recommendValue}>
+                                            {result.recommendation.estimatedImprovement}
+                                        </span>
+                                    </div>
+                                    <div className={styles.recommendRow}>
+                                        <span className={styles.recommendLabel}>Risk Level</span>
+                                        <span className={`${styles.riskBadge} ${styles[`risk${result.recommendation.riskLevel.charAt(0).toUpperCase() + result.recommendation.riskLevel.slice(1)}`]}`}>
+                                            {result.recommendation.riskLevel.toUpperCase()}
+                                        </span>
+                                    </div>
+                                </>
+                            )}
                             <div className={styles.recommendFooter}>
-                                Prepared by: AirPulse Analyst Engine
+                                {hasRunSimulation ? 'Powered by: AirPulse ML Engine' : 'Prepared by: AirPulse Analyst Engine'}
                             </div>
                         </div>
 
