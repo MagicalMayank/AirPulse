@@ -12,7 +12,6 @@ import {
     generateExportSummary,
     type SimulationInputs,
     type SimulationResult,
-    DEFAULT_SOURCE_CONTRIBUTIONS
 } from '../../utils/simulationEngine';
 import { type SimulationAPIResponse, type ImpactBreakdown } from '../../services/simulationService';
 

@@ -47,18 +47,6 @@ export interface SimulationAPIError {
 }
 
 /**
- * Convert frontend weather assist value to API format
- */
-function weatherToNumber(weatherAssist: 'none' | 'moderate' | 'strong'): number {
-    switch (weatherAssist) {
-        case 'none': return 0;
-        case 'moderate': return 1;
-        case 'strong': return 2;
-        default: return 0;
-    }
-}
-
-/**
  * Run simulation (MOCKED for high-performance feel)
  * 
  * Simulations a call to a high-performance XGBoost model with SHAP explainability.
@@ -127,7 +115,7 @@ export async function runSimulation(params: {
     return {
         status: 'success',
         ward: params.ward,
-        original_aqi: params.baselineAqi,
+        baseline_aqi: params.baselineAqi,
         projected_aqi: projected_aqi,
         total_reduction: parseFloat(total_reduction.toFixed(2)),
         impact_breakdown: impact_breakdown,
