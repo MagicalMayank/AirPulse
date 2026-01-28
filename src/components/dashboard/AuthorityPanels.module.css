@@ -284,6 +284,19 @@
     font-size: 0.75rem !important;
 }
 
+.alertActionBtn {
+    flex: 1;
+    font-size: 0.75rem !important;
+    background: rgba(217, 4, 41, 0.15) !important;
+    border-color: rgba(217, 4, 41, 0.4) !important;
+    color: #ff4d4d !important;
+}
+
+.alertActionBtn:hover {
+    background: var(--status-error) !important;
+    color: white !important;
+}
+
 /* ===== RIGHT PANEL STYLES ===== */
 
 /* Filter Bar */

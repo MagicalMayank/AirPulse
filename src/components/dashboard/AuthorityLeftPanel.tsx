@@ -288,7 +288,7 @@ Sent via AirPulse Authority Dashboard
                 <Button variant="primary" size="sm" className={styles.actionBtn} onClick={handleGenerateReport}>
                     📋 Generate Report
                 </Button>
-                <Button variant="outline" size="sm" className={styles.actionBtn} onClick={handleSendAlert}>
+                <Button variant="outline" size="sm" className={styles.alertActionBtn} onClick={handleSendAlert}>
                     📢 Send Alert
                 </Button>
             </div>
