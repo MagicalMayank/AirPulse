@@ -87,7 +87,14 @@
 
 .navButtons {
     display: flex;
-    gap: 1.5rem;
+    align-items: center;
+    gap: 1rem;
+}
+
+.welcomeText {
+    color: rgba(255, 255, 255, 0.8);
+    font-weight: 500;
+    font-size: 0.9rem;
 }
 
 .ghostButton {
