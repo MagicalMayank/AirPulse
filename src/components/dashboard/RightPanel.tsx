@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useMemo } from 'react';
-import { ThumbsUp, ThumbsDown, RefreshCw } from 'lucide-react';
+import { RefreshCw } from 'lucide-react';
 import styles from './Panels.module.css';
 import { useAirQuality, useWardData } from '../../context/AirQualityContext';
 import { TrendChart } from './TrendChart';
@@ -123,8 +123,6 @@ export const RightPanel: React.FC = () => {
             {/* Tabs */}
             <div className={styles.tabs}>
                 <button className={`${styles.tab} ${styles.activeTab}`}>Trends</button>
-                <button className={styles.tab}>Anomalies</button>
-                <button className={styles.tab}>Reports</button>
             </div>
 
             {/* AQI Trend Graph */}
@@ -167,28 +165,6 @@ export const RightPanel: React.FC = () => {
                 />
             </div>
 
-            {/* Recent Reports */}
-            <div className={styles.headerFlex}>
-                <h4 className={styles.sectionHeader}>RECENT CITIZEN REPORTS</h4>
-                <a href="#" className={styles.link}>View All</a>
-            </div>
-            <div className={styles.reportList}>
-                <ReportItem
-                    title="Garbage Burning"
-                    location="Okhla Phase III • 10 mins ago"
-                    status="Pending"
-                    statusColor="var(--status-warning)"
-                    icon={<ThumbsDown size={14} />}
-                />
-                <ReportItem
-                    title="Dust from Construction"
-                    location="Lajpat Nagar • 1 hr ago"
-                    status="Resolved"
-                    statusColor="var(--status-success)"
-                    icon={<ThumbsUp size={14} />}
-                />
-            </div>
-
             {/* Attribution */}
             <div style={{ marginTop: 'auto', paddingTop: '20px', fontSize: '0.65rem', opacity: 0.5, textAlign: 'center', fontStyle: 'italic' }}>
                 Data provided by World Air Quality Index Project & EPA. Fallback via Open-Meteo.
@@ -207,15 +183,3 @@ const SentimentItem = ({ user, time, text, borderColor }: any) => (
     </div>
 );
 
-const ReportItem = ({ title, location, status, statusColor, icon }: any) => (
-    <div className={styles.reportItem}>
-        <div className={styles.reportIcon}>{icon}</div>
-        <div className={styles.reportContent}>
-            <div className={styles.reportTitle}>{title}</div>
-            <div className={styles.reportLoc}>{location}</div>
-        </div>
-        <span className={styles.statusBadge} style={{ color: statusColor, borderColor: statusColor }}>
-            {status}
-        </span>
-    </div>
-);
