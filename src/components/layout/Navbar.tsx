@@ -6,9 +6,11 @@
  * - Correct mode display based on user's actual role from profile
  */
 
-import { MapPin, Bell, Zap, LogOut } from 'lucide-react';
+import { useState } from 'react';
+import { MapPin, Bell, Zap, LogOut, Clock } from 'lucide-react';
 import styles from './Navbar.module.css';
 import { useAuth } from '../../context/AuthContext';
+import { useAirQuality } from '../../context/AirQualityContext';
 
 interface NavbarProps {
     role?: 'citizen' | 'authority' | 'analyst';
@@ -19,18 +21,14 @@ interface NavbarProps {
 
 export const Navbar = ({ role = 'citizen', onRoleChange, advancedMode = false, onAdvancedModeChange }: NavbarProps) => {
     const { profile, user, loading, signOut, userRole, isAuthenticated } = useAuth();
+    const { alerts } = useAirQuality();
+    const [showNotifications, setShowNotifications] = useState(false);
 
     /**
      * Get initials for profile avatar
-     * 
-     * Rules:
-     * - Citizen with name: First letter of each word (e.g., "Demo User" -> "DU")
-     * - Authority: "AU"
-     * - Analyst: "AN"
-     * - Fallback to email first letter or "?"
      */
     const getInitials = (): string => {
-        // If we have a name, get initials from it
+        // ... (existing code remains same)
         if (profile?.name && profile.name.trim()) {
             const words = profile.name.trim().split(/\s+/).filter(w => w.length > 0);
             if (words.length >= 2) {
@@ -40,7 +38,6 @@ export const Navbar = ({ role = 'citizen', onRoleChange, advancedMode = false, o
             }
         }
 
-        // Role-based initials for authority and analyst
         if (profile?.role === 'authority' || userRole === 'authority') {
             return 'AU';
         }
@@ -48,7 +45,6 @@ export const Navbar = ({ role = 'citizen', onRoleChange, advancedMode = false, o
             return 'AN';
         }
 
-        // Fallback: email first letter
         if (profile?.email) {
             return profile.email.charAt(0).toUpperCase();
         }
@@ -61,33 +57,45 @@ export const Navbar = ({ role = 'citizen', onRoleChange, advancedMode = false, o
 
     /**
      * Get the current mode display text
-     * Uses the actual role from the user's profile
      */
     const getModeDisplay = (): string => {
         if (loading) return 'Loading...';
-
-        // Use the actual role from profile, not the URL param
         const actualRole = userRole || profile?.role;
-
         if (actualRole) {
             return `${actualRole.charAt(0).toUpperCase() + actualRole.slice(1)} Mode`;
         }
-
         if (user) {
             return 'Auth Active';
         }
-
         return 'Guest Mode';
     };
 
-    /**
-     * Get status indicator color
-     */
     const getStatusColor = (): string => {
-        if (loading) return '#6b7280'; // gray
-        if (profile) return '#10b981'; // green
-        if (user) return '#f59e0b'; // amber
-        return '#6b7280'; // gray
+        if (loading) return '#6b7280';
+        if (profile) return '#10b981';
+        if (user) return '#f59e0b';
+        return '#6b7280';
+    };
+
+    const formatTimeAgo = (dateStr: string) => {
+        const date = new Date(dateStr);
+        const seconds = Math.floor((new Date().getTime() - date.getTime()) / 1000);
+        if (seconds < 60) return 'Just now';
+        const minutes = Math.floor(seconds / 60);
+        if (minutes < 60) return `${minutes}m ago`;
+        const hours = Math.floor(minutes / 60);
+        if (hours < 24) return `${hours}h ago`;
+        return date.toLocaleDateString();
+    };
+
+    const getSeverityColor = (severity: string) => {
+        switch (severity) {
+            case 'emergency': return '#ef4444';
+            case 'high': return '#f97316';
+            case 'medium': return '#f59e0b';
+            case 'low': return '#10b981';
+            default: return '#6b7280';
+        }
     };
 
     return (
@@ -119,7 +127,6 @@ export const Navbar = ({ role = 'citizen', onRoleChange, advancedMode = false, o
             </div>
 
             <div className={styles.right}>
-                {/* Advanced Mode Toggle - Only for Analyst */}
                 {role === 'analyst' && onAdvancedModeChange && (
                     <button
                         className={`${styles.advancedToggle} ${advancedMode ? styles.advancedActive : ''}`}
@@ -134,7 +141,6 @@ export const Navbar = ({ role = 'citizen', onRoleChange, advancedMode = false, o
                     </button>
                 )}
 
-                {/* Status Indicator - Shows actual role mode */}
                 <div className={styles.status}>
                     <div
                         className={styles.dot}
@@ -143,9 +149,50 @@ export const Navbar = ({ role = 'citizen', onRoleChange, advancedMode = false, o
                     <span>{getModeDisplay()}</span>
                 </div>
 
-                <button className={styles.iconBtn} title="Notifications">
-                    <Bell size={20} />
-                </button>
+                <div className={styles.iconBtnWrapper}>
+                    <button
+                        className={styles.iconBtn}
+                        title="Notifications"
+                        onClick={() => setShowNotifications(!showNotifications)}
+                    >
+                        <Bell size={20} />
+                        {alerts.length > 0 && <div className={styles.badge} />}
+                    </button>
+
+                    {showNotifications && (
+                        <div className={styles.notificationDropdown}>
+                            <div className={styles.notificationHeader}>
+                                <h4>Recent Alerts</h4>
+                                <span style={{ fontSize: '0.7rem', color: '#666' }}>{alerts.length} Active</span>
+                            </div>
+                            <div className={styles.notificationList}>
+                                {alerts.length === 0 ? (
+                                    <div className={styles.emptyNotifications}>
+                                        No active alerts for your area.
+                                    </div>
+                                ) : (
+                                    alerts.map((alert) => (
+                                        <div key={alert.id} className={styles.notificationItem}>
+                                            <div className={styles.notificationTitle}>{alert.title}</div>
+                                            <div className={styles.notificationMsg}>{alert.message}</div>
+                                            <div className={styles.notificationMeta}>
+                                                <span
+                                                    className={styles.severityBadge}
+                                                    style={{ backgroundColor: `${getSeverityColor(alert.severity)}20`, color: getSeverityColor(alert.severity) }}
+                                                >
+                                                    {alert.severity}
+                                                </span>
+                                                <span className={styles.timeAgo}>
+                                                    <Clock size={10} /> {formatTimeAgo(alert.createdAt || new Date().toISOString())}
+                                                </span>
+                                            </div>
+                                        </div>
+                                    ))
+                                )}
+                            </div>
+                        </div>
+                    )}
+                </div>
 
                 {/* Profile Menu */}
                 <div className={styles.profileMenu}>

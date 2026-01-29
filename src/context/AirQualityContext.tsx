@@ -9,8 +9,9 @@ import { createContext, useContext, useEffect, useState, useCallback, useRef, ty
 import { getAirQualityData, getStationDetails, type StationData } from '../services/aqiService';
 import { mapWardsToAQI, type WardAQIData } from '../utils/wardMapping';
 import type { PollutantData } from '../utils/aqiCalculator';
-import type { Complaint } from '../types';
+import type { Complaint, Alert } from '../types';
 import { getComplaints, subscribeToComplaints, updateComplaintStatus } from '../services/complaints';
+import { createAlert, subscribeToAlerts } from '../services/alerts';
 
 // Filter state types
 export interface PollutantFilters {
@@ -47,6 +48,8 @@ export interface AirQualityState {
     complaints: Complaint[];
     complaintsLoading: boolean;
     complaintsError: string | null;
+    alerts: Alert[];
+    alertsLoading: boolean;
 
     // Loading/Error states
     loading: boolean;
@@ -79,6 +82,7 @@ export interface AirQualityActions {
     // Complaint actions
     refreshComplaints: () => Promise<void>;
     updateComplaintStatus: (id: string, status: 'pending' | 'in_progress' | 'resolved') => Promise<void>;
+    sendAlert: (data: any) => Promise<string>;
 
     // Helpers
     getWardAQI: (wardId: string | number) => WardAQIData | undefined;
@@ -123,6 +127,8 @@ export function AirQualityProvider({ children }: { children: ReactNode }) {
     const [complaints, setComplaints] = useState<Complaint[]>([]);
     const [complaintsLoading, setComplaintsLoading] = useState(true);
     const [complaintsError, setComplaintsError] = useState<string | null>(null);
+    const [alerts, setAlerts] = useState<Alert[]>([]);
+    const [alertsLoading, setAlertsLoading] = useState(true);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
     const [lastUpdated, setLastUpdated] = useState<Date | null>(null);
@@ -211,16 +217,22 @@ export function AirQualityProvider({ children }: { children: ReactNode }) {
         console.log('[AirQualityContext] Setting up Firestore subscription...');
         setComplaintsLoading(true);
 
-        const unsubscribe = subscribeToComplaints((data) => {
-            console.log('[AirQualityContext] Real-time update received:', data.length, 'complaints');
+        const unsubscribeComplaints = subscribeToComplaints((data) => {
+            console.log('[AirQualityContext] Real-time complaints update:', data.length);
             setComplaints(data);
             setComplaintsLoading(false);
-            setComplaintsError(null);
+        });
+
+        const unsubscribeAlerts = subscribeToAlerts((data) => {
+            console.log('[AirQualityContext] Real-time alerts update:', data.length);
+            setAlerts(data);
+            setAlertsLoading(false);
         });
 
         return () => {
             console.log('[AirQualityContext] Cleaning up subscriptions');
-            unsubscribe();
+            unsubscribeComplaints();
+            unsubscribeAlerts();
         };
     }, [fetchData]);
 
@@ -306,6 +318,10 @@ export function AirQualityProvider({ children }: { children: ReactNode }) {
         }
     }, [wardData]);
 
+    const handleSendAlert = useCallback(async (data: any) => {
+        return await createAlert(data);
+    }, []);
+
     const getWardAQI = useCallback((wardId: string | number): WardAQIData | undefined => {
         return wardData.get(wardId);
     }, [wardData]);
@@ -356,8 +372,11 @@ export function AirQualityProvider({ children }: { children: ReactNode }) {
         selectWard,
         refreshComplaints: fetchComplaints,
         updateComplaintStatus: handleUpdateComplaintStatus,
+        sendAlert: handleSendAlert,
         getWardAQI,
         getActivePollutants,
+        alerts,
+        alertsLoading,
     };
 
     return (

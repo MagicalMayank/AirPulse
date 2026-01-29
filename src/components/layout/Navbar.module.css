@@ -96,11 +96,46 @@
     box-shadow: 0 0 8px var(--status-success);
 }
 
+.iconBtnWrapper {
+    position: relative;
+    display: flex;
+    align-items: center;
+}
+
 .iconBtn {
     background: transparent;
     color: rgba(255, 255, 255, 0.8);
     padding: 0.5rem;
     border-radius: 50%;
+    cursor: pointer;
+    border: none;
+    transition: all 0.2s;
+}
+
+.badge {
+    position: absolute;
+    top: 4px;
+    right: 4px;
+    width: 8px;
+    height: 8px;
+    background-color: var(--status-error);
+    border-radius: 50%;
+    border: 2px solid var(--bg-dark);
+    animation: badgePulse 2s infinite;
+}
+
+@keyframes badgePulse {
+    0% {
+        box-shadow: 0 0 0 0 rgba(217, 4, 41, 0.7);
+    }
+
+    70% {
+        box-shadow: 0 0 0 6px rgba(217, 4, 41, 0);
+    }
+
+    100% {
+        box-shadow: 0 0 0 0 rgba(217, 4, 41, 0);
+    }
 }
 
 .iconBtn:hover {
@@ -234,3 +269,103 @@
 .toggleSwitch.on .toggleKnob {
     left: 18px;
 }
+/* Notifications Dropdown */
+.notificationDropdown {
+    position: absolute;
+    top: calc(100% + 10px);
+    right: 0;
+    width: 320px;
+    background: rgba(26, 29, 36, 0.95);
+    backdrop-filter: blur(12px);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 12px;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+    z-index: 1000;
+    overflow: hidden;
+    animation: slideDown 0.2s ease-out;
+}
+
+@keyframes slideDown {
+    from {
+        opacity: 0;
+        transform: translateY(-10px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.notificationHeader {
+    padding: 1rem;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.notificationHeader h4 {
+    margin: 0;
+    font-size: 0.9rem;
+    font-weight: 600;
+    color: white;
+}
+
+.notificationList {
+    max-height: 400px;
+    overflow-y: auto;
+}
+
+.notificationItem {
+    padding: 1rem;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+    transition: background 0.2s;
+    cursor: pointer;
+    display: flex;
+    flex-direction: column;
+    gap: 0.25rem;
+}
+
+.notificationItem:hover {
+    background: rgba(255, 255, 255, 0.03);
+}
+
+.notificationTitle {
+    font-size: 0.85rem;
+    font-weight: 600;
+    color: white;
+}
+
+.notificationMsg {
+    font-size: 0.75rem;
+    color: #AAA;
+    line-height: 1.4;
+}
+
+.notificationMeta {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-top: 0.25rem;
+    font-size: 0.65rem;
+}
+
+.severityBadge {
+    padding: 2px 6px;
+    border-radius: 4px;
+    text-transform: uppercase;
+    font-weight: 700;
+}
+
+.timeAgo {
+    color: #666;
+}
+
+.emptyNotifications {
+    padding: 2rem;
+    text-align: center;
+    color: #666;
+    font-size: 0.85rem;
+}
+

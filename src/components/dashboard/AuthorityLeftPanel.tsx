@@ -4,6 +4,8 @@ import { Button } from '../common/Button';
 import type { WardProperties } from '../../types';
 import styles from './AuthorityPanels.module.css';
 import { useAirQuality } from '../../context/AirQualityContext';
+import { AlertModal } from './AlertModal';
+import { Bell } from 'lucide-react';
 
 interface AuthorityLeftPanelProps {
     selectedWard?: WardProperties | null;
@@ -16,6 +18,7 @@ export const AuthorityLeftPanel = ({ selectedWard }: AuthorityLeftPanelProps) =>
         hotspots: true,
         teams: false
     });
+    const [showAlertModal, setShowAlertModal] = useState(false);
 
     const activeCount = complaints.filter(c => c.status !== 'resolved').length;
     const pendingCount = complaints.filter(c => c.status === 'pending').length;
@@ -107,46 +110,8 @@ ${complaints.map((c, i) => `
         URL.revokeObjectURL(url);
     };
 
-    // Send Alert functionality
-    const handleSendAlert = () => {
-        const alertMessage = `
-🚨 AIRPULSE POLLUTION ALERT 🚨
+    // Send Alert functionality is now handled by AlertModal
 
-Ward: ${wardName}
-Active Complaints: ${activeCount}
-Pending: ${pendingCount}
-
-Top Concerns:
-🔴 Garbage Burning - Okhla Phase III
-🟠 Construction Dust - Lajpat Nagar
-
-Action Required: Immediate attention needed.
-Timestamp: ${new Date().toLocaleString()}
-
----
-Sent via AirPulse Authority Dashboard
-`;
-        // Download alert message
-        const blob = new Blob([alertMessage], { type: 'text/plain' });
-        const url = URL.createObjectURL(blob);
-        const a = document.createElement('a');
-        a.href = url;
-        a.download = `AirPulse_Alert_${new Date().toISOString().split('T')[0]}.txt`;
-        a.click();
-        URL.revokeObjectURL(url);
-
-        // Also show a browser notification if supported
-        if ('Notification' in window && Notification.permission === 'granted') {
-            new Notification('AirPulse Alert Sent', {
-                body: `Alert for ${wardName} with ${activeCount} active complaints has been generated.`,
-                icon: '/Mask group.svg'
-            });
-        } else if ('Notification' in window && Notification.permission !== 'denied') {
-            Notification.requestPermission();
-        }
-
-        alert(`✅ Alert generated and downloaded!\n\nWard: ${wardName}\nActive Complaints: ${activeCount}`);
-    };
 
     if (error) return (
         <div className={styles.panelContainer}>
@@ -288,10 +253,12 @@ Sent via AirPulse Authority Dashboard
                 <Button variant="primary" size="sm" className={styles.actionBtn} onClick={handleGenerateReport}>
                     📋 Generate Report
                 </Button>
-                <Button variant="outline" size="sm" className={styles.alertActionBtn} onClick={handleSendAlert}>
-                    📢 Send Alert
+                <Button variant="outline" size="sm" className={styles.alertActionBtn} onClick={() => setShowAlertModal(true)}>
+                    <Bell size={14} /> Send Alert
                 </Button>
             </div>
+
+            <AlertModal isOpen={showAlertModal} onClose={() => setShowAlertModal(false)} />
         </div>
     );
 };

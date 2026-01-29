@@ -51,3 +51,17 @@ export interface Complaint {
     created_at: string;
 }
 
+export interface Alert {
+    id: string;
+    title: string;
+    message: string;
+    wardId: string | 'all'; // 'all' for entire city
+    severity: 'low' | 'medium' | 'high' | 'emergency';
+    category: 'pollution' | 'traffic' | 'health';
+    actionRequired: boolean;
+    recommendedActions: string[];
+    expiresAt: string;
+    createdByAuthorityId: string;
+    createdAt: string;
+}
+

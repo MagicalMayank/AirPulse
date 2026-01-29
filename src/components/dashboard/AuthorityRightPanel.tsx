@@ -3,14 +3,13 @@
  * 
  * FEATURES:
  * - View all complaints in real-time
- * - Filter by status
+ * - Collapsible Stack Design (Top 3)
+ * - View All Drawer for full complaint list
  * - Update complaint status (Pending -> In Progress -> Resolved)
- * 
- * UPDATED: Uses Firestore via AirQualityContext
  */
 
 import { useState } from 'react';
-import { ClipboardList, BarChart3, Users, Bell, CheckCircle, MapPin, Loader2, ExternalLink, Filter } from 'lucide-react';
+import { ClipboardList, BarChart3, Users, Bell, MapPin, Loader2, ExternalLink, Filter, ChevronDown, ChevronUp } from 'lucide-react';
 import styles from './AuthorityPanels.module.css';
 import { useAirQuality } from '../../context/AirQualityContext';
 import type { Complaint } from '../../types';
@@ -58,8 +57,8 @@ export const AuthorityRightPanel = () => {
 const ActionsTab = () => {
     const { complaints, complaintsLoading: loading, complaintsError: error, refreshComplaints, updateComplaintStatus } = useAirQuality();
     const [statusFilter, setStatusFilter] = useState<StatusFilter>('all');
+    const [isExpanded, setIsExpanded] = useState(false);
 
-    // Handle status update
     const handleUpdateStatus = async (id: string, newStatus: 'pending' | 'in_progress' | 'resolved') => {
         await updateComplaintStatus(id, newStatus);
     };
@@ -79,17 +78,12 @@ const ActionsTab = () => {
 
     if (loading) return <div style={{ display: 'flex', justifyContent: 'center', padding: '2rem' }}><Loader2 className={styles.spinner} /></div>;
 
-    // Filter complaints based on status
-    const filteredComplaints = statusFilter === 'all'
-        ? complaints
+    const displayComplaints = statusFilter === 'all'
+        ? complaints.filter(c => c.status !== 'resolved')
         : complaints.filter(c => c.status === statusFilter);
-
-    const pendingComplaints = filteredComplaints.filter(c => c.status !== 'resolved');
-    const recentResolutions = complaints.filter(c => c.status === 'resolved').slice(0, 5);
 
     return (
         <>
-            {/* Status Filter */}
             <div className={styles.filterBar}>
                 <Filter size={14} />
                 <select
@@ -104,50 +98,44 @@ const ActionsTab = () => {
                 </select>
             </div>
 
-            {/* Priority Queue */}
             <div className={styles.card}>
                 <div className={styles.cardHeader}>
-                    <span className={styles.cardTitle}>Live Complaints</span>
-                    <span className={styles.queueCount}>{pendingComplaints.length} active</span>
+                    <span className={styles.cardTitle}>
+                        {statusFilter === 'resolved' ? 'Resolved Reports' : 'Live Complaints'} ({displayComplaints.length})
+                    </span>
                 </div>
                 <div className={styles.actionList}>
-                    {pendingComplaints.length === 0 ? (
-                        <p style={{ color: '#666', fontSize: '0.8rem', textAlign: 'center' }}>No active complaints</p>
+                    {displayComplaints.length === 0 ? (
+                        <p style={{ color: '#666', fontSize: '0.8rem', textAlign: 'center' }}>
+                            No {statusFilter === 'resolved' ? 'resolved' : 'active'} complaints
+                        </p>
                     ) : (
-                        pendingComplaints.map(complaint => (
-                            <ActionItem
-                                key={complaint.id}
-                                complaint={complaint}
-                                onUpdateStatus={handleUpdateStatus}
-                            />
-                        ))
+                        <>
+                            {(isExpanded ? displayComplaints : displayComplaints.slice(0, 3)).map(complaint => (
+                                <ActionItem
+                                    key={complaint.id}
+                                    complaint={complaint}
+                                    onUpdateStatus={handleUpdateStatus}
+                                />
+                            ))}
+
+                            {displayComplaints.length > 3 && (
+                                <button
+                                    className={styles.viewAllBtn}
+                                    onClick={() => setIsExpanded(!isExpanded)}
+                                >
+                                    {isExpanded ? (
+                                        <><ChevronUp size={14} /> Show Less</>
+                                    ) : (
+                                        <><ChevronDown size={14} /> View All ({displayComplaints.length})</>
+                                    )}
+                                </button>
+                            )}
+                        </>
                     )}
                 </div>
             </div>
 
-            {/* Recent Resolutions */}
-            <div className={styles.card}>
-                <div className={styles.cardHeader}>
-                    <span className={styles.cardTitle}>Recent Resolutions</span>
-                    <a href="#" className={styles.viewAllLink}>View All</a>
-                </div>
-                <div className={styles.resolutionList}>
-                    {recentResolutions.length === 0 ? (
-                        <p style={{ color: '#666', fontSize: '0.8rem', textAlign: 'center' }}>No resolutions yet</p>
-                    ) : (
-                        recentResolutions.map(complaint => (
-                            <ResolutionItem
-                                key={complaint.id}
-                                title={complaint.pollution_type}
-                                location={complaint.location_text}
-                                time={new Date(complaint.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
-                            />
-                        ))
-                    )}
-                </div>
-            </div>
-
-            {/* Escalation Alerts */}
             <div className={styles.alertCard}>
                 <div className={styles.alertHeader}>
                     <Bell size={14} color="var(--status-error)" />
@@ -168,7 +156,6 @@ const ActionItem = ({ complaint, onUpdateStatus }: {
     const [isUpdating, setIsUpdating] = useState(false);
     const [showDetails, setShowDetails] = useState(false);
 
-    // Format pollution type for display
     const formatPollutionType = (type: string) => {
         return type.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase());
     };
@@ -211,23 +198,13 @@ const ActionItem = ({ complaint, onUpdateStatus }: {
                     )}
                 </div>
                 <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '0.5rem', marginTop: '0.5rem' }}>
-                    <button
-                        className={styles.viewBtn}
-                        onClick={() => setShowDetails(true)}
-                    >
-                        View
-                    </button>
-                    <button
-                        className={styles.statusUpdateBtn}
-                        onClick={handleClick}
-                        disabled={isUpdating}
-                    >
+                    <button className={styles.viewBtn} onClick={() => setShowDetails(true)}>View</button>
+                    <button className={styles.statusUpdateBtn} onClick={handleClick} disabled={isUpdating}>
                         {isUpdating ? <Loader2 size={12} className={styles.spinner} /> : `Move to ${nextStatusLabel}`}
                     </button>
                 </div>
             </div>
 
-            {/* Detail Modal */}
             {showDetails && (
                 <div className={styles.modalBackdrop} onClick={() => setShowDetails(false)}>
                     <div className={styles.modalContent} onClick={e => e.stopPropagation()}>
@@ -265,11 +242,7 @@ const ActionItem = ({ complaint, onUpdateStatus }: {
                                 <div className={styles.detailRow}>
                                     <span className={styles.detailLabel}>Photo Evidence</span>
                                     <a href={complaint.photo_url} target="_blank" rel="noopener noreferrer">
-                                        <img
-                                            src={complaint.photo_url}
-                                            alt="Evidence"
-                                            style={{ width: '100%', maxWidth: '200px', borderRadius: '8px', marginTop: '0.5rem' }}
-                                        />
+                                        <img src={complaint.photo_url} alt="Evidence" style={{ width: '100%', maxWidth: '200px', borderRadius: '8px', marginTop: '0.5rem' }} />
                                     </a>
                                 </div>
                             )}
@@ -281,30 +254,11 @@ const ActionItem = ({ complaint, onUpdateStatus }: {
     );
 };
 
-const ResolutionItem = ({ title, location, time }: { title: string; location: string; time: string }) => {
-    const formatTitle = (type: string) => {
-        return type.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase());
-    };
-
-    return (
-        <div className={styles.resolutionItem}>
-            <CheckCircle size={16} color="var(--status-success)" />
-            <div className={styles.resolutionContent}>
-                <span className={styles.resolutionTitle}>{formatTitle(title)}</span>
-                <span className={styles.resolutionMeta}>{location} • Resolved at {time}</span>
-            </div>
-        </div>
-    );
-};
-
 const AnalyticsTab = () => {
     const { complaints } = useAirQuality();
-
-    // Calculate stats from complaints
     const totalComplaints = complaints.length;
     const resolvedComplaints = complaints.filter(c => c.status === 'resolved').length;
 
-    // Category breakdown
     const categoryCounts: Record<string, number> = {};
     complaints.forEach(c => {
         const type = c.pollution_type || 'unknown';
@@ -319,7 +273,6 @@ const AnalyticsTab = () => {
 
     return (
         <>
-            {/* Resolution Stats */}
             <div className={styles.card}>
                 <div className={styles.cardHeader}>
                     <span className={styles.cardTitle}>Resolution Stats</span>
@@ -334,7 +287,6 @@ const AnalyticsTab = () => {
                 </div>
             </div>
 
-            {/* Complaints by Category */}
             <div className={styles.card}>
                 <div className={styles.cardHeader}>
                     <span className={styles.cardTitle}>Complaints by Source</span>
@@ -375,7 +327,6 @@ const CategoryBar = ({ label, value, color }: { label: string; value: number; co
 
 const TeamsTab = () => (
     <>
-        {/* Team Overview */}
         <div className={styles.teamOverview}>
             <div className={styles.teamStat}>
                 <span className={styles.teamStatValue}>8</span>
@@ -391,7 +342,6 @@ const TeamsTab = () => (
             </div>
         </div>
 
-        {/* Active Deployments */}
         <div className={styles.card}>
             <div className={styles.cardHeader}>
                 <span className={styles.cardTitle}>Active Deployments</span>
