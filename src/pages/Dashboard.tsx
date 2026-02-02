@@ -43,9 +43,6 @@ export const Dashboard = () => {
         }
     }, [userRole]);
 
-    // The role used for rendering components
-    const role = activeRole;
-
     // Show auth modal if not authenticated
     useEffect(() => {
         if (!loading && !isAuthenticated) {
