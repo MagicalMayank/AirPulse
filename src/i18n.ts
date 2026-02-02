@@ -1,0 +1,147 @@
+import i18n from 'i18next';
+import { initReactI18next } from 'react-i18next';
+import LanguageDetector from 'i18next-browser-languagedetector';
+
+const resources = {
+    en: {
+        translation: {
+            "mode_citizen": "Citizen Mode",
+            "mode_authority": "Authority Mode",
+            "mode_analyst": "Analyst Mode",
+            "nav_location": "Delhi, NCR",
+            "nav_advanced": "Advanced",
+            "nav_notifications": "Notifications",
+            "recent_alerts": "Recent Alerts",
+            "no_alerts": "No active alerts for your area.",
+            "profile_title": "User Profile",
+            "profile_name": "Name",
+            "profile_email": "Email",
+            "profile_role": "Role",
+            "profile_language": "Preferred Language",
+            "profile_theme": "Theme",
+            "profile_notifications": "Email Notifications",
+            "profile_save": "Save Changes",
+            "stats_raised": "Complaints Raised",
+            "stats_resolved": "Complaints Resolved",
+            "stats_impact": "PulseCoin Balance",
+            "settings": "Settings",
+            "logout": "Logout",
+            "theme_light": "Light",
+            "theme_dark": "Dark",
+            "theme_system": "System",
+            "lang_en": "English",
+            "lang_hi": "Hindi",
+            "lang_bn": "Bengali",
+            "lang_ta": "Tamil",
+        }
+    },
+    hi: {
+        translation: {
+            "mode_citizen": "नागरिक मोड",
+            "mode_authority": "प्रशासन मोड",
+            "mode_analyst": "विशेषज्ञ मोड",
+            "nav_location": "दिल्ली, एनसीआर",
+            "nav_advanced": "उन्नत डैशबोर्ड",
+            "nav_notifications": "सूचनाएं",
+            "recent_alerts": "ताज़ा अलर्ट",
+            "no_alerts": "आपके क्षेत्र में कोई सक्रिय अलर्ट नहीं है।",
+            "profile_title": "उपयोगकर्ता प्रोफ़ाइल",
+            "profile_name": "पूरा नाम",
+            "profile_email": "ईमेल पता",
+            "profile_role": "भूमिका / पद",
+            "profile_language": "पसंद की भाषा",
+            "profile_theme": "डैशबोर्ड थीम",
+            "profile_notifications": "ईमेल सूचनाएं",
+            "profile_save": "सेटिंग्स सेव करें",
+            "stats_raised": "उठाई गई शिकायतें",
+            "stats_resolved": "समाधान की गई शिकायतें",
+            "stats_impact": "पल्सकॉइन बैलेंस",
+            "settings": "सेटिंग्स",
+            "logout": "लॉगआउट",
+            "theme_light": "लाइट मोड",
+            "theme_dark": "डार्क मोड",
+            "theme_system": "सिस्टम के अनुसार",
+            "lang_en": "English",
+            "lang_hi": "हिन्दी",
+            "lang_bn": "বাংলা",
+            "lang_ta": "தமிழ்",
+        }
+    },
+    bn: {
+        translation: {
+            "mode_citizen": "নাগরিক মোড",
+            "mode_authority": "কর্তৃপক্ষ মোড",
+            "mode_analyst": "বিশ্লেষক মোড",
+            "nav_location": "দিল্লি, এনসিआर",
+            "nav_advanced": "উন্নত ড্যাশবোর্ড",
+            "nav_notifications": "বিজ্ঞপ্তি",
+            "recent_alerts": "সাম্প্রতিক সতর্কতা",
+            "no_alerts": "আপনার এলাকায় কোনো সক্রিয় সতর্কতা নেই।",
+            "profile_title": "ইউজার প্রোফাইল",
+            "profile_name": "পুরো নাম",
+            "profile_email": "ইমেল আইডি",
+            "profile_role": "পদমর্যাদা",
+            "profile_language": "পছন্দের ভাষা",
+            "profile_theme": "থিম সেটিংস",
+            "profile_notifications": "ইমেল বিজ্ঞপ্তি",
+            "profile_save": "পরিবর্তন সেভ করুন",
+            "stats_raised": "দাখিল করা অভিযোগ",
+            "stats_resolved": "সমাধান করা অভিযোগ",
+            "stats_impact": "পালসকয়েন ব্যালেন্স",
+            "settings": "সেটিংস",
+            "logout": "লগআউট",
+            "theme_light": "লাইট মোড",
+            "theme_dark": "ডার্ক মোড",
+            "theme_system": "সিস্টেম অনুযায়ী",
+            "lang_en": "English",
+            "lang_hi": "हिन्दी",
+            "lang_bn": "বাংলা",
+            "lang_ta": "தமிழ்",
+        }
+    },
+    ta: {
+        translation: {
+            "mode_citizen": "குடிமகன் பயன்முறை",
+            "mode_authority": "அதிகார பயன்முறை",
+            "mode_analyst": "பகுப்பாய்வாளர் பயன்முறை",
+            "nav_location": "டெல்லி, என்சிஆர்",
+            "nav_advanced": "மேம்பட்ட",
+            "nav_notifications": "அறிவிப்புகள்",
+            "recent_alerts": "சமீபத்திய எச்சரிக்கைகள்",
+            "no_alerts": "உங்கள் பகுதிக்கு செயலில் உள்ள எச்சரிக்கைகள் இல்லை.",
+            "profile_title": "பயனர் சுயவிவரம்",
+            "profile_name": "பெயர்",
+            "profile_email": "மின்னஞ்சல்",
+            "profile_role": "பங்கு",
+            "profile_language": "விருப்பமான மொழி",
+            "profile_theme": "தீம்",
+            "profile_notifications": "மின்னஞ்சல் அறிவிப்புகள்",
+            "profile_save": "மாற்றங்களைச் சேமி",
+            "stats_raised": "எழுப்பப்பட்ட புகார்கள்",
+            "stats_resolved": "தீர்க்கப்பட்ட புகார்கள்",
+            "stats_impact": "பல்ஸ்காயின் இருப்பு",
+            "settings": "அமைப்புகள்",
+            "logout": "வெளியேறு",
+            "theme_light": "ஒளி",
+            "theme_dark": "இருண்ட",
+            "theme_system": "கணினி",
+            "lang_en": "ஆங்கிலம்",
+            "lang_hi": "இந்தி",
+            "lang_bn": "பெங்காலி",
+            "lang_ta": "தமிழ்",
+        }
+    }
+};
+
+i18n
+    .use(LanguageDetector)
+    .use(initReactI18next)
+    .init({
+        resources,
+        fallbackLng: 'en',
+        interpolation: {
+            escapeValue: false,
+        },
+    });
+
+export default i18n;

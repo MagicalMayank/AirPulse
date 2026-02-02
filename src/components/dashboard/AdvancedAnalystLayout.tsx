@@ -3,6 +3,7 @@ import { Search, ChevronDown, ChevronUp, Layers, Filter, Sliders } from 'lucide-
 import { AnalysisCanvas } from './AnalysisCanvas';
 import { InteractiveMap } from './InteractiveMap';
 import type { WardProperties } from '../../types';
+import { useAirQuality } from '../../context/AirQualityContext';
 import styles from './AdvancedAnalystLayout.module.css';
 
 interface AdvancedAnalystLayoutProps {
@@ -12,6 +13,7 @@ interface AdvancedAnalystLayoutProps {
 }
 
 export const AdvancedAnalystLayout = ({ selectedWard, onWardSelect, onExitAdvanced }: AdvancedAnalystLayoutProps) => {
+    const { selectedCity } = useAirQuality();
     const [pollutants, setPollutants] = useState({
         pm25: true,
         pm10: true,
@@ -85,7 +87,7 @@ export const AdvancedAnalystLayout = ({ selectedWard, onWardSelect, onExitAdvanc
                     <div className={styles.mapHeader}>
                         <span className={styles.mapLabel}>Spatial Context</span>
                         <span className={styles.wardInfo}>
-                            {selectedWard ? `Ward ${selectedWard.Ward_No}` : 'All Wards'}
+                            {selectedWard ? `Ward ${selectedWard[selectedCity.wardIdProp]}` : 'All Wards'}
                         </span>
                     </div>
                     <div className={styles.mapWrapper}>
@@ -97,7 +99,7 @@ export const AdvancedAnalystLayout = ({ selectedWard, onWardSelect, onExitAdvanc
                 <div className={styles.canvasArea}>
                     <AnalysisCanvas
                         onClose={onExitAdvanced}
-                        selectedWard={selectedWard?.Ward_Name || 'Connaught Place'}
+                        selectedWard={selectedWard?.[selectedCity.wardNameProp] || 'Select Location'}
                     />
                 </div>
             </div>

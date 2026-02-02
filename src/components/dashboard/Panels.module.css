@@ -6,9 +6,10 @@
 
 .searchBox {
     position: relative;
-    background: #1F2229;
+    background: var(--bg-element);
+    z-index: 1;
     border-radius: 8px;
-    border: 1px solid #333;
+    border: 1px solid var(--border-color);
 }
 
 .searchIcon {
@@ -24,7 +25,7 @@
     background: transparent;
     border: none;
     padding: 0.75rem 0.75rem 0.75rem 2.5rem;
-    color: white;
+    color: var(--text-primary);
     font-family: var(--font-main);
 }
 
@@ -36,14 +37,14 @@
 .timeFilter {
     display: flex;
     gap: 0.25rem;
-    background: #1F2229;
+    background: var(--bg-element);
     padding: 4px;
     border-radius: 8px;
 }
 
 .timeBtn {
     flex: 1;
-    background: transparent;
+    background: var(--bg-surface-hover);
     border: none;
     color: #888;
     padding: 0.5rem 0.75rem;
@@ -55,8 +56,8 @@
 }
 
 .timeBtn:hover {
-    background: rgba(255, 255, 255, 0.05);
-    color: #CCC;
+    background: var(--bg-surface-hover);
+    color: var(--text-primary);
 }
 
 .timeBtnActive {
@@ -71,14 +72,15 @@
 
 /* Base Card (Panel specific override) */
 .card {
-    background: #1F2229;
+    background: var(--bg-card);
     border-radius: 12px;
     padding: 1rem;
-    border: 1px solid rgba(255, 255, 255, 0.05);
+    border: 1px solid var(--border-color);
+    box-shadow: var(--card-shadow);
 }
 
 .aqiCard {
-    background: linear-gradient(135deg, #2D1B36 0%, #1F2229 100%);
+    background: var(--aqi-card-bg);
     border-left: 4px solid var(--aqi-very-poor);
 }
 
@@ -100,12 +102,12 @@
     font-size: 4rem;
     font-weight: 800;
     line-height: 1;
-    color: #FFFFFF;
+    color: var(--aqi-number-color);
     margin: 0.5rem 0;
 }
 
 .aqiSub {
-    color: #CCCCCC;
+    color: var(--text-secondary);
     font-size: 0.85rem;
     margin-bottom: 0.25rem;
 }
@@ -118,13 +120,13 @@
 
 .progressBar {
     height: 6px;
-    background: rgba(255, 255, 255, 0.1);
+    background: var(--bg-surface-hover);
     border-radius: 3px;
     overflow: hidden;
 }
 
 .sectionHeader {
-    color: #AAAAAA;
+    color: var(--text-secondary);
     font-size: 0.75rem;
     font-weight: 700;
     letter-spacing: 0.08em;
@@ -140,17 +142,21 @@
 }
 
 .pollutantCard {
-    background: #252830;
-    padding: 0.75rem;
-    border-radius: 8px;
+    background: var(--bg-element);
+    border-radius: 12px;
+    padding: 1rem;
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+    border: 1px solid var(--border-subtle);
 }
 
 /* Pollutant Item Styles */
 .pollutantItem {
-    background: #252830;
+    background: var(--bg-element);
     padding: 0.75rem 1rem;
     border-radius: 10px;
-    border: 1px solid rgba(255, 255, 255, 0.05);
+    border: 1px solid var(--border-color);
 }
 
 .pHeader {
@@ -161,7 +167,7 @@
 }
 
 .pName {
-    color: #CCCCCC;
+    color: var(--text-secondary);
     font-size: 0.8rem;
     font-weight: 500;
 }
@@ -202,7 +208,7 @@
     display: flex;
     justify-content: space-between;
     align-items: center;
-    color: #aaa;
+    color: var(--text-secondary);
     font-size: 0.75rem;
     margin-bottom: 4px;
 }
@@ -216,7 +222,7 @@
 .polValue {
     font-size: 1.25rem;
     font-weight: 700;
-    color: white;
+    color: var(--text-primary);
 }
 
 .polMeta {
@@ -225,13 +231,13 @@
 }
 
 .healthCard {
-    background: rgba(106, 0, 244, 0.15);
-    border: 1px solid rgba(106, 0, 244, 0.3);
+    background: var(--bg-health-advisory);
+    border: 1px solid var(--border-color);
     border-left: 4px solid var(--brand-primary);
 }
 
 .cardTitle {
-    color: #FFFFFF;
+    color: var(--text-primary);
     font-weight: 600;
     margin-bottom: 0.75rem;
     font-size: 0.85rem;
@@ -245,18 +251,19 @@
 }
 
 .healthHeader {
-    color: #E0E0FF;
+    color: var(--text-primary);
     font-weight: 600;
     margin-bottom: 0.5rem;
     font-size: 0.9rem;
 }
 
 .healthText {
-    color: #CCCCCC;
+    color: var(--text-secondary);
     font-size: 0.8rem;
     line-height: 1.4;
 }
 
+/* Health Advisory List */
 .healthList {
     list-style: none;
     padding: 0;
@@ -264,7 +271,7 @@
 }
 
 .healthList li {
-    color: #CCCCCC;
+    color: var(--text-secondary);
     font-size: 0.8rem;
     line-height: 1.6;
     padding-left: 1rem;
@@ -281,7 +288,7 @@
 /* Right Panel */
 .tabs {
     display: flex;
-    border-bottom: 1px solid #333;
+    border-bottom: 1px solid var(--border-color);
     margin-bottom: 0.5rem;
 }
 
@@ -296,7 +303,7 @@
 }
 
 .activeTab {
-    color: white;
+    color: var(--text-primary);
     border-bottom-color: var(--brand-primary);
 }
 
@@ -336,7 +343,7 @@
 }
 
 .sentimentItem {
-    background: #1F2229;
+    background: var(--bg-sentiment);
     border-left: 3px solid #555;
     padding: 0.75rem;
     border-radius: 0 8px 8px 0;
@@ -360,7 +367,7 @@
 }
 
 .sentText {
-    color: #bbb;
+    color: var(--text-secondary);
     font-size: 0.8rem;
     line-height: 1.3;
 }
@@ -392,7 +399,7 @@
 }
 
 .reportIcon {
-    background: #333;
+    background: var(--bg-surface-hover);
     padding: 0.5rem;
     border-radius: 8px;
     color: #ccc;
@@ -403,7 +410,7 @@
 }
 
 .reportTitle {
-    color: white;
+    color: var(--text-primary);
     font-size: 0.85rem;
     font-weight: 600;
 }
@@ -426,13 +433,14 @@
     top: 100%;
     left: 0;
     right: 0;
-    background: #1F2229;
-    border: 1px solid #333;
+    right: 0;
+    background: var(--bg-element);
+    border: 1px solid var(--border-color);
     border-top: none;
     border-radius: 0 0 8px 8px;
     max-height: 200px;
     overflow-y: auto;
-    z-index: 100;
+    z-index: 10;
 }
 
 .searchResultItem {
@@ -442,15 +450,15 @@
     padding: 0.75rem 1rem;
     background: none;
     border: none;
-    color: #CCC;
+    color: var(--text-secondary);
     font-size: 0.85rem;
     cursor: pointer;
     transition: background 0.2s;
 }
 
 .searchResultItem:hover {
-    background: rgba(255, 255, 255, 0.05);
-    color: white;
+    background: var(--bg-surface-hover);
+    color: var(--text-primary);
 }
 
 /* Loading Indicator */
@@ -499,7 +507,7 @@
 /* Last Updated Small */
 .lastUpdatedSmall {
     font-size: 0.65rem;
-    color: #555;
+    color: var(--text-secondary);
     margin-top: 0.5rem;
 }
 

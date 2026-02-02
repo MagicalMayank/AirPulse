@@ -115,10 +115,10 @@ ${complaints.map((c, i) => `
 
     if (error) return (
         <div className={styles.panelContainer}>
-            <div style={{ textAlign: 'center', padding: '2rem', color: '#ff6b6b' }}>
+            <div style={{ textAlign: 'center', padding: '2rem', color: 'var(--status-error)' }}>
                 <AlertCircle size={32} style={{ marginBottom: '0.5rem' }} />
                 <p style={{ fontSize: '0.85rem' }}>Failed to load complaints</p>
-                <p style={{ fontSize: '0.7rem', color: '#888' }}>{error}</p>
+                <p style={{ fontSize: '0.7rem', color: 'var(--text-secondary)' }}>{error}</p>
                 <Button
                     variant="outline"
                     size="sm"

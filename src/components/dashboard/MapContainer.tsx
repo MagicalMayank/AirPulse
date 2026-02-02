@@ -4,13 +4,14 @@
  * UPDATED: Uses Cloudinary for image uploads and Firestore for complaints
  */
 
-import { useState, useRef } from 'react';
+import { useState, useRef, useEffect } from 'react';
 import { Plus, Minus, Crosshair, Camera, X, MapPin, Send, Loader2 } from 'lucide-react';
 import { Button } from '../common/Button';
 import { InteractiveMap, type InteractiveMapHandle } from './InteractiveMap';
 import type { WardProperties } from '../../types';
 import styles from './MapContainer.module.css';
 import { useAuth } from '../../context/AuthContext';
+import { useAirQuality } from '../../context/AirQualityContext';
 import { uploadToCloudinary } from '../../services/cloudinary';
 import { createComplaint } from '../../services/complaints';
 
@@ -22,7 +23,15 @@ interface MapContainerProps {
 export const MapContainer = ({ onWardSelect, role = 'citizen' }: MapContainerProps) => {
     const [showReportModal, setShowReportModal] = useState(false);
     const { user, isAuthenticated } = useAuth();
+    const { selectedCity } = useAirQuality();
     const mapRef = useRef<InteractiveMapHandle>(null);
+
+    // Fly to city center when selectedCity changes
+    useEffect(() => {
+        if (mapRef.current) {
+            mapRef.current.flyTo(selectedCity.center, selectedCity.zoom);
+        }
+    }, [selectedCity]);
 
     const handleZoomIn = () => mapRef.current?.zoomIn();
     const handleZoomOut = () => mapRef.current?.zoomOut();
@@ -52,7 +61,7 @@ export const MapContainer = ({ onWardSelect, role = 'citizen' }: MapContainerPro
                         <Minus size={20} />
                     </button>
                     <div className={styles.spacer}></div>
-                    <button className={styles.controlBtn} title="Locate Me">
+                    <button className={styles.controlBtn} title="Locate Me" onClick={() => mapRef.current?.locate()}>
                         <Crosshair size={20} />
                     </button>
                 </div>
@@ -201,6 +210,7 @@ const ReportPollutionModal = ({ onClose }: { onClose: () => void }) => {
             setUploadProgress('Saving report...');
             await createComplaint({
                 userId: user.uid,
+                userEmail: user.email || undefined,
                 wardName: ward,
                 pollutionType: pollutionType,
                 description: description,

@@ -12,7 +12,7 @@ interface AnalysisCanvasProps {
     selectedWard?: string;
 }
 
-export const AnalysisCanvas = ({ onClose, selectedWard = 'Connaught Place' }: AnalysisCanvasProps) => {
+export const AnalysisCanvas = ({ onClose, selectedWard = 'Select Ward' }: AnalysisCanvasProps) => {
     const [activeTab, setActiveTab] = useState<TabType>('source');
     const [isFocusMode, setIsFocusMode] = useState(false);
 
@@ -76,7 +76,7 @@ export const AnalysisCanvas = ({ onClose, selectedWard = 'Connaught Place' }: An
                 {activeTab === 'correlation' && <CorrelationExplorerTab />}
                 {activeTab === 'seasonality' && <SeasonalityAnomalyTab />}
                 {activeTab === 'spillover' && <SpatialSpilloverTab />}
-                {activeTab === 'explain' && <WhyThisSpikeTab />}
+                {activeTab === 'explain' && <WhyThisSpikeTab selectedWard={selectedWard} />}
             </div>
         </div>
     );
@@ -330,7 +330,7 @@ const SpatialSpilloverTab = () => (
 );
 
 /* Tab 5: Why This Spike? */
-const WhyThisSpikeTab = () => (
+const WhyThisSpikeTab = ({ selectedWard }: { selectedWard: string }) => (
     <div className={styles.tabContent}>
         <div className={styles.explainPanel}>
             <div className={styles.aiHeader}>
@@ -342,7 +342,7 @@ const WhyThisSpikeTab = () => (
             <div className={styles.reportSection}>
                 <h3>📊 Executive Summary</h3>
                 <p>
-                    The current PM2.5 spike of <strong>285 µg/m³</strong> in Connaught Place represents a
+                    The current PM2.5 spike of <strong>285 µg/m³</strong> in {selectedWard} represents a
                     <strong style={{ color: 'var(--status-error)' }}> 62% deviation</strong> from the seasonal
                     baseline. This event is classified as a <strong>high-severity local emission episode</strong>.
                 </p>

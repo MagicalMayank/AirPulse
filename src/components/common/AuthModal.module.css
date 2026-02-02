@@ -25,7 +25,7 @@
 }
 
 .activeRole {
-    background: #6366f1;
+    background: linear-gradient(135deg, var(--primary-purple), var(--accent-pink));
     color: #fff;
     box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
 }
@@ -73,7 +73,7 @@
 
 .submitBtn {
     padding: 1rem;
-    background: #6366f1;
+    background: linear-gradient(135deg, var(--primary-purple), var(--accent-pink));
     color: #fff;
     border: none;
     border-radius: 12px;
@@ -87,7 +87,8 @@
 }
 
 .submitBtn:hover:not(:disabled) {
-    background: #4f46e5;
+    transform: translateY(-2px);
+    box-shadow: 0 10px 25px rgba(99, 102, 241, 0.4);
 }
 
 .submitBtn:disabled {

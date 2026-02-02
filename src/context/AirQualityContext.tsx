@@ -12,6 +12,7 @@ import type { PollutantData } from '../utils/aqiCalculator';
 import type { Complaint, Alert } from '../types';
 import { getComplaints, subscribeToComplaints, updateComplaintStatus } from '../services/complaints';
 import { createAlert, subscribeToAlerts } from '../services/alerts';
+import { CITIES, type CityConfig, DEFAULT_CITY } from '../config/cities';
 
 // Filter state types
 export interface PollutantFilters {
@@ -62,6 +63,9 @@ export interface AirQualityState {
 
     // Selected ward for panels
     selectedWardId: number | string | null;
+
+    // Multi-city support
+    selectedCity: CityConfig;
 }
 
 // Context actions type
@@ -81,8 +85,9 @@ export interface AirQualityActions {
 
     // Complaint actions
     refreshComplaints: () => Promise<void>;
-    updateComplaintStatus: (id: string, status: 'pending' | 'in_progress' | 'resolved') => Promise<void>;
+    updateComplaintStatus: (id: string, status: 'pending' | 'in_progress' | 'resolved' | 'invalid') => Promise<void>;
     sendAlert: (data: any) => Promise<string>;
+    setCity: (cityId: string) => void;
 
     // Helpers
     getWardAQI: (wardId: string | number) => WardAQIData | undefined;
@@ -135,6 +140,7 @@ export function AirQualityProvider({ children }: { children: ReactNode }) {
     const [isStale, setIsStale] = useState(false);
     const [filters, setFilters] = useState<AirQualityFilters>(defaultFilters);
     const [selectedWardId, setSelectedWardId] = useState<number | string | null>(null);
+    const [selectedCity, setSelectedCity] = useState<CityConfig>(DEFAULT_CITY);
     const stationsRef = useRef<StationData[]>([]);
 
     // Update ref when stations change
@@ -161,7 +167,7 @@ export function AirQualityProvider({ children }: { children: ReactNode }) {
     }, []);
 
     // Update complaint status
-    const handleUpdateComplaintStatus = useCallback(async (id: string, status: 'pending' | 'in_progress' | 'resolved') => {
+    const handleUpdateComplaintStatus = useCallback(async (id: string, status: 'pending' | 'in_progress' | 'resolved' | 'invalid') => {
         try {
             await updateComplaintStatus(id, status);
             // Real-time subscription will auto-refresh
@@ -179,14 +185,14 @@ export function AirQualityProvider({ children }: { children: ReactNode }) {
         setError(null);
 
         try {
-            const stationData = await getAirQualityData();
+            const stationData = await getAirQualityData(selectedCity.bounds);
             setStations(stationData);
             setLastUpdated(new Date());
             setIsStale(false); // Fresh data
 
             // If we have geo data, update ward mapping
             if (geoData) {
-                const mapping = mapWardsToAQI(geoData, stationData);
+                const mapping = mapWardsToAQI(geoData, stationData, selectedCity);
                 setWardData(mapping);
             }
         } catch (err) {
@@ -205,7 +211,7 @@ export function AirQualityProvider({ children }: { children: ReactNode }) {
         } finally {
             setLoading(false);
         }
-    }, [geoData]);
+    }, [selectedCity]);
 
     // Initial fetch and real-time subscription
     useEffect(() => {
@@ -236,13 +242,30 @@ export function AirQualityProvider({ children }: { children: ReactNode }) {
         };
     }, [fetchData]);
 
+    // Fetch GeoJSON when city changes
+    useEffect(() => {
+        const fetchGeoData = async () => {
+            try {
+                const response = await fetch(selectedCity.geoJsonPath);
+                if (!response.ok) throw new Error(`Failed to fetch GeoJSON from ${selectedCity.geoJsonPath}`);
+                const data = await response.json();
+                setGeoData(data);
+                console.log(`[AirQualityContext] Loaded GeoJSON for ${selectedCity.name}`);
+            } catch (err) {
+                console.error('[AirQualityContext] GeoJSON fetch error:', err);
+            }
+        };
+
+        fetchGeoData();
+    }, [selectedCity]);
+
     // Update ward mapping when geoData or stations change
     useEffect(() => {
         if (geoData && stations.length > 0) {
-            const mapping = mapWardsToAQI(geoData, stations);
+            const mapping = mapWardsToAQI(geoData, stations, selectedCity);
             setWardData(mapping);
         }
-    }, [geoData, stations]);
+    }, [geoData, stations, selectedCity]);
 
     // Periodic refresh (background, with graceful fallback)
     useEffect(() => {
@@ -280,6 +303,14 @@ export function AirQualityProvider({ children }: { children: ReactNode }) {
 
     const setSearchQuery = useCallback((query: string) => {
         setFilters(prev => ({ ...prev, searchQuery: query }));
+    }, []);
+
+    const setCity = useCallback((cityId: string) => {
+        const city = CITIES[cityId];
+        if (city) {
+            setSelectedCity(city);
+            setSelectedWardId(null); // Clear selection when switching cities
+        }
     }, []);
 
     const selectWard = useCallback(async (wardId: number | string | null) => {
@@ -361,6 +392,7 @@ export function AirQualityProvider({ children }: { children: ReactNode }) {
         isStale,
         filters,
         selectedWardId,
+        selectedCity,
 
         // Actions
         refetch,
@@ -370,6 +402,7 @@ export function AirQualityProvider({ children }: { children: ReactNode }) {
         setLayerFilter,
         setSearchQuery,
         selectWard,
+        setCity,
         refreshComplaints: fetchComplaints,
         updateComplaintStatus: handleUpdateComplaintStatus,
         sendAlert: handleSendAlert,

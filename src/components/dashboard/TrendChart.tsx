@@ -62,9 +62,9 @@ export const TrendChart: React.FC<TrendChartProps> = ({
     return (
         <svg viewBox={`0 0 300 ${height}`} className={`${styles.trendChart} ${className || ''}`} preserveAspectRatio="none">
             {/* Grid lines */}
-            <line x1="0" y1={height * 0.25} x2="300" y2={height * 0.25} stroke="rgba(255,255,255,0.1)" strokeDasharray="4 4" />
-            <line x1="0" y1={height * 0.5} x2="300" y2={height * 0.5} stroke="rgba(255,255,255,0.1)" strokeDasharray="4 4" />
-            <line x1="0" y1={height * 0.75} x2="300" y2={height * 0.75} stroke="rgba(255,255,255,0.1)" strokeDasharray="4 4" />
+            <line x1="0" y1={height * 0.25} x2="300" y2={height * 0.25} stroke="var(--grid-line)" strokeOpacity="0.5" strokeDasharray="4 4" />
+            <line x1="0" y1={height * 0.5} x2="300" y2={height * 0.5} stroke="var(--grid-line)" strokeOpacity="0.5" strokeDasharray="4 4" />
+            <line x1="0" y1={height * 0.75} x2="300" y2={height * 0.75} stroke="var(--grid-line)" strokeOpacity="0.5" strokeDasharray="4 4" />
 
             {/* Definitions for gradient */}
             <defs>

@@ -23,6 +23,7 @@ const COLLECTION_NAME = 'complaints';
 
 export interface CreateComplaintData {
     userId: string;
+    userEmail?: string; // Added field
     pollutionType: string;
     description: string;
     location: string;
@@ -40,6 +41,7 @@ export async function createComplaint(data: CreateComplaintData): Promise<string
 
     const docRef = await addDoc(collection(db, COLLECTION_NAME), {
         userId: data.userId,
+        userEmail: data.userEmail || null, // Store email
         pollutionType: data.pollutionType,
         description: data.description,
         location: data.location,
@@ -74,6 +76,7 @@ export async function getComplaints(): Promise<Complaint[]> {
         complaints.push({
             id: doc.id,
             user_id: data.userId,
+            user_email: data.userEmail, // Map from Firestore
             pollution_type: data.pollutionType,
             description: data.description,
             location_text: data.location,
@@ -96,7 +99,7 @@ export async function getComplaints(): Promise<Complaint[]> {
  */
 export async function updateComplaintStatus(
     complaintId: string,
-    status: 'pending' | 'in_progress' | 'resolved'
+    status: 'pending' | 'in_progress' | 'resolved' | 'invalid'
 ): Promise<void> {
     console.log('[ComplaintsService] Updating status:', complaintId, '->', status);
 
@@ -127,6 +130,7 @@ export function subscribeToComplaints(
             complaints.push({
                 id: doc.id,
                 user_id: data.userId,
+                user_email: data.userEmail, // Map from Firestore
                 pollution_type: data.pollutionType,
                 description: data.description,
                 location_text: data.location,

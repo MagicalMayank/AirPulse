@@ -6,6 +6,7 @@
 import * as turf from '@turf/turf';
 import type { StationData } from '../services/aqiService';
 import { calculateAQI, getAQIStatus, getAQIStatusColor, type AQIResult, type PollutantData } from './aqiCalculator';
+import type { CityConfig } from '../config/cities';
 
 export interface WardAQIData {
     wardId: string | number;
@@ -135,9 +136,10 @@ function aggregatePollutants(
  */
 export function mapWardsToAQI(
     geoData: GeoJSON.FeatureCollection,
-    stations: StationData[]
-): Map<string, WardAQIData> {
-    const wardAQIMap = new Map<string, WardAQIData>();
+    stations: StationData[],
+    city: CityConfig
+): Map<string | number, WardAQIData> {
+    const wardAQIMap = new Map<string | number, WardAQIData>();
 
     if (!geoData?.features || stations.length === 0) {
         return wardAQIMap;
@@ -145,18 +147,19 @@ export function mapWardsToAQI(
 
     // First pass: process all wards with direct sensor data
     for (const feature of geoData.features) {
-        let wardId = feature.properties?.Ward_No || feature.properties?.FID;
+        let wardId = feature.properties?.[city.wardIdProp];
 
         // Special case for Yamuna River (null properties in GeoJSON)
-        if (wardId === undefined || wardId === null) {
+        if ((wardId === undefined || wardId === null) && city.id === 'delhi') {
             wardId = 'YAMUNA_RIVER';
         }
 
-        if (wardId === undefined) continue;
+        if (wardId === undefined || wardId === null) continue;
 
         // Wards that must use neighbor averaging (don't have reliable nearby stations)
         // These are skipped in first pass and processed in second pass with explicit neighbors
-        const wardsNeedingNeighborAvg = ['176', '139']; // Bhati, Dichaon Kalan
+        // (Currently only for Delhi)
+        const wardsNeedingNeighborAvg = city.id === 'delhi' ? ['176', '139'] : [];
         if (wardsNeedingNeighborAvg.includes(String(wardId))) {
             continue; // Skip to second pass for neighbor averaging
         }
@@ -168,7 +171,7 @@ export function mapWardsToAQI(
         const [lat, lng] = centroid;
 
         // Get ward name for smart station matching
-        const wardName = feature.properties?.Ward_Name || '';
+        const wardName = feature.properties?.[city.wardNameProp] || '';
 
         // Find nearby stations (prioritizes stations whose name matches the ward name)
         const nearbyStations = findNearbyStations(lat, lng, stations, 25, wardName);
@@ -215,10 +218,10 @@ export function mapWardsToAQI(
     }
 
     // Second pass: handle wards with no data (silent wards)
-    const silentWards: string[] = [];
+    const silentWards: (string | number)[] = [];
     geoData.features.forEach(feature => {
-        const wardId = feature.properties?.Ward_No || feature.properties?.FID;
-        if (wardId !== undefined && !wardAQIMap.has(wardId)) {
+        const wardId = feature.properties?.[city.wardIdProp];
+        if (wardId !== undefined && wardId !== null && !wardAQIMap.has(wardId)) {
             silentWards.push(wardId);
         }
     });
@@ -226,14 +229,14 @@ export function mapWardsToAQI(
     if (silentWards.length > 0) {
         // Collect centroids for all wards with data for distance calculation
         const wardsWithData = Array.from(wardAQIMap.entries()).map(([id, data]) => {
-            const feature = geoData.features.find(f => (f.properties?.Ward_No || f.properties?.FID) === id);
+            const feature = geoData.features.find(f => f.properties?.[city.wardIdProp] === id);
             return { id, data, centroid: feature ? getPolygonCentroid(feature) : null };
         }).filter(w => w.centroid !== null);
 
         for (const silentId of silentWards) {
             const feature = geoData.features.find(f => {
-                const id = f.properties?.Ward_No || f.properties?.FID;
-                return (id === silentId) || (silentId === 'YAMUNA_RIVER' && (id === undefined || id === null));
+                const id = f.properties?.[city.wardIdProp];
+                return (id === silentId) || (silentId === 'YAMUNA_RIVER' && (id === undefined || id === null) && city.id === 'delhi');
             });
             const centroid = feature ? getPolygonCentroid(feature) : null;
 

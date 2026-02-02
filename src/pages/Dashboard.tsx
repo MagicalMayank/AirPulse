@@ -21,21 +21,12 @@ import { AnalystRightPanel } from '../components/dashboard/AnalystRightPanel';
 import { AuthorityLeftPanel } from '../components/dashboard/AuthorityLeftPanel';
 import { AuthorityRightPanel } from '../components/dashboard/AuthorityRightPanel';
 import { AdvancedAnalystLayout } from '../components/dashboard/AdvancedAnalystLayout';
-import { AirQualityProvider } from '../context/AirQualityContext';
 import { useAuth } from '../context/AuthContext';
 import { AuthModal } from '../components/common/AuthModal';
 import type { WardProperties } from '../types';
 import { Loader2 } from 'lucide-react';
 
 export const Dashboard = () => {
-    return (
-        <AirQualityProvider>
-            <DashboardContent />
-        </AirQualityProvider>
-    );
-};
-
-const DashboardContent = () => {
     const { userRole, loading, isAuthenticated } = useAuth();
     const navigate = useNavigate();
     const [selectedWard, setSelectedWard] = useState<WardProperties | null>(null);

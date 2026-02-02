@@ -4,6 +4,7 @@ import type { Map as LeafletMap } from 'leaflet';
 import L from 'leaflet';
 import 'leaflet/dist/leaflet.css';
 import { useAirQuality } from '../../context/AirQualityContext';
+import { useAuth } from '../../context/AuthContext';
 import { getAQIColor } from '../../utils/aqiCalculator';
 import type { WardProperties } from '../../types';
 import styles from './InteractiveMap.module.css';
@@ -25,17 +26,22 @@ interface InteractiveMapProps {
 export interface InteractiveMapHandle {
     zoomIn: () => void;
     zoomOut: () => void;
+    locate: () => void;
     zoomToWard: (wardId: number) => void;
+    flyTo: (center: [number, number], zoom: number) => void;
 }
 
 const MapController = () => {
     const map = useMap();
+    const { selectedCity } = useAirQuality();
+
     useEffect(() => {
-        // Center on Delhi
-        map.setView([28.6139, 77.2090], 11);
+        // Fly to initial city center
+        map.flyTo(selectedCity.center, selectedCity.zoom);
         // Disable scroll wheel zoom - it's too sensitive
         map.scrollWheelZoom.disable();
-    }, [map]);
+    }, [map]); // Only run on initial map mount
+
     return null;
 };
 
@@ -70,6 +76,23 @@ export const InteractiveMap = forwardRef<InteractiveMapHandle, InteractiveMapPro
     const [geoKey, setGeoKey] = useState(0); // Force re-render of GeoJSON
     const mapInstanceRef = useRef<LeafletMap | null>(null);
 
+    const { profile } = useAuth();
+    const [currentTheme, setCurrentTheme] = useState<'light' | 'dark'>('dark');
+
+    // Resolve theme
+    useEffect(() => {
+        const resolveTheme = () => {
+            if (profile?.theme === 'light' || profile?.theme === 'dark') {
+                return profile.theme;
+            }
+            if (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches) {
+                return 'dark';
+            }
+            return 'light'; // Default fallback
+        };
+        setCurrentTheme(resolveTheme());
+    }, [profile?.theme]);
+
     // Use AirQuality context
     const {
         wardData,
@@ -79,6 +102,7 @@ export const InteractiveMap = forwardRef<InteractiveMapHandle, InteractiveMapPro
         error,
         lastUpdated,
         filters,
+        selectedCity,
         setGeoData: setContextGeoData,
         selectWard,
         refetch
@@ -88,7 +112,7 @@ export const InteractiveMap = forwardRef<InteractiveMapHandle, InteractiveMapPro
         mapInstanceRef.current = map;
     }, []);
 
-    // Expose zoom methods to parent
+    // Expose methods to parent
     useImperativeHandle(ref, () => ({
         zoomIn: () => {
             mapInstanceRef.current?.zoomIn();
@@ -96,11 +120,18 @@ export const InteractiveMap = forwardRef<InteractiveMapHandle, InteractiveMapPro
         zoomOut: () => {
             mapInstanceRef.current?.zoomOut();
         },
+        locate: () => {
+            if (!navigator.geolocation || !mapInstanceRef.current) return;
+            navigator.geolocation.getCurrentPosition((position) => {
+                const { latitude, longitude } = position.coords;
+                mapInstanceRef.current?.flyTo([latitude, longitude], 15);
+            });
+        },
         zoomToWard: (wardId: number) => {
             if (!geoData || !mapInstanceRef.current) return;
 
             const feature = geoData.features.find(
-                f => f.properties?.Ward_No === wardId || f.properties?.FID === wardId
+                f => f.properties?.[selectedCity.wardIdProp] === wardId
             );
 
             if (feature && feature.geometry.type === 'Polygon') {
@@ -113,19 +144,25 @@ export const InteractiveMap = forwardRef<InteractiveMapHandle, InteractiveMapPro
                     [Math.max(...lats), Math.max(...lngs)]
                 ]);
             }
+        },
+        flyTo: (center: [number, number], zoom: number) => {
+            mapInstanceRef.current?.flyTo(center, zoom);
         }
     }), [geoData]);
 
-    // Load GeoJSON data
+    // Load GeoJSON data - Refactored to use dynamic path
     useEffect(() => {
-        fetch('/Delhi_Wards_1.geojson')
+        if (!selectedCity.geoJsonPath) return;
+
+        fetch(selectedCity.geoJsonPath)
             .then(response => response.json())
             .then(data => {
                 setGeoData(data);
                 setContextGeoData(data); // Share with context for ward mapping
+                console.log(`[InteractiveMap] Loaded GeoJSON for ${selectedCity.name}`);
             })
-            .catch(err => console.error('Failed to load GeoJSON:', err));
-    }, [setContextGeoData]);
+            .catch(err => console.error(`Failed to load GeoJSON for ${selectedCity.name}:`, err));
+    }, [selectedCity.geoJsonPath, setContextGeoData]);
 
     // Force GeoJSON re-render when ward data updates or heat toggle changes
     useEffect(() => {
@@ -133,8 +170,9 @@ export const InteractiveMap = forwardRef<InteractiveMapHandle, InteractiveMapPro
     }, [wardData, filters.pollutants, filters.layers.heat]);
 
     const onEachFeature = useCallback((feature: any, layer: any) => {
-        const wardId = feature.properties?.Ward_No || feature.properties?.FID || 'YAMUNA_RIVER';
-        const wardName = feature.properties?.Ward_Name || (wardId === 'YAMUNA_RIVER' ? 'Yamuna River' : `Ward ${wardId}`);
+        const rawWardId = feature.properties?.[selectedCity.wardIdProp];
+        const wardId = rawWardId || (selectedCity.id === 'delhi' && !rawWardId ? 'YAMUNA_RIVER' : rawWardId);
+        const wardName = feature.properties?.[selectedCity.wardNameProp] || (wardId === 'YAMUNA_RIVER' ? 'Yamuna River' : `Ward ${wardId}`);
 
         // Get real AQI data from context
         const aqiData = wardData.get(wardId);
@@ -155,9 +193,10 @@ export const InteractiveMap = forwardRef<InteractiveMapHandle, InteractiveMapPro
         // Click Handler
         layer.on({
             click: () => {
-                const wardId = feature.properties?.Ward_No || feature.properties?.FID || 'YAMUNA_RIVER';
+                const rawWardId = feature.properties?.[selectedCity.wardIdProp];
+                const wardId = rawWardId || (selectedCity.id === 'delhi' && !rawWardId ? 'YAMUNA_RIVER' : rawWardId);
                 const wardData_ = wardData.get(wardId);
-                const wardName = feature.properties?.Ward_Name || feature.properties?.Ward_Nane || (wardId === 'YAMUNA_RIVER' ? 'Yamuna River' : 'Unknown Ward');
+                const wardName = feature.properties?.[selectedCity.wardNameProp] || (wardId === 'YAMUNA_RIVER' ? 'Yamuna River' : 'Unknown Ward');
 
                 const wardProperties: WardProperties = {
                     ...feature.properties,
@@ -196,7 +235,8 @@ export const InteractiveMap = forwardRef<InteractiveMapHandle, InteractiveMapPro
             },
             mouseout: (e: any) => {
                 const l = e.target;
-                const wardId = feature.properties?.Ward_No || feature.properties?.FID || 'YAMUNA_RIVER';
+                const rawWardId = feature.properties?.[selectedCity.wardIdProp];
+                const wardId = rawWardId || (selectedCity.id === 'delhi' && !rawWardId ? 'YAMUNA_RIVER' : rawWardId);
                 const aqiData = wardData.get(wardId);
                 const aqi = aqiData?.aqi ?? 0;
                 l.setStyle({
@@ -210,18 +250,22 @@ export const InteractiveMap = forwardRef<InteractiveMapHandle, InteractiveMapPro
     }, [wardData, onWardSelect, filters.layers.heat]);
 
     const mapStyle = useCallback((feature: any) => {
-        const wardId = feature.properties?.Ward_No || feature.properties?.FID || 'YAMUNA_RIVER';
+        const rawWardId = feature.properties?.[selectedCity.wardIdProp];
+        const wardId = rawWardId || (selectedCity.id === 'delhi' && !rawWardId ? 'YAMUNA_RIVER' : rawWardId);
         const aqiData = wardData.get(wardId);
         const aqi = aqiData?.aqi ?? 0;
+
+        const boundaryColor = currentTheme === 'light' ? '#CBD5E1' : 'white';
+        const defaultOpacity = currentTheme === 'light' ? 0.3 : 0.1;
 
         return {
             fillColor: filters.layers.heat ? getAQIColor(aqi) : 'transparent',
             weight: 1,
             opacity: 1,
-            color: 'white',
-            fillOpacity: filters.layers.heat ? 0.6 : 0.1
+            color: boundaryColor,
+            fillOpacity: filters.layers.heat ? 0.6 : defaultOpacity
         };
-    }, [wardData, filters.layers.heat]);
+    }, [wardData, filters.layers.heat, currentTheme, selectedCity.id, selectedCity.wardIdProp]);
 
     const showSensors = filters.layers.sensors;
     // Always show complaints for authority, otherwise follow layer filter
@@ -239,9 +283,9 @@ export const InteractiveMap = forwardRef<InteractiveMapHandle, InteractiveMapPro
             )}
 
             <MapContainer
-                center={[28.6139, 77.2090]}
-                zoom={11}
-                style={{ height: '100%', width: '100%', background: '#242424' }}
+                center={selectedCity.center}
+                zoom={selectedCity.zoom}
+                style={{ height: '100%', width: '100%', background: currentTheme === 'light' ? '#F8FAFC' : '#242424' }}
                 zoomControl={false}
                 scrollWheelZoom={false}
             >
@@ -249,7 +293,10 @@ export const InteractiveMap = forwardRef<InteractiveMapHandle, InteractiveMapPro
                 <MapInstanceCapture onMapReady={handleMapReady} />
                 <TileLayer
                     attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors &copy; <a href="https://carto.com/attributions">CARTO</a>'
-                    url="https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png"
+                    url={currentTheme === 'light'
+                        ? "https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png"
+                        : "https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png"
+                    }
                 />
                 {geoData && (
                     <GeoJSON

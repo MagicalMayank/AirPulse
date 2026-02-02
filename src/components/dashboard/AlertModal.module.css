@@ -3,7 +3,7 @@
     flex-direction: column;
     gap: 1.5rem;
     padding: 0.5rem;
-    color: var(--text-primary, #fff);
+    color: var(--text-primary);
 }
 
 .section {
@@ -15,7 +15,7 @@
 .label {
     font-size: 0.7rem;
     font-weight: 700;
-    color: #888;
+    color: var(--text-secondary);
     letter-spacing: 0.05em;
     text-transform: uppercase;
 }
@@ -35,29 +35,35 @@
 .input,
 .select,
 .textarea {
-    background: rgba(255, 255, 255, 0.05);
-    border: 1px solid rgba(255, 255, 255, 0.1);
+    background: var(--bg-main);
+    border: 1px solid var(--border-color);
     border-radius: 8px;
     padding: 0.75rem;
-    color: white;
+    color: var(--text-primary);
     font-family: inherit;
     font-size: 0.9rem;
     transition: all 0.2s;
-    color-scheme: dark;
-    /* Force dark mode for browser UI like select menus */
+}
+
+/* Let the browser handle the contrast for standard inputs if possible, or force it */
+[data-theme="light"] .input,
+[data-theme="light"] .select,
+[data-theme="light"] .textarea {
+    background: #fff;
 }
 
 .select option {
-    background-color: #1A1D24;
-    color: white;
+    background-color: var(--bg-card);
+    color: var(--text-primary);
 }
 
 .input:focus,
 .select:focus,
 .textarea:focus {
     outline: none;
-    border-color: var(--brand-primary, #6A00F4);
-    background: rgba(255, 255, 255, 0.08);
+    border-color: var(--brand-primary);
+    background: var(--bg-card);
+    box-shadow: 0 0 0 2px rgba(var(--brand-primary-rgb, 95, 39, 205), 0.1);
 }
 
 .targetTypeGroup {
@@ -72,19 +78,20 @@
     justify-content: center;
     gap: 0.5rem;
     padding: 0.6rem;
-    background: rgba(255, 255, 255, 0.05);
-    border: 1px solid rgba(255, 255, 255, 0.1);
-    border-radius: 6px;
-    color: #888;
+    background: var(--bg-main);
+    border: 1px solid var(--border-color);
+    border-radius: 8px;
+    color: var(--text-secondary);
     cursor: pointer;
     font-size: 0.8rem;
+    font-weight: 600;
     transition: all 0.2s;
 }
 
 .activeTarget {
-    background: rgba(106, 0, 244, 0.15);
-    border-color: var(--brand-primary, #6A00F4);
-    color: white;
+    background: rgba(var(--brand-primary-rgb, 95, 39, 205), 0.1);
+    border-color: var(--brand-primary);
+    color: var(--brand-primary);
 }
 
 .tagGroup {
@@ -98,12 +105,13 @@
     display: flex;
     align-items: center;
     gap: 0.4rem;
-    background: rgba(106, 0, 244, 0.1);
-    border: 1px solid rgba(106, 0, 244, 0.3);
-    padding: 0.25rem 0.6rem;
+    background: rgba(var(--brand-primary-rgb, 95, 39, 205), 0.08);
+    border: 1px solid rgba(var(--brand-primary-rgb, 95, 39, 205), 0.2);
+    padding: 0.35rem 0.75rem;
     border-radius: 20px;
     font-size: 0.75rem;
-    color: #B288FF;
+    color: var(--brand-primary);
+    font-weight: 600;
 }
 
 .tag svg {
@@ -120,7 +128,8 @@
     align-items: center;
     gap: 0.75rem;
     font-size: 0.85rem;
-    color: #AAA;
+    color: var(--text-secondary);
+    font-weight: 500;
 }
 
 .actionInputs {
@@ -139,21 +148,27 @@
 }
 
 .removeBtn {
-    background: rgba(217, 4, 41, 0.1);
-    border: 1px solid rgba(217, 4, 41, 0.2);
-    color: var(--status-error, #D90429);
+    background: rgba(var(--status-error-rgb, 217, 4, 41), 0.05);
+    border: 1px solid rgba(var(--status-error-rgb, 217, 4, 41), 0.2);
+    color: var(--status-error);
     border-radius: 8px;
     width: 38px;
     display: flex;
     align-items: center;
     justify-content: center;
     cursor: pointer;
+    transition: all 0.2s;
+}
+
+.removeBtn:hover {
+    background: var(--status-error);
+    color: white;
 }
 
 .addBtn {
     background: transparent;
-    border: 1px dashed rgba(255, 255, 255, 0.2);
-    color: #888;
+    border: 1px dashed var(--border-color);
+    color: var(--text-secondary);
     padding: 0.6rem;
     border-radius: 8px;
     display: flex;
@@ -162,12 +177,15 @@
     gap: 0.5rem;
     cursor: pointer;
     font-size: 0.8rem;
+    font-weight: 600;
     margin-top: 0.5rem;
+    transition: all 0.2s;
 }
 
 .addBtn:hover {
-    border-color: rgba(255, 255, 255, 0.4);
-    color: white;
+    border-color: var(--brand-primary);
+    color: var(--brand-primary);
+    background: rgba(var(--brand-primary-rgb, 95, 39, 205), 0.02);
 }
 
 .footer {
@@ -176,12 +194,12 @@
     gap: 1rem;
     margin-top: 1rem;
     padding-top: 1.5rem;
-    border-top: 1px solid rgba(255, 255, 255, 0.1);
+    border-top: 1px solid var(--border-color);
 }
 
 .emergencySubmit {
-    background: #D90429 !important;
-    border-color: #EF233C !important;
+    background: var(--status-error) !important;
+    border-color: var(--status-error) !important;
     animation: pulse-red 2s infinite;
 }
 

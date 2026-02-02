@@ -13,9 +13,13 @@ import { ClipboardList, BarChart3, Users, Bell, MapPin, Loader2, ExternalLink, F
 import styles from './AuthorityPanels.module.css';
 import { useAirQuality } from '../../context/AirQualityContext';
 import type { Complaint } from '../../types';
+import { doc, getDoc, setDoc } from 'firebase/firestore';
+import { db } from '../../lib/firebase';
 
 type TabType = 'actions' | 'analytics' | 'teams';
 type StatusFilter = 'all' | 'pending' | 'in_progress' | 'resolved';
+
+import { sendEmailNotification } from '../../services/emailService';
 
 export const AuthorityRightPanel = () => {
     const [activeTab, setActiveTab] = useState<TabType>('actions');
@@ -59,17 +63,78 @@ const ActionsTab = () => {
     const [statusFilter, setStatusFilter] = useState<StatusFilter>('all');
     const [isExpanded, setIsExpanded] = useState(false);
 
-    const handleUpdateStatus = async (id: string, newStatus: 'pending' | 'in_progress' | 'resolved') => {
+    const handleUpdateStatus = async (id: string, newStatus: 'pending' | 'in_progress' | 'resolved' | 'invalid') => {
         await updateComplaintStatus(id, newStatus);
+
+        // Trigger Email Notification
+        const complaint = complaints.find(c => c.id === id);
+        if (complaint && complaint.user_email) {
+            console.log('[Authority] Sending status update email to:', complaint.user_email);
+            await sendEmailNotification({
+                to_email: complaint.user_email,
+                to_name: 'Citizen', // We don't have the name stored in complaint yet, defaulted.
+                complaint_id: id.substring(0, 8),
+                location: complaint.location_text || 'Delhi',
+                ward_name: complaint.ward_name || 'Delhi NCR',
+                pollution_type: complaint.pollution_type || 'Report',
+                status: newStatus.replace('_', ' ').toUpperCase(),
+                timestamp: new Date().toLocaleString(),
+                update_type: 'status_changed',
+                description: complaint.description
+            });
+        }
+    };
+
+    const handleGrantPoints = async (complaint: Complaint, points: number) => {
+        console.log('[Authority] Granting', points, 'PulseCoins to user:', complaint.user_id);
+
+        try {
+            // Direct Firestore update to user's profile
+            const userDocRef = doc(db, 'users', complaint.user_id);
+            const userDoc = await getDoc(userDocRef);
+
+            const currentBalance = userDoc.exists() ? (userDoc.data()?.pulseCoins || 0) : 0;
+            const newBalance = currentBalance + points;
+
+            await setDoc(userDocRef, { pulseCoins: newBalance }, { merge: true });
+            console.log('[Authority] Updated PulseCoins:', currentBalance, '->', newBalance);
+        } catch (err) {
+            console.error('[Authority] Failed to update PulseCoins:', err);
+        }
+
+        // Send points awarded email notification
+        if (complaint.user_email) {
+            await sendEmailNotification({
+                to_email: complaint.user_email,
+                to_name: 'Citizen',
+                complaint_id: complaint.id.substring(0, 8),
+                location: complaint.location_text || 'Delhi',
+                ward_name: complaint.ward_name || 'Delhi NCR',
+                pollution_type: complaint.pollution_type || 'Report',
+                status: `+${points} PULSECOINS AWARDED`,
+                timestamp: new Date().toLocaleString(),
+                update_type: 'points_awarded',
+                description: `Your pollution report has been verified! You earned ${points} PulseCoins. Visit the Marketplace to redeem eco-friendly rewards.`
+            });
+        }
     };
 
     if (error) return (
-        <div style={{ textAlign: 'center', padding: '2rem', color: '#ff6b6b' }}>
+        <div style={{ textAlign: 'center', padding: '2rem', color: 'var(--status-error)' }}>
             <p style={{ fontSize: '0.85rem' }}>Failed to load complaints</p>
-            <p style={{ fontSize: '0.7rem', color: '#888' }}>{error}</p>
+            <p style={{ fontSize: '0.7rem', color: 'var(--text-secondary)' }}>{error}</p>
             <button
                 onClick={() => refreshComplaints()}
-                style={{ background: 'none', border: '1px solid #444', color: '#888', padding: '4px 12px', borderRadius: '4px', marginTop: '8px', cursor: 'pointer' }}
+                style={{
+                    background: 'none',
+                    border: '1px solid var(--border-color)',
+                    color: 'var(--text-secondary)',
+                    padding: '6px 16px',
+                    borderRadius: '8px',
+                    marginTop: '12px',
+                    cursor: 'pointer',
+                    fontWeight: 600
+                }}
             >
                 Retry
             </button>
@@ -79,7 +144,7 @@ const ActionsTab = () => {
     if (loading) return <div style={{ display: 'flex', justifyContent: 'center', padding: '2rem' }}><Loader2 className={styles.spinner} /></div>;
 
     const displayComplaints = statusFilter === 'all'
-        ? complaints.filter(c => c.status !== 'resolved')
+        ? complaints.filter(c => c.status !== 'resolved' && c.status !== 'invalid')
         : complaints.filter(c => c.status === statusFilter);
 
     return (
@@ -106,7 +171,7 @@ const ActionsTab = () => {
                 </div>
                 <div className={styles.actionList}>
                     {displayComplaints.length === 0 ? (
-                        <p style={{ color: '#666', fontSize: '0.8rem', textAlign: 'center' }}>
+                        <p style={{ color: 'var(--text-secondary)', fontSize: '0.8rem', textAlign: 'center' }}>
                             No {statusFilter === 'resolved' ? 'resolved' : 'active'} complaints
                         </p>
                     ) : (
@@ -116,6 +181,7 @@ const ActionsTab = () => {
                                     key={complaint.id}
                                     complaint={complaint}
                                     onUpdateStatus={handleUpdateStatus}
+                                    onGrantPoints={handleGrantPoints}
                                 />
                             ))}
 
@@ -149,9 +215,12 @@ const ActionsTab = () => {
     );
 };
 
-const ActionItem = ({ complaint, onUpdateStatus }: {
+const POINTS_PER_VERIFIED_REPORT = 100;
+
+const ActionItem = ({ complaint, onUpdateStatus, onGrantPoints }: {
     complaint: Complaint;
-    onUpdateStatus: (id: string, status: 'pending' | 'in_progress' | 'resolved') => void
+    onUpdateStatus: (id: string, status: 'pending' | 'in_progress' | 'resolved' | 'invalid') => void;
+    onGrantPoints?: (complaint: Complaint, points: number) => Promise<void>;
 }) => {
     const [isUpdating, setIsUpdating] = useState(false);
     const [showDetails, setShowDetails] = useState(false);
@@ -164,23 +233,61 @@ const ActionItem = ({ complaint, onUpdateStatus }: {
         ? 'var(--status-error)'
         : 'var(--status-warning)';
 
+    const getStatusLabel = () => {
+        switch (complaint.status) {
+            case 'pending': return 'Pending';
+            case 'in_progress': return 'In Progress';
+            case 'resolved': return 'Resolved';
+            case 'invalid': return 'Invalid';
+            default: return complaint.status;
+        }
+    };
+
+    const getStatusColor = () => {
+        switch (complaint.status) {
+            case 'in_progress': return 'var(--aqi-moderate)';
+            case 'resolved': return 'var(--status-success)';
+            case 'invalid': return 'var(--status-error)';
+            default: return 'var(--text-secondary)';
+        }
+    };
+
     const nextStatus = complaint.status === 'pending' ? 'in_progress' : 'resolved';
-    const statusLabel = complaint.status === 'pending' ? 'Pending' : 'In Progress';
     const nextStatusLabel = nextStatus === 'in_progress' ? 'In Progress' : 'Resolved';
 
-    const handleClick = async () => {
+    const handleStatusUpdate = async (newStatus: 'pending' | 'in_progress' | 'resolved' | 'invalid') => {
         setIsUpdating(true);
-        await onUpdateStatus(complaint.id, nextStatus);
+
+        // ATOMIC SEQUENCE: 1. Update Status → 2. Grant Points → 3. Email (inside handleGrantPoints)
+        // First update the complaint status
+        await onUpdateStatus(complaint.id, newStatus);
+
+        // Grant points ONLY when successfully moving from pending to in_progress (verification)
+        if (complaint.status === 'pending' && newStatus === 'in_progress' && onGrantPoints) {
+            await onGrantPoints(complaint, POINTS_PER_VERIFIED_REPORT);
+        }
+
         setIsUpdating(false);
+        setShowDetails(false);
     };
+
+    const handleMarkInvalid = async () => {
+        setIsUpdating(true);
+        await onUpdateStatus(complaint.id, 'invalid');
+        setIsUpdating(false);
+        setShowDetails(false);
+    };
+
+    // Don't show action buttons for already resolved/invalid complaints
+    const showActionButtons = complaint.status !== 'resolved' && complaint.status !== 'invalid';
 
     return (
         <>
             <div className={styles.actionItem} style={{ borderLeftColor: priorityColor }}>
                 <div className={styles.actionHeader}>
                     <span className={styles.actionTitle}>{formatPollutionType(complaint.pollution_type)}</span>
-                    <span className={styles.actionStatus} style={{ color: complaint.status === 'in_progress' ? 'var(--aqi-moderate)' : '#888' }}>
-                        {statusLabel}
+                    <span className={styles.actionStatus} style={{ color: getStatusColor() }}>
+                        {getStatusLabel()}
                     </span>
                 </div>
                 <div style={{ display: 'flex', gap: '0.5rem', marginTop: '0.5rem', alignItems: 'flex-start' }}>
@@ -188,7 +295,7 @@ const ActionItem = ({ complaint, onUpdateStatus }: {
                         <div className={styles.actionTime} style={{ marginBottom: '0.25rem' }}>
                             <MapPin size={12} /> {complaint.location_text}
                         </div>
-                        <p style={{ fontSize: '0.7rem', color: '#AAA', margin: '0 0 0.5rem 0' }}>{complaint.description}</p>
+                        <p style={{ fontSize: '0.75rem', color: 'var(--text-secondary)', margin: '0 0 0.5rem 0', fontWeight: 500 }}>{complaint.description}</p>
                     </div>
                     {complaint.photo_url && (
                         <a href={complaint.photo_url} target="_blank" rel="noopener noreferrer" className={styles.photoThumb}>
@@ -197,12 +304,14 @@ const ActionItem = ({ complaint, onUpdateStatus }: {
                         </a>
                     )}
                 </div>
-                <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '0.5rem', marginTop: '0.5rem' }}>
-                    <button className={styles.viewBtn} onClick={() => setShowDetails(true)}>View</button>
-                    <button className={styles.statusUpdateBtn} onClick={handleClick} disabled={isUpdating}>
-                        {isUpdating ? <Loader2 size={12} className={styles.spinner} /> : `Move to ${nextStatusLabel}`}
-                    </button>
-                </div>
+                {showActionButtons && (
+                    <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '0.5rem', marginTop: '0.5rem' }}>
+                        <button className={styles.viewBtn} onClick={() => setShowDetails(true)}>View</button>
+                        <button className={styles.statusUpdateBtn} onClick={() => handleStatusUpdate(nextStatus)} disabled={isUpdating}>
+                            {isUpdating ? <Loader2 size={12} className={styles.spinner} /> : `Move to ${nextStatusLabel}`}
+                        </button>
+                    </div>
+                )}
             </div>
 
             {showDetails && (
@@ -210,7 +319,27 @@ const ActionItem = ({ complaint, onUpdateStatus }: {
                     <div className={styles.modalContent} onClick={e => e.stopPropagation()}>
                         <div className={styles.modalHeader}>
                             <h3>{formatPollutionType(complaint.pollution_type)}</h3>
-                            <button onClick={() => setShowDetails(false)} className={styles.modalClose}>×</button>
+                            <div style={{ display: 'flex', gap: '0.5rem', alignItems: 'center' }}>
+                                {complaint.status === 'pending' && (
+                                    <button
+                                        onClick={handleMarkInvalid}
+                                        disabled={isUpdating}
+                                        style={{
+                                            background: 'var(--status-error)',
+                                            color: 'white',
+                                            border: 'none',
+                                            padding: '0.4rem 0.75rem',
+                                            borderRadius: '6px',
+                                            fontSize: '0.75rem',
+                                            fontWeight: 600,
+                                            cursor: 'pointer',
+                                        }}
+                                    >
+                                        Mark Invalid
+                                    </button>
+                                )}
+                                <button onClick={() => setShowDetails(false)} className={styles.modalClose}>×</button>
+                            </div>
                         </div>
                         <div className={styles.modalBody}>
                             <div className={styles.detailRow}>
@@ -227,11 +356,8 @@ const ActionItem = ({ complaint, onUpdateStatus }: {
                             </div>
                             <div className={styles.detailRow}>
                                 <span className={styles.detailLabel}>Status</span>
-                                <span className={styles.detailValue} style={{
-                                    color: complaint.status === 'resolved' ? 'var(--status-success)' :
-                                        complaint.status === 'in_progress' ? 'var(--aqi-moderate)' : '#888'
-                                }}>
-                                    {statusLabel}
+                                <span className={styles.detailValue} style={{ color: getStatusColor() }}>
+                                    {getStatusLabel()}
                                 </span>
                             </div>
                             <div className={styles.detailRow}>
@@ -244,6 +370,21 @@ const ActionItem = ({ complaint, onUpdateStatus }: {
                                     <a href={complaint.photo_url} target="_blank" rel="noopener noreferrer">
                                         <img src={complaint.photo_url} alt="Evidence" style={{ width: '100%', maxWidth: '200px', borderRadius: '8px', marginTop: '0.5rem' }} />
                                     </a>
+                                </div>
+                            )}
+
+                            {/* Point notification for pending complaints */}
+                            {complaint.status === 'pending' && (
+                                <div style={{
+                                    background: 'rgba(0, 200, 151, 0.1)',
+                                    border: '1px solid var(--status-success)',
+                                    borderRadius: '8px',
+                                    padding: '0.75rem',
+                                    marginTop: '1rem',
+                                    fontSize: '0.8rem',
+                                    color: 'var(--status-success)',
+                                }}>
+                                    ✨ Moving to "In Progress" will verify this report and award <strong>{POINTS_PER_VERIFIED_REPORT} PulseCoins</strong> to the citizen.
                                 </div>
                             )}
                         </div>
@@ -293,7 +434,7 @@ const AnalyticsTab = () => {
                 </div>
                 <div className={styles.categoryList}>
                     {categoryPercentages.length === 0 ? (
-                        <p style={{ color: '#666', fontSize: '0.8rem', textAlign: 'center' }}>No data yet</p>
+                        <p style={{ color: 'var(--text-secondary)', fontSize: '0.8rem', textAlign: 'center' }}>No data yet</p>
                     ) : (
                         categoryPercentages.map(cat => (
                             <CategoryBar key={cat.label} label={cat.label} value={cat.value} color={cat.color} />

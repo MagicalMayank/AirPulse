@@ -39,24 +39,14 @@ export interface HistoryDataPoint {
     value: number;
 }
 
-// Delhi NCR bounding box for WAQI and Open-Meteo
-const DELHI_BOUNDS = {
-    minLat: 28.4,
-    maxLat: 29.0,
-    minLng: 76.8,
-    maxLng: 77.4,
-    centerLat: 28.6139,
-    centerLng: 77.2090
-};
-
 // Attribution constants
 const WAQI_ATTRIBUTION = "Data provided by World Air Quality Index Project and originating EPA (DPCC, CPCB)";
 const OPENMETEO_ATTRIBUTION = "Air quality data by Open-Meteo.com (Model-based)";
 
 /**
- * Main function to fetch air quality data for Delhi stations
+ * Main function to fetch air quality data for a specific region
  */
-export async function getAirQualityData(): Promise<StationData[]> {
+export async function getAirQualityData(bounds?: { minLat: number, maxLat: number, minLng: number, maxLng: number }): Promise<StationData[]> {
     console.log('[AQIService] Initializing multi-provider fetch...');
 
     let waqiData: StationData[] = [];
@@ -64,7 +54,7 @@ export async function getAirQualityData(): Promise<StationData[]> {
 
     // 1. Fetch WAQI (AQICN) via Proxy
     try {
-        const data = await fetchFromWAQI();
+        const data = await fetchFromWAQI(bounds);
         if (data) waqiData = data;
     } catch (error) {
         console.warn('[AQIService] WAQI fetch failed:', error);
@@ -72,7 +62,7 @@ export async function getAirQualityData(): Promise<StationData[]> {
 
     // 2. Fetch Open-Meteo (Always fetch this for pollutant breakdown fallback)
     try {
-        const data = await fetchFromOpenMeteo();
+        const data = await fetchFromOpenMeteo(bounds);
         if (data) meteoData = data;
     } catch (error) {
         console.warn('[AQIService] Open-Meteo fetch failed:', error);
@@ -120,11 +110,11 @@ export async function getAirQualityData(): Promise<StationData[]> {
 /**
  * Fetch from World Air Quality Index (WAQI) via proxy
  */
-async function fetchFromWAQI(): Promise<StationData[] | null> {
-    // We use the proxy at /api/proxy?provider=waqi&path=...
-    // The bounds format for WAQI is lat,lng,lat,lng (south,west,north,east)
-    const bounds = `${DELHI_BOUNDS.minLat},${DELHI_BOUNDS.minLng},${DELHI_BOUNDS.maxLat},${DELHI_BOUNDS.maxLng}`;
-    const path = `/map/bounds?latlng=${bounds}`;
+async function fetchFromWAQI(providedBounds?: { minLat: number, maxLat: number, minLng: number, maxLng: number }): Promise<StationData[] | null> {
+    // Default to Delhi if no bounds provided (backward compatibility)
+    const boundsObj = providedBounds || { minLat: 28.4, maxLat: 29.0, minLng: 76.8, maxLng: 77.4 };
+    const boundsStr = `${boundsObj.minLat},${boundsObj.minLng},${boundsObj.maxLat},${boundsObj.maxLng}`;
+    const path = `/map/bounds?latlng=${boundsStr}`;
 
     const response = await fetch(`/api/proxy?provider=waqi&path=${encodeURIComponent(path)}`);
 
@@ -155,24 +145,24 @@ async function fetchFromWAQI(): Promise<StationData[] | null> {
 /**
  * Fetch from Open-Meteo (Model-based AQI)
  */
-async function fetchFromOpenMeteo(): Promise<StationData[] | null> {
-    // Open-Meteo returns data for a specific point.
-    // To represent Delhi NCR, we'll fetch data for 9 grid points to cover the area.
-    const gridPoints = [
-        { name: "Central Delhi", lat: 28.61, lng: 77.21 },
-        { name: "North Delhi", lat: 28.70, lng: 77.13 },
-        { name: "South Delhi", lat: 28.52, lng: 77.22 },
-        { name: "West Delhi", lat: 28.63, lng: 77.08 },
-        { name: "East Delhi", lat: 28.63, lng: 77.30 },
-        { name: "Dwarka", lat: 28.58, lng: 77.05 },
-        { name: "Rohini", lat: 28.74, lng: 77.11 },
-        { name: "Noida Sector 62", lat: 28.62, lng: 77.36 },
-        { name: "Gurugram", lat: 28.45, lng: 77.02 },
-        { name: "Aya Nagar", lat: 28.4717, lng: 77.1095 },
-        { name: "Bhati", lat: 28.43, lng: 77.226 },  // Bhati Mines, South Delhi
-        { name: "Fatehpur Beri", lat: 28.45, lng: 77.28 },  // Near Bhati for interpolation
-        { name: "Asola", lat: 28.47, lng: 77.24 }  // Asola Wildlife Sanctuary area
-    ];
+async function fetchFromOpenMeteo(providedBounds?: { minLat: number, maxLat: number, minLng: number, maxLng: number }): Promise<StationData[] | null> {
+    // If no bounds provided, default to Delhi
+    const b = providedBounds || { minLat: 28.4, maxLat: 29.0, minLng: 76.8, maxLng: 77.4 };
+
+    // Generate grid points dynamically based on bounds
+    const gridPoints = [];
+    const latStep = (b.maxLat - b.minLat) / 2;
+    const lngStep = (b.maxLng - b.minLng) / 2;
+
+    for (let lat = b.minLat; lat <= b.maxLat; lat += latStep) {
+        for (let lng = b.minLng; lng <= b.maxLng; lng += lngStep) {
+            gridPoints.push({
+                name: `Point (${lat.toFixed(2)}, ${lng.toFixed(2)})`,
+                lat,
+                lng
+            });
+        }
+    }
 
     const results: StationData[] = [];
 

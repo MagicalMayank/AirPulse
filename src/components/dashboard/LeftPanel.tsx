@@ -27,26 +27,26 @@ const PollutantItem = ({ name, value, unit, trend, color }: { name: string, valu
 );
 
 export const LeftPanel = ({ selectedWard, onSearchSelect }: LeftPanelProps) => {
-    const { filters, setTimeRange, wardData, loading, lastUpdated, geoData, selectWard } = useAirQuality();
+    const { filters, setTimeRange, wardData, loading, lastUpdated, geoData, selectWard, selectedCity } = useAirQuality();
     const [searchQuery, setSearchQuery] = useState('');
-    const [searchResults, setSearchResults] = useState<Array<{ wardId: number; name: string }>>([]);
+    const [searchResults, setSearchResults] = useState<Array<{ wardId: number | string; name: string }>>([]);
     const [showResults, setShowResults] = useState(false);
     const searchRef = useRef<HTMLDivElement>(null);
 
     // Get ward data from context if available
-    const wardId = selectedWard?.Ward_No;
+    const wardId = selectedWard?.[selectedCity.wardIdProp];
     const contextWardData = wardId ? wardData.get(wardId) : null;
 
     // Use context data if available, otherwise fall back to selectedWard props
-    const locationName = selectedWard ? `Ward ${selectedWard.Ward_No}` : 'Delhi NCR';
-    const subLocation = selectedWard?.Ward_Name || 'Select a ward';
+    const locationName = selectedWard ? `Ward ${selectedWard[selectedCity.wardIdProp]}` : selectedCity.name;
+    const subLocation = selectedWard?.[selectedCity.wardNameProp] || 'Select a ward';
     const aqiValue = contextWardData?.aqi ?? selectedWard?.aqi ?? (wardData.size > 0 ? Math.round([...wardData.values()].reduce((a, b) => a + b.aqi, 0) / wardData.size) : 0);
     const aqiStatus = contextWardData?.status ?? selectedWard?.aqiStatus ?? getAQIStatus(aqiValue);
     const aqiColor = getAQIStatusColor(aqiValue);
     const dominantPollutant = contextWardData?.dominantPollutant ?? selectedWard?.dominantPollutant;
 
     // Pollutant values from real data
-    // When no ward is selected, aggregate pollutant values from all wards for Delhi NCR overview
+    // When no ward is selected, aggregate pollutant values from all wards for city overview
     const pollutants = contextWardData?.pollutants ?? selectedWard?.pollutants ?? (() => {
         if (wardData.size === 0) return undefined;
 
@@ -77,18 +77,18 @@ export const LeftPanel = ({ selectedWard, onSearchSelect }: LeftPanelProps) => {
         const query = searchQuery.toLowerCase();
         const results = geoData.features
             .filter(f => {
-                const wardName = f.properties?.Ward_Name?.toLowerCase() || '';
-                const wardNo = String(f.properties?.Ward_No || '');
+                const wardName = String(f.properties?.[selectedCity.wardNameProp] || '').toLowerCase();
+                const wardNo = String(f.properties?.[selectedCity.wardIdProp] || '');
                 return wardName.includes(query) || wardNo.includes(query);
             })
             .slice(0, 5)
             .map(f => ({
-                wardId: f.properties?.Ward_No || f.properties?.FID,
-                name: f.properties?.Ward_Name || `Ward ${f.properties?.Ward_No}`
+                wardId: f.properties?.[selectedCity.wardIdProp],
+                name: f.properties?.[selectedCity.wardNameProp] || `Ward ${f.properties?.[selectedCity.wardIdProp]}`
             }));
 
         setSearchResults(results);
-    }, [searchQuery, geoData]);
+    }, [searchQuery, geoData, selectedCity]);
 
     // Close search results on outside click
     useEffect(() => {
@@ -144,7 +144,7 @@ export const LeftPanel = ({ selectedWard, onSearchSelect }: LeftPanelProps) => {
                                     // Also notify parent Dashboard if callback provided
                                     if (onSearchSelect && geoData) {
                                         const feature = geoData.features.find(
-                                            f => (f.properties?.Ward_No || f.properties?.FID) === result.wardId
+                                            f => f.properties?.[selectedCity.wardIdProp] === result.wardId
                                         );
                                         if (feature?.properties) {
                                             onSearchSelect(feature.properties as WardProperties);
@@ -191,6 +191,7 @@ export const LeftPanel = ({ selectedWard, onSearchSelect }: LeftPanelProps) => {
 
             {/* AQI Card */}
             <div className={`${styles.card} ${styles.aqiCard}`}>
+                <div className={styles.aqiPattern}></div>
                 <div className={styles.cardHeader}>
                     <span className={styles.statusLabel} style={{ color: aqiColor }}>{aqiStatus.toUpperCase()} ⚠️</span>
                     <span className={styles.iconMask}>😷</span>

@@ -102,7 +102,7 @@
     transform: translateX(-50%);
 }
 
-.fab {
+.fabButton {
     border-radius: 50px !important;
     box-shadow: 0 8px 24px rgba(95, 39, 205, 0.4);
     padding: 0.75rem 2rem !important;

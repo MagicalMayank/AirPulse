@@ -1,17 +1,20 @@
 export interface WardProperties {
-    FID: number;
-    state: string;
-    townname: string;
-    Ward_Name: string;
-    Ward_No: number;
-    ASC_NAME: string;
-    Area: number;
-    Density: number;
+    FID?: number;
+    state?: string;
+    townname?: string;
+    Ward_Name?: string;
+    Ward_No?: number;
+    ward_lgd_name?: string;
+    ward_lgd_code?: number;
+    ASC_NAME?: string;
+    Area?: number;
+    Density?: number;
     aqi?: number;
     aqiStatus?: string;
     dominantPollutant?: string;
     nearestStation?: string;
     nearestStationId?: string | number;
+    lastUpdated?: string;
     isEstimated?: boolean;
     stationCount?: number;
     pollutants?: {
@@ -22,6 +25,7 @@ export interface WardProperties {
         co: number;
         o3: number;
     };
+    [key: string]: any; // Allow for dynamic GeoJSON properties
 }
 
 export type UserRole = 'citizen' | 'authority' | 'analyst';
@@ -39,6 +43,7 @@ export interface UserProfile {
 export interface Complaint {
     id: string;
     user_id: string;
+    user_email?: string; // Added for notifications
     role: string;
     pollution_type: string;
     location_text: string;
@@ -47,8 +52,9 @@ export interface Complaint {
     description: string;
     photo_url?: string;
     ward_name?: string;
-    status: 'pending' | 'in_progress' | 'resolved';
+    status: 'pending' | 'in_progress' | 'resolved' | 'invalid';
     created_at: string;
+    authority_comment?: string;
 }
 
 export interface Alert {
@@ -63,5 +69,7 @@ export interface Alert {
     expiresAt: string;
     createdByAuthorityId: string;
     createdAt: string;
+    targetRole?: UserRole | 'all'; // Role this alert targets (citizen/authority/analyst/all)
+    targetUserId?: string; // Specific user ID (optional)
 }
 

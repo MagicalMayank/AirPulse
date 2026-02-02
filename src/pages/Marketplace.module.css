@@ -1,0 +1,547 @@
+/**
+ * Marketplace Styles
+ * Premium eco-store with locking system and animations
+ */
+
+.container {
+    min-height: 100vh;
+    background: var(--bg-main);
+    padding: 2rem;
+    color: var(--text-primary);
+}
+
+/* Header */
+.header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-end;
+    gap: 2rem;
+    margin-bottom: 2rem;
+    max-width: 1200px;
+    margin-left: auto;
+    margin-right: auto;
+    flex-wrap: wrap;
+}
+
+.headerLeft {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+}
+
+.backButton {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    color: var(--text-primary);
+    font-weight: 500;
+    font-size: 0.85rem;
+    text-decoration: none;
+    border: 1px solid var(--border-color);
+    padding: 0.5rem 1rem;
+    border-radius: 50px;
+    background: transparent;
+    transition: all 0.2s ease;
+}
+
+.backButton:hover {
+    border-color: var(--brand-primary);
+    color: var(--brand-primary);
+}
+
+.title {
+    font-size: 2rem;
+    font-weight: 700;
+    color: var(--text-primary);
+    margin: 0;
+}
+
+.subtitle {
+    color: var(--text-secondary);
+    font-size: 1rem;
+    margin: 0;
+}
+
+/* Balance Card */
+.balanceCard {
+    display: flex;
+    align-items: center;
+    gap: 1.5rem;
+    background: var(--bg-card);
+    padding: 1.25rem 1.5rem;
+    border-radius: 12px;
+    border: 1px solid var(--border-color);
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
+    min-width: 300px;
+}
+
+.balanceSection {
+    display: flex;
+    flex-direction: column;
+    gap: 0.25rem;
+}
+
+.balanceLabel {
+    font-size: 0.7rem;
+    font-weight: 600;
+    color: var(--text-tertiary);
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+}
+
+.balanceValue {
+    font-size: 1.75rem;
+    font-weight: 800;
+    color: var(--brand-primary);
+}
+
+.balanceUnit {
+    font-size: 1rem;
+    font-weight: 600;
+    color: var(--text-tertiary);
+}
+
+.balanceDivider {
+    width: 1px;
+    height: 40px;
+    background: var(--border-color);
+}
+
+.tierSection {
+    display: flex;
+    flex-direction: column;
+    gap: 0.25rem;
+}
+
+.tierLabel {
+    font-size: 0.7rem;
+    font-weight: 600;
+    color: var(--text-tertiary);
+    text-transform: uppercase;
+}
+
+.tierInfo {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+}
+
+.tierName {
+    font-size: 0.875rem;
+    font-weight: 500;
+    color: var(--text-primary);
+}
+
+.tierProgress {
+    width: 60px;
+    height: 6px;
+    background: var(--bg-surface-hover);
+    border-radius: 3px;
+    overflow: hidden;
+}
+
+.tierProgressFill {
+    height: 100%;
+    background: var(--status-success);
+    border-radius: 3px;
+    transition: width 0.3s ease;
+}
+
+/* Products Grid */
+.productsGrid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+    gap: 1.5rem;
+    max-width: 1200px;
+    margin: 0 auto;
+}
+
+/* Product Card */
+.productCard {
+    display: flex;
+    flex-direction: column;
+    background: var(--bg-card);
+    border-radius: 16px;
+    border: 1px solid var(--border-color);
+    overflow: hidden;
+    position: relative;
+    transition: all 0.3s ease;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+}
+
+.productCard:hover {
+    box-shadow: 0 8px 24px rgba(95, 39, 205, 0.15);
+    transform: translateY(-4px);
+}
+
+.productCard.locked {
+    opacity: 0.7;
+}
+
+.productCard.locked:hover {
+    opacity: 0.85;
+    transform: none;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+}
+
+/* Badge */
+.badge {
+    position: absolute;
+    top: 12px;
+    left: 12px;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4rem;
+    background: rgba(0, 0, 0, 0.6);
+    backdrop-filter: blur(8px);
+    color: var(--status-success);
+    font-size: 0.7rem;
+    font-weight: 600;
+    padding: 0.4rem 0.6rem;
+    border-radius: 6px;
+    border: 1px solid rgba(0, 200, 151, 0.3);
+    z-index: 10;
+}
+
+/* Lock Icon */
+.lockIcon {
+    position: absolute;
+    top: 12px;
+    right: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 36px;
+    height: 36px;
+    background: rgba(0, 0, 0, 0.5);
+    border-radius: 50%;
+    color: var(--text-tertiary);
+    z-index: 10;
+}
+
+/* Product Image */
+.productImage {
+    aspect-ratio: 1;
+    overflow: hidden;
+    background: var(--bg-surface-hover);
+}
+
+.productImage img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    transition: transform 0.5s ease;
+}
+
+.productCard:not(.locked):hover .productImage img {
+    transform: scale(1.05);
+}
+
+.productCard.locked .productImage img {
+    filter: grayscale(50%);
+    opacity: 0.8;
+}
+
+/* Product Content */
+.productContent {
+    padding: 1rem;
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+    flex: 1;
+}
+
+.productName {
+    font-size: 1.1rem;
+    font-weight: 700;
+    color: var(--text-primary);
+    margin: 0;
+    line-height: 1.3;
+}
+
+.productDescription {
+    font-size: 0.85rem;
+    color: var(--text-secondary);
+    margin: 0;
+    line-height: 1.5;
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+}
+
+/* Locked Section */
+.lockedSection {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+    padding-top: 0.75rem;
+    border-top: 1px solid var(--border-color);
+    margin-top: auto;
+}
+
+.progressInfo {
+    display: flex;
+    justify-content: space-between;
+    font-size: 0.75rem;
+    font-weight: 500;
+    color: var(--text-tertiary);
+}
+
+.progressBar {
+    height: 6px;
+    background: var(--bg-surface-hover);
+    border-radius: 3px;
+    overflow: hidden;
+}
+
+.progressFill {
+    height: 100%;
+    background: var(--text-tertiary);
+    border-radius: 3px;
+    transition: width 0.3s ease;
+}
+
+.priceRow {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.priceLockedText {
+    font-size: 1rem;
+    font-weight: 700;
+    color: var(--text-tertiary);
+}
+
+.lockedButton {
+    width: 100%;
+    background: var(--bg-surface-hover);
+    color: var(--text-tertiary);
+    border: 1px solid var(--border-color);
+    padding: 0.6rem 1rem;
+    border-radius: 8px;
+    font-size: 0.85rem;
+    font-weight: 600;
+    cursor: not-allowed;
+}
+
+/* Unlocked Section */
+.unlockedSection {
+    padding-top: 0.75rem;
+    border-top: 1px solid var(--border-color);
+    margin-top: auto;
+}
+
+.priceText {
+    font-size: 1.1rem;
+    font-weight: 700;
+    color: var(--text-primary);
+}
+
+.redeemButton {
+    background: var(--brand-gradient);
+    background-size: 200% 100%;
+    color: white;
+    border: none;
+    padding: 0.6rem 1.25rem;
+    border-radius: 8px;
+    font-size: 0.85rem;
+    font-weight: 700;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    box-shadow: 0 4px 12px rgba(95, 39, 205, 0.3);
+}
+
+.redeemButton:hover {
+    background-position: 100% 0;
+    box-shadow: 0 6px 16px rgba(95, 39, 205, 0.4);
+    transform: translateY(-2px);
+}
+
+/* Modal */
+.modalBackdrop {
+    position: fixed;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.7);
+    backdrop-filter: blur(4px);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 1000;
+    padding: 1rem;
+}
+
+.modal {
+    background: var(--bg-card);
+    border-radius: 16px;
+    border: 1px solid var(--border-color);
+    padding: 2rem;
+    max-width: 400px;
+    width: 100%;
+    box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3);
+}
+
+.modalTitle {
+    font-size: 1.25rem;
+    font-weight: 700;
+    color: var(--text-primary);
+    margin: 0 0 1rem 0;
+}
+
+.modalText {
+    font-size: 0.95rem;
+    color: var(--text-secondary);
+    margin: 0 0 0.5rem 0;
+    line-height: 1.6;
+}
+
+.modalSubtext {
+    font-size: 0.85rem;
+    color: var(--text-tertiary);
+    margin: 0 0 1.5rem 0;
+}
+
+.modalButtons {
+    display: flex;
+    gap: 0.75rem;
+    justify-content: flex-end;
+}
+
+.cancelButton {
+    background: transparent;
+    color: var(--text-secondary);
+    border: 1px solid var(--border-color);
+    padding: 0.6rem 1.25rem;
+    border-radius: 8px;
+    font-size: 0.85rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.cancelButton:hover {
+    background: var(--bg-surface-hover);
+    color: var(--text-primary);
+}
+
+.confirmButton {
+    background: var(--brand-gradient);
+    color: white;
+    border: none;
+    padding: 0.6rem 1.5rem;
+    border-radius: 8px;
+    font-size: 0.85rem;
+    font-weight: 700;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.confirmButton:hover {
+    opacity: 0.9;
+}
+
+.confirmButton:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+}
+
+/* Success Toast */
+.successToast {
+    position: fixed;
+    bottom: 24px;
+    right: 24px;
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    background: var(--bg-card);
+    border: 1px solid var(--border-color);
+    border-radius: 12px;
+    padding: 1rem 1.25rem;
+    max-width: 340px;
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.25);
+    z-index: 1100;
+    animation: slideIn 0.3s ease;
+}
+
+@keyframes slideIn {
+    from {
+        opacity: 0;
+        transform: translateY(20px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.toastIcon {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 40px;
+    height: 40px;
+    background: rgba(0, 200, 151, 0.1);
+    border-radius: 50%;
+    color: var(--status-success);
+    flex-shrink: 0;
+}
+
+.toastContent {
+    flex: 1;
+}
+
+.toastContent h4 {
+    font-size: 0.9rem;
+    font-weight: 700;
+    color: var(--text-primary);
+    margin: 0 0 0.25rem 0;
+}
+
+.toastContent p {
+    font-size: 0.75rem;
+    color: var(--text-tertiary);
+    margin: 0;
+}
+
+.toastTrack {
+    background: none;
+    border: none;
+    color: var(--brand-primary);
+    font-size: 0.75rem;
+    font-weight: 700;
+    cursor: pointer;
+    white-space: nowrap;
+}
+
+.toastTrack:hover {
+    text-decoration: underline;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+    .container {
+        padding: 1rem;
+    }
+
+    .header {
+        flex-direction: column;
+        align-items: stretch;
+    }
+
+    .balanceCard {
+        min-width: auto;
+        width: 100%;
+    }
+
+    .title {
+        font-size: 1.5rem;
+    }
+
+    .productsGrid {
+        grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+        gap: 1rem;
+    }
+}

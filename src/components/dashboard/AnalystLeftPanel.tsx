@@ -17,7 +17,8 @@ export const AnalystLeftPanel = ({ selectedWard }: AnalystLeftPanelProps) => {
         setPollutantFilter,
         setLayerFilter,
         wardData,
-        geoData
+        geoData,
+        selectedCity
     } = useAirQuality();
 
     const [expandedSections, setExpandedSections] = useState({
@@ -25,16 +26,16 @@ export const AnalystLeftPanel = ({ selectedWard }: AnalystLeftPanelProps) => {
         layers: true
     });
     const [searchQuery, setSearchQuery] = useState('');
-    const [searchResults, setSearchResults] = useState<Array<{ wardId: number; name: string }>>([]);
+    const [searchResults, setSearchResults] = useState<Array<{ wardId: number | string; name: string }>>([]);
     const [showResults, setShowResults] = useState(false);
     const searchRef = useRef<HTMLDivElement>(null);
 
     // Get ward data from context
-    const wardId = selectedWard?.Ward_No;
+    const wardId = selectedWard?.[selectedCity.wardIdProp];
     const contextWardData = wardId ? wardData.get(wardId) : null;
 
-    const wardName = selectedWard?.Ward_Name || 'Delhi NCR Overview';
-    const wardNo = selectedWard?.Ward_No || 'All';
+    const wardNameDisplay = selectedWard?.[selectedCity.wardNameProp] || `${selectedCity.name} Overview`;
+    const wardNoDisplay = selectedWard?.[selectedCity.wardIdProp] || 'All';
     // Calculate AQI from wardData average when no ward selected
     const aqiValue = contextWardData?.aqi ?? selectedWard?.aqi ?? (wardData.size > 0 ? Math.round([...wardData.values()].reduce((a, b) => a + b.aqi, 0) / wardData.size) : 285);
     const aqiStatus = contextWardData?.status ?? selectedWard?.aqiStatus ?? 'POOR';
@@ -84,18 +85,18 @@ export const AnalystLeftPanel = ({ selectedWard }: AnalystLeftPanelProps) => {
         const query = searchQuery.toLowerCase();
         const results = geoData.features
             .filter(f => {
-                const wardName = (f.properties?.Ward_Name || f.properties?.Ward_Nane)?.toLowerCase() || '';
-                const wardNo = String(f.properties?.Ward_No || '');
+                const wardName = String(f.properties?.[selectedCity.wardNameProp] || '').toLowerCase();
+                const wardNo = String(f.properties?.[selectedCity.wardIdProp] || '');
                 return wardName.includes(query) || wardNo.includes(query);
             })
             .slice(0, 5)
             .map(f => ({
-                wardId: f.properties?.Ward_No || f.properties?.FID,
-                name: f.properties?.Ward_Name || f.properties?.Ward_Nane || `Ward ${f.properties?.Ward_No}`
+                wardId: f.properties?.[selectedCity.wardIdProp],
+                name: f.properties?.[selectedCity.wardNameProp] || `Ward ${f.properties?.[selectedCity.wardIdProp]}`
             }));
 
         setSearchResults(results);
-    }, [searchQuery, geoData]);
+    }, [searchQuery, geoData, selectedCity]);
 
     // Close search results on outside click
     useEffect(() => {
@@ -170,8 +171,8 @@ export const AnalystLeftPanel = ({ selectedWard }: AnalystLeftPanelProps) => {
                         {aqiStatus}
                     </span>
                 </div>
-                <h3 className={styles.wardName}>{wardName}</h3>
-                <div className={styles.wardMeta}>Ward {wardNo}</div>
+                <h3 className={styles.wardName}>{wardNameDisplay}</h3>
+                <div className={styles.wardMeta}>Ward {wardNoDisplay}</div>
                 <div className={styles.aqiDisplay}>
                     <span className={styles.aqiBig}>{aqiValue}</span>
                     <span className={styles.aqiLabel}>AQI (India)</span>

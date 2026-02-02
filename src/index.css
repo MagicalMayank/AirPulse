@@ -3,12 +3,15 @@
 :root {
   /* Typography */
   --font-main: 'Inter', system-ui, -apple-system, sans-serif;
-  
+
   /* Smog Pop Palette - Base */
-  --bg-main: #F3EFFA; /* Dusty Lilac */
-  --bg-card: #FFFFFF; /* White */
-  --bg-dark: #14161C; /* Midnight Asphalt */
-  
+  --bg-main: #F3EFFA;
+  /* Dusty Lilac */
+  --bg-card: #FFFFFF;
+  /* White */
+  --bg-dark: #14161C;
+  /* Midnight Asphalt */
+
   /* Text */
   --text-primary: #1F2937;
   --text-secondary: #6B7280;
@@ -23,17 +26,24 @@
   --aqi-severe: #6A00F4;
 
   /* Brand Colors */
-  --brand-primary: #5F27CD; /* Electric Indigo */
-  --brand-secondary: #1DD1A1; /* Skyline Teal */
-  --brand-focus: #FF6F61; /* Neon Peach */
-  --brand-hover: #3B82F6; /* Blueberry Pop */
+  --brand-primary: #5F27CD;
+  /* Electric Indigo */
+  --brand-secondary: #1DD1A1;
+  /* Skyline Teal */
+  --brand-gradient: linear-gradient(135deg, #5F27CD, #FF6F61);
+  /* Purple to Peach */
+  --aqi-card-gradient: linear-gradient(135deg, #5F27CD, #FF6F61);
+  --brand-focus: #FF6F61;
+  /* Neon Peach */
+  --brand-hover: #3B82F6;
+  /* Blueberry Pop */
 
   /* Sources */
   --source-traffic: #FF3B3B;
   --source-construction: #FFC857;
   --source-industry: #3DD6D0;
   --source-biomass: #C44569;
-  
+
   /* Engagement / Sentiment */
   --sentiment-hotspot: #8E44AD;
   --sentiment-positive: #27AE60;
@@ -48,12 +58,94 @@
 }
 
 /* Dark Mode Theme */
-.dark {
-  --bg-main: #14161C;
-  --bg-card: #1F2937;
+[data-theme='dark'] {
+  --bg-main: #0B0E14;
+  --bg-dark: #0B0E14;
+  /* Used for navbar in dark mode */
+  --bg-card: #151921;
+  --bg-element: #252830;
+  --bg-health-advisory: rgba(106, 0, 244, 0.15);
+  --bg-surface-hover: rgba(255, 255, 255, 0.05);
   --text-primary: #F3EFFA;
   --text-secondary: #9CA3AF;
-  --text-inverse: #14161C;
+  --text-inverse: #FFFFFF;
+  --aqi-card-bg: linear-gradient(135deg, #2D1B36 0%, #1F2229 100%);
+  --aqi-number-color: #FFFFFF;
+  --border-color: rgba(255, 255, 255, 0.08);
+  /* General border */
+  --border-subtle: transparent;
+  /* Subtle border for pollutant cards in dark mode */
+  --card-shadow: 0 8px 32px rgba(0, 0, 0, 0.4);
+  --grid-line: rgba(255, 255, 255, 0.1);
+  --bg-sentiment: #1F2229;
+  /* Nav Text */
+  --nav-text-color: #FFFFFF;
+
+  /* Role Switcher - Dark */
+  --bg-role-switcher: #000000;
+  --bg-role-active: var(--brand-primary);
+  --text-role-active: #FFFFFF;
+  --text-role-inactive: #888888;
+  --role-shadow: none;
+
+  /* Dropdown Theme - Dark */
+  --dropdown-bg: #1E293B;
+  --dropdown-text: #F8FAFC;
+  --dropdown-border: #334155;
+  --dropdown-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.5);
+}
+
+[data-theme='light'] {
+  /* Eye-Comfort: Slate 50 background */
+  --bg-main: #F8FAFC;
+  --bg-dark: #FFFFFF;
+  /* Navbar becomes white in Light Mode */
+  --bg-card: #FFFFFF;
+  /* Pure white surface for elevation */
+  --bg-element: #FFFFFF;
+  /* Pollutant cards are white */
+  --bg-health-advisory: #F5F3FF;
+  /* Very pale purple wash */
+  --bg-surface-hover: #F1F5F9;
+  /* Slate 100 for hover states */
+
+  /* Eye-Comfort Text: Slate 700 & 500 */
+  --text-primary: #334155;
+  --text-secondary: #64748B;
+  --text-inverse: #FFFFFF;
+
+  --aqi-card-bg: #FFFFFF;
+  --aqi-number-color: #334155;
+
+  --border-color: #E2E8F0;
+  /* Slate 200 */
+  --border-subtle: #E2E8F0;
+  /* Subtle border for cards against white bg */
+
+  --card-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
+  --grid-line: #F1F5F9;
+  --bg-sentiment: #F1F5F9;
+
+  /* Nav Text */
+  --nav-text-color: #64748B;
+
+  /* Role Switcher - Soft Toggle (Light) */
+  --bg-role-switcher: #E2E8F0;
+  /* Slate 200 container */
+  --bg-role-active: #FFFFFF;
+  /* White active pill */
+  --text-role-active: #6366F1;
+  /* Brand Purple text */
+  --text-role-inactive: #64748B;
+  /* Slate 500 inactive */
+  --role-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
+  /* Subtle lift */
+
+  /* Dropdown Theme - Light */
+  --dropdown-bg: #FFFFFF;
+  --dropdown-text: #334155;
+  --dropdown-border: #E2E8F0;
+  --dropdown-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
 }
 
 * {

@@ -72,6 +72,7 @@ export const AlertModal: React.FC<AlertModalProps> = ({ isOpen, onClose }) => {
                 recommendedActions: actions,
                 expiresAt: expiresAt.toISOString(),
                 createdByAuthorityId: user.uid,
+                targetRole: 'citizen', // Alerts sent by Authority are targeted at Citizens only
             };
 
             console.log('[AlertModal] Submitting alerts for wards:', wards);

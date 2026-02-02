@@ -42,6 +42,11 @@ export interface UserProfile {
     authority_id?: string;
     apa_id?: string;
     createdAt?: string;
+    language?: 'en' | 'hi' | 'bn' | 'ta';
+    theme?: 'light' | 'dark' | 'system';
+    emailNotifications?: boolean;
+    photoURL?: string;
+    pulseCoins?: number; // PulseCoin balance
 }
 
 interface AuthContextType {
@@ -57,6 +62,8 @@ interface AuthContextType {
     signUp: (email: string, password: string, name: string) => Promise<{ error: any }>;
     signOut: () => Promise<void>;
     anonymousLogin: () => Promise<{ error: any }>;
+    updateProfile: (data: Partial<UserProfile>) => Promise<{ error: any }>;
+    updatePulseCoins: (delta: number) => Promise<{ error: any }>; // Add/subtract coins
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -115,6 +122,11 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
                     authority_id: data.authority_id,
                     apa_id: data.apa_id,
                     createdAt: data.createdAt?.toDate?.()?.toISOString(),
+                    language: data.language || 'en',
+                    theme: data.theme || 'dark',
+                    emailNotifications: data.emailNotifications !== undefined ? data.emailNotifications : true,
+                    photoURL: data.photoURL,
+                    pulseCoins: data.pulseCoins || 0,
                 };
             } else {
                 // No profile exists - create one based on email pattern
@@ -125,6 +137,10 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
                     role: inferredRole || 'citizen',
                     email: email,
                     createdAt: serverTimestamp(),
+                    language: 'en',
+                    theme: 'dark',
+                    emailNotifications: true,
+                    pulseCoins: 0,
                 };
 
                 // Set role-specific fields
@@ -171,8 +187,17 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
             if (firebaseUser) {
                 const profileData = await fetchProfile(firebaseUser);
                 setProfile(profileData);
+
+                // Apply theme
+                if (profileData?.theme) {
+                    const theme = profileData.theme === 'system'
+                        ? (window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light')
+                        : profileData.theme;
+                    document.documentElement.setAttribute('data-theme', theme);
+                }
             } else {
                 setProfile(null);
+                document.documentElement.setAttribute('data-theme', 'dark'); // Default
             }
 
             setLoading(false);
@@ -260,6 +285,59 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     };
 
     /**
+     * Update user profile
+     */
+    const updateProfile = async (data: Partial<UserProfile>) => {
+        if (!user) return { error: 'No user authenticated' };
+
+        try {
+            console.log('[AuthContext] Updating profile for:', user.uid, data);
+            const docRef = doc(db, 'users', user.uid);
+            await setDoc(docRef, { ...data }, { merge: true });
+
+            // Update local state
+            setProfile(prev => prev ? { ...prev, ...data } : null);
+
+            // Apply theme if changed
+            if (data.theme) {
+                const theme = data.theme === 'system'
+                    ? (window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light')
+                    : data.theme;
+                document.documentElement.setAttribute('data-theme', theme);
+            }
+
+            return { error: null };
+        } catch (err: any) {
+            console.error('[AuthContext] UpdateProfile error:', err);
+            return { error: err };
+        }
+    };
+
+    /**
+     * Update PulseCoin balance (add or subtract)
+     */
+    const updatePulseCoins = async (delta: number) => {
+        if (!user) return { error: 'No user authenticated' };
+
+        try {
+            const currentBalance = profile?.pulseCoins || 0;
+            const newBalance = Math.max(0, currentBalance + delta); // Never go below 0
+
+            console.log('[AuthContext] Updating PulseCoins:', currentBalance, '->', newBalance);
+            const docRef = doc(db, 'users', user.uid);
+            await setDoc(docRef, { pulseCoins: newBalance }, { merge: true });
+
+            // Update local state immediately
+            setProfile(prev => prev ? { ...prev, pulseCoins: newBalance } : null);
+
+            return { error: null };
+        } catch (err: any) {
+            console.error('[AuthContext] UpdatePulseCoins error:', err);
+            return { error: err };
+        }
+    };
+
+    /**
      * Sign out and redirect to home
      */
     const signOut = async () => {
@@ -281,7 +359,9 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
             signIn,
             signUp,
             signOut,
-            anonymousLogin
+            anonymousLogin,
+            updateProfile,
+            updatePulseCoins
         }}>
             {children}
         </AuthContext.Provider>
