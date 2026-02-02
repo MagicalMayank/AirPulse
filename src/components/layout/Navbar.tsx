@@ -223,14 +223,33 @@ export const Navbar = ({ role = 'citizen', onRoleChange, advancedMode = false, o
 
                 <div className={styles.iconBtnWrapper}>
                     {(() => {
-                        // Filter alerts for current user's role
+                        // Filter alerts for current user's role - STRICT filtering for Authority users
                         const userAlerts = alerts.filter(alert => {
-                            // Show if no target role (legacy) or targets 'all'
-                            if (!alert.targetRole || alert.targetRole === 'all') return true;
-                            // Show if targets current user's role
-                            if (alert.targetRole === userRole) return true;
-                            // Show if targets specific user
-                            if (alert.targetUserId && alert.targetUserId === user?.uid) return true;
+                            // Debug logging
+                            console.log(`[Navbar] Filtering alert: "${alert.title}", targetRole: "${alert.targetRole}", userRole: "${userRole}"`);
+                            
+                            // For Authority users: ONLY show alerts specifically targeted at 'authority' role
+                            if (userRole === 'authority') {
+                                const shouldShow = alert.targetRole === 'authority' || 
+                                                 (alert.targetUserId && alert.targetUserId === user?.uid);
+                                console.log(`[Navbar] Authority user - shouldShow: ${shouldShow}`);
+                                return shouldShow;
+                            }
+                            
+                            // For Analyst users: ONLY show alerts specifically targeted at 'analyst' role  
+                            if (userRole === 'analyst') {
+                                return alert.targetRole === 'analyst' || 
+                                       (alert.targetUserId && alert.targetUserId === user?.uid);
+                            }
+                            
+                            // For Citizens: Show alerts targeted at 'citizen' or 'all' or legacy alerts without targetRole
+                            if (userRole === 'citizen') {
+                                return !alert.targetRole || 
+                                       alert.targetRole === 'all' || 
+                                       alert.targetRole === 'citizen' ||
+                                       (alert.targetUserId && alert.targetUserId === user?.uid);
+                            }
+                            
                             return false;
                         });
                         
@@ -249,14 +268,33 @@ export const Navbar = ({ role = 'citizen', onRoleChange, advancedMode = false, o
                     })()}
 
                     {showNotifications && (() => {
-                        // Filter notifications by current user's role
+                        // Filter notifications by current user's role - STRICT filtering
                         const filteredAlerts = alerts.filter(alert => {
-                            // Show if no target role (legacy) or targets 'all'
-                            if (!alert.targetRole || alert.targetRole === 'all') return true;
-                            // Show if targets current user's role
-                            if (alert.targetRole === userRole) return true;
-                            // Show if targets specific user
-                            if (alert.targetUserId && alert.targetUserId === user?.uid) return true;
+                            // Debug logging
+                            console.log(`[Navbar Dropdown] Filtering alert: "${alert.title}", targetRole: "${alert.targetRole}", userRole: "${userRole}"`);
+                            
+                            // For Authority users: ONLY show alerts specifically targeted at 'authority' role
+                            if (userRole === 'authority') {
+                                const shouldShow = alert.targetRole === 'authority' || 
+                                                 (alert.targetUserId && alert.targetUserId === user?.uid);
+                                console.log(`[Navbar Dropdown] Authority user - shouldShow: ${shouldShow}`);
+                                return shouldShow;
+                            }
+                            
+                            // For Analyst users: ONLY show alerts specifically targeted at 'analyst' role  
+                            if (userRole === 'analyst') {
+                                return alert.targetRole === 'analyst' || 
+                                       (alert.targetUserId && alert.targetUserId === user?.uid);
+                            }
+                            
+                            // For Citizens: Show alerts targeted at 'citizen' or 'all' or legacy alerts without targetRole
+                            if (userRole === 'citizen') {
+                                return !alert.targetRole || 
+                                       alert.targetRole === 'all' || 
+                                       alert.targetRole === 'citizen' ||
+                                       (alert.targetUserId && alert.targetUserId === user?.uid);
+                            }
+                            
                             return false;
                         });
 

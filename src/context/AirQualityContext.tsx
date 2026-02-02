@@ -231,6 +231,11 @@ export function AirQualityProvider({ children }: { children: ReactNode }) {
 
         const unsubscribeAlerts = subscribeToAlerts((data) => {
             console.log('[AirQualityContext] Real-time alerts update:', data.length);
+            console.log('[AirQualityContext] Alerts data:', data.map(a => ({ 
+                title: a.title, 
+                targetRole: a.targetRole, 
+                createdByAuthorityId: a.createdByAuthorityId 
+            })));
             setAlerts(data);
             setAlertsLoading(false);
         });

@@ -7,6 +7,9 @@ import { useAuth } from '../../context/AuthContext';
 import { Bell, Plus, X, Globe } from 'lucide-react';
 import styles from './AlertModal.module.css';
 
+// Import cleanup utility for debugging
+import '../../utils/cleanupAlerts';
+
 interface AlertModalProps {
     isOpen: boolean;
     onClose: () => void;
