@@ -32,10 +32,19 @@ export const Dashboard = () => {
     const [selectedWard, setSelectedWard] = useState<WardProperties | null>(null);
     const [advancedMode, setAdvancedMode] = useState(false);
     const [showAuthModal, setShowAuthModal] = useState(false);
+    
+    // Active role state - allows Authority users to switch to Analyst mode
+    const [activeRole, setActiveRole] = useState<'citizen' | 'authority' | 'analyst'>(userRole || 'citizen');
 
-    // The active role is determined by the user's profile role
-    // This ensures role-based access control
-    const role = userRole || 'citizen';
+    // Update activeRole when userRole changes (on login/logout)
+    useEffect(() => {
+        if (userRole) {
+            setActiveRole(userRole);
+        }
+    }, [userRole]);
+
+    // The role used for rendering components
+    const role = activeRole;
 
     // Show auth modal if not authenticated
     useEffect(() => {
@@ -95,18 +104,25 @@ export const Dashboard = () => {
         );
     }
 
-    // Role change handler - only allow switching if user has proper permissions
+    // Role change handler - Authority users can switch to Analyst, others stay locked
     const handleRoleChange = (newRole: 'citizen' | 'authority' | 'analyst') => {
-        // For now, only allow viewing the user's own role dashboard
-        // In production, you might want to show an error or redirect
+        // Authority users can switch between Authority and Analyst
+        if (userRole === 'authority' && (newRole === 'authority' || newRole === 'analyst')) {
+            setActiveRole(newRole);
+            return;
+        }
+        
+        // All other users can only access their own role dashboard
         if (newRole !== userRole) {
             alert(`You can only access the ${userRole} dashboard. Login with a different account to access ${newRole} features.`);
             return;
         }
+        
+        setActiveRole(newRole);
     };
 
     const getLeftPanel = () => {
-        switch (role) {
+        switch (activeRole) {
             case 'analyst':
                 return <AnalystLeftPanel selectedWard={selectedWard} />;
             case 'authority':
@@ -117,7 +133,7 @@ export const Dashboard = () => {
     };
 
     const getRightPanel = () => {
-        switch (role) {
+        switch (activeRole) {
             case 'analyst':
                 return <AnalystRightPanel />;
             case 'authority':
@@ -128,11 +144,11 @@ export const Dashboard = () => {
     };
 
     // Show Advanced Analyst Layout when in Analyst mode with Advanced Mode ON
-    if (role === 'analyst' && advancedMode) {
+    if (activeRole === 'analyst' && advancedMode) {
         return (
             <>
                 <Navbar
-                    role={role}
+                    role={activeRole}
                     onRoleChange={handleRoleChange}
                     advancedMode={advancedMode}
                     onAdvancedModeChange={setAdvancedMode}
@@ -149,14 +165,14 @@ export const Dashboard = () => {
     return (
         <>
             <Navbar
-                role={role}
+                role={activeRole}
                 onRoleChange={handleRoleChange}
                 advancedMode={advancedMode}
-                onAdvancedModeChange={role === 'analyst' ? setAdvancedMode : undefined}
+                onAdvancedModeChange={activeRole === 'analyst' ? setAdvancedMode : undefined}
             />
             <DashboardLayout
                 leftPanel={getLeftPanel()}
-                centerPanel={<MapContainer onWardSelect={setSelectedWard} role={role} />}
+                centerPanel={<MapContainer onWardSelect={setSelectedWard} role={activeRole} />}
                 rightPanel={getRightPanel()}
             />
         </>
