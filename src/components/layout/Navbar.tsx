@@ -223,18 +223,27 @@ export const Navbar = ({ role = 'citizen', onRoleChange, advancedMode = false, o
 
                 <div className={styles.iconBtnWrapper}>
                     {(() => {
-                        // Calculate filtered alerts count for badge and styling
-                        const citizenAlerts = alerts.filter(a => !a.targetRole || a.targetRole === 'all' || a.targetRole === userRole || a.targetUserId === user?.uid);
-                        const hasCitizenAlerts = userRole === 'citizen' && citizenAlerts.length > 0;
+                        // Filter alerts for current user's role
+                        const userAlerts = alerts.filter(alert => {
+                            // Show if no target role (legacy) or targets 'all'
+                            if (!alert.targetRole || alert.targetRole === 'all') return true;
+                            // Show if targets current user's role
+                            if (alert.targetRole === userRole) return true;
+                            // Show if targets specific user
+                            if (alert.targetUserId && alert.targetUserId === user?.uid) return true;
+                            return false;
+                        });
+                        
+                        const hasAlerts = userAlerts.length > 0;
 
                         return (
                             <button
-                                className={`${styles.iconBtn} ${hasCitizenAlerts ? styles.alertActive : ''}`}
+                                className={`${styles.iconBtn} ${hasAlerts ? styles.alertActive : ''}`}
                                 title={t('nav_notifications')}
                                 onClick={() => setShowNotifications(!showNotifications)}
                             >
-                                <Bell size={20} fill={hasCitizenAlerts ? '#ef4444' : 'none'} color={hasCitizenAlerts ? '#ef4444' : 'currentColor'} />
-                                {citizenAlerts.length > 0 && <div className={styles.badge} />}
+                                <Bell size={20} fill={hasAlerts ? '#ef4444' : 'none'} color={hasAlerts ? '#ef4444' : 'currentColor'} />
+                                {hasAlerts && <div className={styles.badge} />}
                             </button>
                         );
                     })()}

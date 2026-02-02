@@ -28,6 +28,7 @@ export interface CreateAlertData {
     recommendedActions: string[];
     expiresAt: string;
     createdByAuthorityId: string;
+    targetRole?: 'citizen' | 'authority' | 'analyst' | 'all'; // Add targetRole to interface
 }
 
 /**
