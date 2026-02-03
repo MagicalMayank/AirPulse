@@ -54,6 +54,41 @@
     border-radius: 20px;
 }
 
+/* AI Active Indicator */
+.aiIndicator {
+    display: flex;
+    align-items: center;
+    gap: 0.4rem;
+    font-size: 0.7rem;
+    color: #10B981;
+    background: rgba(16, 185, 129, 0.1);
+    padding: 0.3rem 0.65rem;
+    border-radius: 20px;
+    border: 1px solid rgba(16, 185, 129, 0.3);
+}
+
+.aiDot {
+    width: 6px;
+    height: 6px;
+    background: #10B981;
+    border-radius: 50%;
+    animation: pulse 1.5s infinite;
+}
+
+@keyframes pulse {
+
+    0%,
+    100% {
+        opacity: 1;
+        transform: scale(1);
+    }
+
+    50% {
+        opacity: 0.5;
+        transform: scale(1.2);
+    }
+}
+
 .headerActions {
     display: flex;
     gap: 0.5rem;
@@ -146,7 +181,7 @@
     display: flex;
     justify-content: space-between;
     align-items: center;
-    margin-bottom: 1rem;
+    margin-bottom: 0.75rem;
 }
 
 .chartHeader h3 {
@@ -154,6 +189,12 @@
     font-weight: 600;
     color: #CCC;
     margin: 0;
+}
+
+.chartControls {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
 }
 
 .timeSelector {
@@ -173,11 +214,68 @@
     font-weight: 600;
     border-radius: 4px;
     cursor: pointer;
+    transition: all 0.2s;
+}
+
+.timeBtn:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
 }
 
 .timeBtnActive {
     background: var(--brand-primary);
     color: white;
+}
+
+/* Refresh Button */
+.refreshBtn {
+    display: flex;
+    align-items: center;
+    gap: 0.4rem;
+    padding: 0.4rem 0.75rem;
+    background: linear-gradient(135deg, rgba(139, 92, 246, 0.2), rgba(6, 182, 212, 0.2));
+    border: 1px solid rgba(139, 92, 246, 0.3);
+    border-radius: 6px;
+    color: #8B5CF6;
+    font-size: 0.7rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.refreshBtn:hover:not(:disabled) {
+    background: linear-gradient(135deg, rgba(139, 92, 246, 0.3), rgba(6, 182, 212, 0.3));
+    transform: translateY(-1px);
+}
+
+.refreshBtn:disabled {
+    opacity: 0.7;
+    cursor: not-allowed;
+}
+
+.refreshing {
+    background: linear-gradient(135deg, rgba(139, 92, 246, 0.15), rgba(6, 182, 212, 0.15));
+}
+
+/* Update Indicator */
+.updateIndicator {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    margin-bottom: 0.75rem;
+    font-size: 0.7rem;
+    color: #10B981;
+    padding: 0.35rem 0.65rem;
+    background: rgba(16, 185, 129, 0.08);
+    border-radius: 4px;
+    width: fit-content;
+}
+
+.updateTime {
+    color: #666;
+    margin-left: 0.5rem;
+    padding-left: 0.5rem;
+    border-left: 1px solid rgba(255, 255, 255, 0.1);
 }
 
 /* Chart Area */
@@ -186,6 +284,30 @@
     border-radius: 10px;
     padding: 1rem;
     margin-bottom: 1rem;
+    position: relative;
+    transition: opacity 0.3s;
+}
+
+.chartLoading {
+    opacity: 0.5;
+}
+
+.chartOverlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+    background: rgba(0, 0, 0, 0.5);
+    border-radius: 10px;
+    z-index: 10;
+    color: #AAA;
+    font-size: 0.8rem;
 }
 
 .areaChart,
@@ -195,11 +317,57 @@
     height: auto;
 }
 
+/* Animated Path */
+.animatedPath {
+    transition: d 0.8s ease-in-out;
+}
+
+/* Scan Line Animation */
+.scanLine {
+    animation: scan 3s linear infinite;
+}
+
+@keyframes scan {
+    0% {
+        transform: translateX(0);
+        opacity: 0;
+    }
+
+    10% {
+        opacity: 1;
+    }
+
+    90% {
+        opacity: 1;
+    }
+
+    100% {
+        transform: translateX(530px);
+        opacity: 0;
+    }
+}
+
+/* Spinner */
+.spinner {
+    animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+    from {
+        transform: rotate(0deg);
+    }
+
+    to {
+        transform: rotate(360deg);
+    }
+}
+
 /* Legend */
 .legend {
     display: flex;
     gap: 1.5rem;
     justify-content: center;
+    flex-wrap: wrap;
 }
 
 .legendItem {
@@ -220,9 +388,25 @@
 }
 
 .legendValue {
+    display: flex;
+    align-items: center;
+    gap: 0.25rem;
     font-size: 0.75rem;
     font-weight: 600;
     color: white;
+    transition: color 0.3s;
+}
+
+.trendUp {
+    color: #EF4444;
+}
+
+.trendDown {
+    color: #10B981;
+}
+
+.rotateIcon {
+    transform: rotate(180deg);
 }
 
 .legendInline {
@@ -287,10 +471,42 @@
     font-size: 0.75rem;
 }
 
+.aiNote {
+    display: flex;
+    align-items: center;
+    gap: 0.4rem;
+    margin-top: 1rem;
+    padding: 0.5rem;
+    background: rgba(139, 92, 246, 0.08);
+    border-radius: 6px;
+    font-size: 0.65rem;
+    color: #8B5CF6;
+}
+
 .scatterPlot {
     background: rgba(0, 0, 0, 0.2);
     border-radius: 10px;
     padding: 1rem;
+    position: relative;
+    transition: opacity 0.3s;
+}
+
+.analyzing {
+    opacity: 0.6;
+}
+
+.analyzeOverlay {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.5rem;
+    z-index: 10;
+    color: #AAA;
+    font-size: 0.8rem;
 }
 
 .plotHeader {
@@ -315,8 +531,42 @@
     border-radius: 4px;
 }
 
+.pulseBadge {
+    animation: badgePulse 2s ease-in-out infinite;
+}
+
+@keyframes badgePulse {
+
+    0%,
+    100% {
+        box-shadow: 0 0 0 0 rgba(139, 92, 246, 0.4);
+    }
+
+    50% {
+        box-shadow: 0 0 0 4px rgba(139, 92, 246, 0);
+    }
+}
+
 .correlationBadge strong {
     color: var(--brand-secondary);
+}
+
+/* Animated scatter points */
+.animatedPoint {
+    transition: cx 0.8s ease, cy 0.8s ease;
+    animation: pointPulse 2s ease-in-out infinite;
+}
+
+@keyframes pointPulse {
+
+    0%,
+    100% {
+        opacity: 0.8;
+    }
+
+    50% {
+        opacity: 1;
+    }
 }
 
 .correlationExplain {
@@ -324,6 +574,64 @@
     color: #AAA;
     margin: 1rem 0 0 0;
     line-height: 1.5;
+}
+
+/* Scan Status */
+.scanStatus {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    margin-bottom: 0.75rem;
+    font-size: 0.75rem;
+    color: #10B981;
+}
+
+.scanning {
+    animation: scanPulse 1s ease-in-out infinite;
+}
+
+@keyframes scanPulse {
+
+    0%,
+    100% {
+        opacity: 1;
+    }
+
+    50% {
+        opacity: 0.3;
+    }
+}
+
+/* Animated line */
+.animatedLine {
+    stroke-dasharray: 1000;
+    stroke-dashoffset: 1000;
+    animation: drawLine 2s ease forwards;
+}
+
+@keyframes drawLine {
+    to {
+        stroke-dashoffset: 0;
+    }
+}
+
+/* Pulse Circle for anomalies */
+.pulseCircle {
+    animation: anomalyPulse 1.5s ease-in-out infinite;
+}
+
+@keyframes anomalyPulse {
+
+    0%,
+    100% {
+        r: 8;
+        opacity: 1;
+    }
+
+    50% {
+        r: 12;
+        opacity: 0.6;
+    }
 }
 
 /* Anomaly Cards */
@@ -352,6 +660,16 @@
     font-weight: 600;
     color: white;
     margin-bottom: 0.5rem;
+}
+
+.confidencePill {
+    margin-left: auto;
+    font-size: 0.65rem;
+    font-weight: 500;
+    color: #10B981;
+    background: rgba(16, 185, 129, 0.1);
+    padding: 0.2rem 0.5rem;
+    border-radius: 10px;
 }
 
 .anomalyCard p {
@@ -410,6 +728,7 @@
     font-size: 0.9rem;
     font-weight: 700;
     color: white;
+    transition: all 0.5s ease;
 }
 
 .centerCell {
@@ -487,6 +806,7 @@
     display: flex;
     align-items: center;
     justify-content: center;
+    transition: width 0.5s ease;
 }
 
 .transportExt {
@@ -496,6 +816,7 @@
     display: flex;
     align-items: center;
     justify-content: center;
+    transition: width 0.5s ease;
 }
 
 /* Explain Panel */
@@ -515,8 +836,27 @@
     border-bottom: 1px solid rgba(255, 255, 255, 0.1);
 }
 
+.sparkle {
+    animation: sparkle 1s ease-in-out infinite;
+}
+
+@keyframes sparkle {
+
+    0%,
+    100% {
+        transform: scale(1) rotate(0deg);
+    }
+
+    50% {
+        transform: scale(1.2) rotate(180deg);
+    }
+}
+
 .confidence {
     margin-left: auto;
+    display: flex;
+    align-items: center;
+    gap: 0.4rem;
     font-size: 0.7rem;
     font-weight: 500;
     color: var(--aqi-good);
@@ -525,8 +865,80 @@
     border-radius: 20px;
 }
 
+/* Generating State */
+.generatingState {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 1.5rem;
+    padding: 2rem;
+    color: #888;
+    font-size: 0.8rem;
+}
+
+.neuralNetwork {
+    display: flex;
+    gap: 2rem;
+}
+
+.neuronLayer {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+}
+
+.neuron {
+    width: 12px;
+    height: 12px;
+    background: linear-gradient(135deg, #8B5CF6, #06B6D4);
+    border-radius: 50%;
+    animation: neuronPulse 1.5s ease-in-out infinite;
+}
+
+@keyframes neuronPulse {
+
+    0%,
+    100% {
+        opacity: 0.3;
+        transform: scale(0.8);
+    }
+
+    50% {
+        opacity: 1;
+        transform: scale(1);
+    }
+}
+
+/* Report Sections with animation */
 .reportSection {
     margin-bottom: 1.5rem;
+    opacity: 1;
+    transform: translateY(0);
+    transition: all 0.5s ease;
+}
+
+.reportSection.hidden {
+    opacity: 0;
+    transform: translateY(20px);
+    height: 0;
+    margin: 0;
+    overflow: hidden;
+}
+
+.reportSection.visible {
+    animation: slideIn 0.5s ease forwards;
+}
+
+@keyframes slideIn {
+    from {
+        opacity: 0;
+        transform: translateY(20px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
 }
 
 .reportSection h3 {

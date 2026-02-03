@@ -63,8 +63,10 @@ const ActionsTab = () => {
     const [statusFilter, setStatusFilter] = useState<StatusFilter>('all');
     const [isExpanded, setIsExpanded] = useState(false);
 
-    // Sync filter with map visibility - show resolved markers only when filter is 'resolved'
+    // Sync filter with map visibility - update complaintStatusFilter in context
     useEffect(() => {
+        setLayerFilter('complaintStatusFilter', statusFilter);
+        // Also enable resolved visibility when filter is 'resolved'
         setLayerFilter('showResolvedComplaints', statusFilter === 'resolved');
     }, [statusFilter, setLayerFilter]);
 
@@ -471,48 +473,213 @@ const CategoryBar = ({ label, value, color }: { label: string; value: number; co
     </div>
 );
 
-const TeamsTab = () => (
-    <>
-        <div className={styles.teamOverview}>
-            <div className={styles.teamStat}>
-                <span className={styles.teamStatValue}>8</span>
-                <span className={styles.teamStatLabel}>Total Teams</span>
-            </div>
-            <div className={styles.teamStat}>
-                <span className={styles.teamStatValue} style={{ color: 'var(--aqi-moderate)' }}>5</span>
-                <span className={styles.teamStatLabel}>Deployed</span>
-            </div>
-            <div className={styles.teamStat}>
-                <span className={styles.teamStatValue} style={{ color: 'var(--status-success)' }}>3</span>
-                <span className={styles.teamStatLabel}>Available</span>
-            </div>
-        </div>
+const TeamsTab = () => {
+    const { complaints, deployedTeams, deployTeam, removeDeployedTeam } = useAirQuality();
+    const [showDeployModal, setShowDeployModal] = useState(false);
+    const [selectedComplaint, setSelectedComplaint] = useState<Complaint | null>(null);
 
-        <div className={styles.card}>
-            <div className={styles.cardHeader}>
-                <span className={styles.cardTitle}>Active Deployments</span>
-            </div>
-            <div className={styles.deploymentList}>
-                <DeploymentCard
-                    team="Team Alpha"
-                    location="Okhla Phase III"
-                    task="Garbage Burning Investigation"
-                    eta="15 mins"
-                />
-            </div>
-        </div>
-    </>
-);
+    const AVAILABLE_TEAMS = [
+        { name: 'Team Alpha', specialization: 'Industrial & Burning' },
+        { name: 'Team Beta', specialization: 'Vehicle Emissions' },
+        { name: 'Team Gamma', specialization: 'Construction Dust' },
+        { name: 'Team Delta', specialization: 'General Inspection' },
+    ];
 
-const DeploymentCard = ({ team, location, task, eta }: { team: string; location: string; task: string; eta: string }) => (
-    <div className={styles.deploymentCard}>
-        <div className={styles.deploymentHeader}>
-            <span className={styles.deploymentTeam}>{team}</span>
-            <span className={styles.deploymentEta}>ETA: {eta}</span>
-        </div>
-        <div className={styles.deploymentLocation}>
-            <MapPin size={12} /> {location}
-        </div>
-        <div className={styles.deploymentTask}>{task}</div>
-    </div>
-);
+    const getAvailableTeams = () => {
+        const deployedNames = new Set(deployedTeams.map(t => t.teamName));
+        return AVAILABLE_TEAMS.filter(t => !deployedNames.has(t.name));
+    };
+
+    const pendingComplaints = complaints.filter(c => c.status === 'pending' || c.status === 'in_progress');
+
+    const handleDeploy = (teamName: string) => {
+        if (!selectedComplaint) return;
+        if (!selectedComplaint.latitude || !selectedComplaint.longitude) {
+            alert('Cannot deploy - complaint has no location coordinates');
+            return;
+        }
+        deployTeam(
+            teamName,
+            selectedComplaint.ward_name || selectedComplaint.location_text || 'Unknown Ward',
+            selectedComplaint.latitude,
+            selectedComplaint.longitude,
+            selectedComplaint.id
+        );
+        setShowDeployModal(false);
+        setSelectedComplaint(null);
+    };
+
+    return (
+        <>
+            <div className={styles.teamOverview}>
+                <div className={styles.teamStat}>
+                    <span className={styles.teamStatValue}>{AVAILABLE_TEAMS.length}</span>
+                    <span className={styles.teamStatLabel}>Total Teams</span>
+                </div>
+                <div className={styles.teamStat}>
+                    <span className={styles.teamStatValue} style={{ color: 'var(--aqi-moderate)' }}>{deployedTeams.length}</span>
+                    <span className={styles.teamStatLabel}>Deployed</span>
+                </div>
+                <div className={styles.teamStat}>
+                    <span className={styles.teamStatValue} style={{ color: 'var(--status-success)' }}>{getAvailableTeams().length}</span>
+                    <span className={styles.teamStatLabel}>Available</span>
+                </div>
+            </div>
+
+            {/* Deploy to Complaint Button */}
+            <div className={styles.card}>
+                <div className={styles.cardHeader}>
+                    <span className={styles.cardTitle}>Deploy Team to Complaint</span>
+                </div>
+                <div className={styles.deploymentList}>
+                    {pendingComplaints.length === 0 ? (
+                        <p style={{ color: 'var(--text-secondary)', fontSize: '0.8rem', textAlign: 'center' }}>
+                            No active complaints to deploy to
+                        </p>
+                    ) : (
+                        pendingComplaints.slice(0, 5).map(complaint => {
+                            const isDeployed = deployedTeams.some(t => t.complaintId === complaint.id);
+                            return (
+                                <div key={complaint.id} className={styles.deploymentCard} style={{ opacity: isDeployed ? 0.6 : 1 }}>
+                                    <div className={styles.deploymentHeader}>
+                                        <span className={styles.deploymentTeam}>
+                                            {complaint.pollution_type?.replace(/_/g, ' ')}
+                                        </span>
+                                        {isDeployed ? (
+                                            <span style={{ color: 'var(--status-success)', fontSize: '0.7rem' }}>✓ Deployed</span>
+                                        ) : (
+                                            <button
+                                                onClick={() => { setSelectedComplaint(complaint); setShowDeployModal(true); }}
+                                                style={{
+                                                    background: 'var(--brand-primary)',
+                                                    color: 'white',
+                                                    border: 'none',
+                                                    padding: '4px 10px',
+                                                    borderRadius: '6px',
+                                                    fontSize: '0.7rem',
+                                                    cursor: 'pointer'
+                                                }}
+                                            >
+                                                Deploy
+                                            </button>
+                                        )}
+                                    </div>
+                                    <div className={styles.deploymentLocation}>
+                                        <MapPin size={12} /> {complaint.ward_name || complaint.location_text}
+                                    </div>
+                                </div>
+                            );
+                        })
+                    )}
+                </div>
+            </div>
+
+            {/* Active Deployments */}
+            <div className={styles.card}>
+                <div className={styles.cardHeader}>
+                    <span className={styles.cardTitle}>Active Deployments ({deployedTeams.length})</span>
+                </div>
+                <div className={styles.deploymentList}>
+                    {deployedTeams.length === 0 ? (
+                        <p style={{ color: 'var(--text-secondary)', fontSize: '0.8rem', textAlign: 'center' }}>
+                            No teams currently deployed
+                        </p>
+                    ) : (
+                        deployedTeams.map(team => (
+                            <div key={team.id} className={styles.deploymentCard}>
+                                <div className={styles.deploymentHeader}>
+                                    <span className={styles.deploymentTeam}>🚔 {team.teamName}</span>
+                                    <button
+                                        onClick={() => removeDeployedTeam(team.id)}
+                                        style={{
+                                            background: 'var(--status-error)',
+                                            color: 'white',
+                                            border: 'none',
+                                            padding: '4px 8px',
+                                            borderRadius: '4px',
+                                            fontSize: '0.65rem',
+                                            cursor: 'pointer'
+                                        }}
+                                    >
+                                        Recall
+                                    </button>
+                                </div>
+                                <div className={styles.deploymentLocation}>
+                                    <MapPin size={12} /> {team.wardName}
+                                </div>
+                                <div className={styles.deploymentTask}>
+                                    Deployed: {new Date(team.deployedAt).toLocaleTimeString()}
+                                </div>
+                            </div>
+                        ))
+                    )}
+                </div>
+            </div>
+
+            {/* Deploy Modal */}
+            {showDeployModal && selectedComplaint && (
+                <div style={{
+                    position: 'fixed',
+                    top: 0,
+                    left: 0,
+                    right: 0,
+                    bottom: 0,
+                    background: 'rgba(0,0,0,0.7)',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    zIndex: 9999
+                }}>
+                    <div style={{
+                        background: 'var(--bg-card)',
+                        padding: '1.5rem',
+                        borderRadius: '12px',
+                        minWidth: '300px',
+                        border: '1px solid var(--border-color)'
+                    }}>
+                        <h3 style={{ color: 'var(--text-primary)', marginBottom: '1rem' }}>Select Team to Deploy</h3>
+                        <p style={{ color: 'var(--text-secondary)', fontSize: '0.8rem', marginBottom: '1rem' }}>
+                            Deploying to: {selectedComplaint.ward_name || selectedComplaint.location_text}
+                        </p>
+                        <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
+                            {getAvailableTeams().map(team => (
+                                <button
+                                    key={team.name}
+                                    onClick={() => handleDeploy(team.name)}
+                                    style={{
+                                        background: 'var(--bg-element)',
+                                        color: 'var(--text-primary)',
+                                        border: '1px solid var(--border-color)',
+                                        padding: '0.75rem',
+                                        borderRadius: '8px',
+                                        cursor: 'pointer',
+                                        textAlign: 'left'
+                                    }}
+                                >
+                                    <strong>{team.name}</strong>
+                                    <br />
+                                    <small style={{ color: 'var(--text-secondary)' }}>{team.specialization}</small>
+                                </button>
+                            ))}
+                        </div>
+                        <button
+                            onClick={() => { setShowDeployModal(false); setSelectedComplaint(null); }}
+                            style={{
+                                marginTop: '1rem',
+                                width: '100%',
+                                background: 'none',
+                                border: '1px solid var(--border-color)',
+                                color: 'var(--text-secondary)',
+                                padding: '0.5rem',
+                                borderRadius: '6px',
+                                cursor: 'pointer'
+                            }}
+                        >
+                            Cancel
+                        </button>
+                    </div>
+                </div>
+            )}
+        </>
+    );
+};

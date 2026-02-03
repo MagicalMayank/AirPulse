@@ -6,7 +6,7 @@ import { TrendChart } from './TrendChart';
 import { getStationHistory, type HistoryDataPoint } from '../../services/aqiService';
 import { calculateSubIndex } from '../../utils/aqiCalculator';
 
-const OPENWEATHER_API_KEY = '0423c230c409fb25a549f3cd75b8b55f';
+const OPENWEATHER_API_KEY = import.meta.env.VITE_OPENWEATHER_API_KEY || '';
 
 // City coordinates for weather fetching (matching cities.ts config)
 const CITY_COORDS: Record<string, { lat: number; lng: number; name: string }> = {

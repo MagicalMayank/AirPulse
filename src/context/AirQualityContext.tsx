@@ -30,6 +30,17 @@ export interface LayerFilters {
     traffic: boolean;
     complaints: boolean;
     showResolvedComplaints: boolean;
+    complaintStatusFilter: 'all' | 'pending' | 'in_progress' | 'resolved';
+}
+
+export interface DeployedTeam {
+    id: string;
+    teamName: string;
+    wardName: string;
+    lat: number;
+    lng: number;
+    complaintId: string;
+    deployedAt: string;
 }
 
 export type TimeRange = 'live' | '24h' | '7d';
@@ -52,6 +63,7 @@ export interface AirQualityState {
     complaintsError: string | null;
     alerts: Alert[];
     alertsLoading: boolean;
+    deployedTeams: DeployedTeam[];
 
     // Loading/Error states
     loading: boolean;
@@ -78,7 +90,7 @@ export interface AirQualityActions {
     // Filter actions
     setPollutantFilter: (pollutant: keyof PollutantFilters, enabled: boolean) => void;
     setTimeRange: (range: TimeRange) => void;
-    setLayerFilter: (layer: keyof LayerFilters, enabled: boolean) => void;
+    setLayerFilter: <K extends keyof LayerFilters>(layer: K, value: LayerFilters[K]) => void;
     setSearchQuery: (query: string) => void;
 
     // Selection actions
@@ -89,6 +101,8 @@ export interface AirQualityActions {
     updateComplaintStatus: (id: string, status: 'pending' | 'in_progress' | 'resolved' | 'invalid') => Promise<void>;
     sendAlert: (data: any) => Promise<string>;
     setCity: (cityId: string) => void;
+    deployTeam: (teamName: string, wardName: string, lat: number, lng: number, complaintId: string) => void;
+    removeDeployedTeam: (teamId: string) => void;
 
     // Helpers
     getWardAQI: (wardId: string | number) => WardAQIData | undefined;
@@ -115,6 +129,7 @@ const defaultFilters: AirQualityFilters = {
         traffic: false,
         complaints: true,
         showResolvedComplaints: false,
+        complaintStatusFilter: 'all',
     },
     searchQuery: '',
 };
@@ -143,6 +158,7 @@ export function AirQualityProvider({ children }: { children: ReactNode }) {
     const [filters, setFilters] = useState<AirQualityFilters>(defaultFilters);
     const [selectedWardId, setSelectedWardId] = useState<number | string | null>(null);
     const [selectedCity, setSelectedCity] = useState<CityConfig>(DEFAULT_CITY);
+    const [deployedTeams, setDeployedTeams] = useState<DeployedTeam[]>([]);
     const stationsRef = useRef<StationData[]>([]);
 
     // Update ref when stations change
@@ -301,10 +317,10 @@ export function AirQualityProvider({ children }: { children: ReactNode }) {
         // TODO: Trigger re-fetch with different time aggregation when API supports it
     }, []);
 
-    const setLayerFilter = useCallback((layer: keyof LayerFilters, enabled: boolean) => {
+    const setLayerFilter = useCallback(<K extends keyof LayerFilters>(layer: K, value: LayerFilters[K]) => {
         setFilters(prev => ({
             ...prev,
-            layers: { ...prev.layers, [layer]: enabled },
+            layers: { ...prev.layers, [layer]: value },
         }));
     }, []);
 
@@ -417,6 +433,24 @@ export function AirQualityProvider({ children }: { children: ReactNode }) {
         getActivePollutants,
         alerts,
         alertsLoading,
+        deployedTeams,
+        deployTeam: (teamName: string, wardName: string, lat: number, lng: number, complaintId: string) => {
+            const newTeam: DeployedTeam = {
+                id: `team-${Date.now()}`,
+                teamName,
+                wardName,
+                lat,
+                lng,
+                complaintId,
+                deployedAt: new Date().toISOString()
+            };
+            setDeployedTeams(prev => [...prev, newTeam]);
+            console.log('[AirQualityContext] Team deployed:', newTeam);
+        },
+        removeDeployedTeam: (teamId: string) => {
+            setDeployedTeams(prev => prev.filter(t => t.id !== teamId));
+            console.log('[AirQualityContext] Team removed:', teamId);
+        },
     };
 
     return (

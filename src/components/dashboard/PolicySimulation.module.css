@@ -941,3 +941,337 @@
         transform: translateY(0);
     }
 }
+
+/* AI Tag in Header */
+.aiTag {
+    display: flex;
+    align-items: center;
+    gap: 0.3rem;
+    font-size: 0.6rem;
+    font-weight: 600;
+    color: #10B981;
+    background: rgba(16, 185, 129, 0.1);
+    padding: 0.2rem 0.5rem;
+    border-radius: 10px;
+    border: 1px solid rgba(16, 185, 129, 0.3);
+    margin-left: 0.5rem;
+    animation: pulse 2s ease-in-out infinite;
+}
+
+/* Strategy Dropdown */
+.strategyDropdown {
+    position: relative;
+    margin-bottom: 0.75rem;
+}
+
+.strategyDropdownBtn {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    width: 100%;
+    padding: 0.875rem 1rem;
+    background: linear-gradient(135deg, rgba(139, 92, 246, 0.1), rgba(6, 182, 212, 0.1));
+    border: 1px solid rgba(139, 92, 246, 0.3);
+    border-radius: 10px;
+    color: white;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.strategyDropdownBtn:hover {
+    background: linear-gradient(135deg, rgba(139, 92, 246, 0.15), rgba(6, 182, 212, 0.15));
+    border-color: rgba(139, 92, 246, 0.5);
+}
+
+.strategyIcon {
+    font-size: 1.25rem;
+    flex-shrink: 0;
+}
+
+.strategyInfo {
+    flex: 1;
+    text-align: left;
+}
+
+.strategyName {
+    display: block;
+    font-size: 0.9rem;
+    font-weight: 600;
+    color: white;
+}
+
+.strategyDesc {
+    display: block;
+    font-size: 0.7rem;
+    color: #888;
+    margin-top: 0.15rem;
+}
+
+.dropdownChevron {
+    color: #888;
+    transition: transform 0.2s;
+}
+
+.chevronOpen {
+    transform: rotate(180deg);
+}
+
+.strategyOptions {
+    position: absolute;
+    top: calc(100% + 4px);
+    left: 0;
+    right: 0;
+    background: #1A1D24;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 10px;
+    z-index: 100;
+    max-height: 300px;
+    overflow-y: auto;
+    box-shadow: 0 10px 40px rgba(0, 0, 0, 0.5);
+    animation: dropdownSlide 0.2s ease;
+}
+
+@keyframes dropdownSlide {
+    from {
+        opacity: 0;
+        transform: translateY(-10px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.strategyOption {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    width: 100%;
+    padding: 0.75rem 1rem;
+    background: transparent;
+    border: none;
+    color: #CCC;
+    cursor: pointer;
+    transition: all 0.2s;
+    text-align: left;
+}
+
+.strategyOption:first-child {
+    border-radius: 10px 10px 0 0;
+}
+
+.strategyOption:last-child {
+    border-radius: 0 0 10px 10px;
+}
+
+.strategyOption:hover {
+    background: rgba(255, 255, 255, 0.05);
+}
+
+.strategyOptionActive {
+    background: rgba(139, 92, 246, 0.15);
+    color: white;
+}
+
+.strategyOption .strategyDesc {
+    color: #666;
+}
+
+.strategyOption:hover .strategyDesc {
+    color: #888;
+}
+
+/* Progress Container */
+.progressContainer {
+    margin-top: 1rem;
+    animation: fadeIn 0.3s ease;
+}
+
+.progressBar {
+    height: 6px;
+    background: #252830;
+    border-radius: 3px;
+    overflow: hidden;
+    margin-bottom: 0.5rem;
+}
+
+.progressFill {
+    height: 100%;
+    background: linear-gradient(90deg, #8B5CF6, #06B6D4);
+    border-radius: 3px;
+    transition: width 0.3s ease;
+    position: relative;
+}
+
+.progressFill::after {
+    content: '';
+    position: absolute;
+    top: 0;
+    right: 0;
+    bottom: 0;
+    width: 50px;
+    background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.3), transparent);
+    animation: shimmer 1s infinite;
+}
+
+@keyframes shimmer {
+    from {
+        transform: translateX(-100%);
+    }
+
+    to {
+        transform: translateX(100%);
+    }
+}
+
+.progressSteps {
+    display: flex;
+    justify-content: space-between;
+    padding: 0 0.5rem;
+}
+
+.progressStep {
+    width: 8px;
+    height: 8px;
+    background: #333;
+    border-radius: 50%;
+    transition: all 0.3s ease;
+}
+
+.progressStepActive {
+    background: #8B5CF6;
+    box-shadow: 0 0 8px rgba(139, 92, 246, 0.5);
+}
+
+/* Enhanced SHAP Animation */
+.shapAnimate .shapFill {
+    animation: shapGrow 0.8s ease forwards;
+}
+
+@keyframes shapGrow {
+    from {
+        width: 0% !important;
+    }
+}
+
+/* Spinner */
+.spinner {
+    animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+    from {
+        transform: rotate(0deg);
+    }
+
+    to {
+        transform: rotate(360deg);
+    }
+}
+
+/* Enhanced Run Button */
+.runButton {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+    width: 100%;
+    padding: 0.875rem 1rem;
+    margin-top: 1rem;
+    background: linear-gradient(135deg, #8B5CF6 0%, #06B6D4 100%);
+    border: none;
+    border-radius: 10px;
+    color: white;
+    font-size: 0.9rem;
+    font-weight: 700;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    box-shadow: 0 4px 15px rgba(139, 92, 246, 0.3);
+    position: relative;
+    overflow: hidden;
+}
+
+.runButton::before {
+    content: '';
+    position: absolute;
+    top: -50%;
+    left: -50%;
+    width: 200%;
+    height: 200%;
+    background: linear-gradient(45deg,
+            transparent,
+            rgba(255, 255, 255, 0.1),
+            transparent);
+    transform: rotate(45deg);
+    animation: buttonShine 3s infinite;
+}
+
+@keyframes buttonShine {
+    0% {
+        transform: rotate(45deg) translateX(-100%);
+    }
+
+    50%,
+    100% {
+        transform: rotate(45deg) translateX(100%);
+    }
+}
+
+.runButton:hover:not(:disabled) {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(139, 92, 246, 0.4);
+}
+
+.runButton:active:not(:disabled) {
+    transform: translateY(0);
+}
+
+.runButton:disabled {
+    opacity: 0.9;
+    cursor: not-allowed;
+}
+
+.runButtonLoading {
+    background: linear-gradient(135deg, #6D28D9 0%, #0891B2 100%);
+}
+
+.runButtonLoading::before {
+    animation: none;
+}
+
+/* Recommend Footer Enhanced */
+.recommendFooter {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.4rem;
+    margin-top: 0.75rem;
+    padding-top: 0.5rem;
+    border-top: 1px solid rgba(255, 255, 255, 0.05);
+    font-size: 0.7rem;
+    color: #666;
+    text-align: center;
+}
+
+.recommendFooter svg {
+    color: #8B5CF6;
+}
+
+/* Scrollbar for strategy options */
+.strategyOptions::-webkit-scrollbar {
+    width: 6px;
+}
+
+.strategyOptions::-webkit-scrollbar-track {
+    background: transparent;
+}
+
+.strategyOptions::-webkit-scrollbar-thumb {
+    background: #333;
+    border-radius: 3px;
+}
+
+.strategyOptions::-webkit-scrollbar-thumb:hover {
+    background: #444;
+}

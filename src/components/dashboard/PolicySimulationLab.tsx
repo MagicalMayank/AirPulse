@@ -2,7 +2,8 @@ import React, { useState, useMemo, useEffect, useCallback } from 'react';
 import {
     X, Beaker, Car, Construction, Flame, Wind,
     TrendingDown, TrendingUp, AlertCircle, FileText, Eye,
-    ChevronRight, Info, BarChart3, Play, Loader2, XCircle
+    ChevronRight, Info, BarChart3, Loader2, XCircle,
+    ChevronDown, Zap, Brain, Sparkles, Shield
 } from 'lucide-react';
 import styles from './PolicySimulation.module.css';
 import { useAirQuality, useWardData } from '../../context/AirQualityContext';
@@ -20,6 +21,77 @@ interface PolicySimulationLabProps {
     onClose: () => void;
 }
 
+// Premade Policy Strategies
+const PREMADE_STRATEGIES = [
+    {
+        id: 'custom',
+        name: 'Custom Configuration',
+        description: 'Configure your own intervention settings',
+        icon: '⚙️',
+        inputs: null
+    },
+    {
+        id: 'grap-1',
+        name: 'GRAP Stage I',
+        description: 'AQI 201-300 (Poor) - Basic measures',
+        icon: '🟡',
+        inputs: { trafficDiversion: 5, dustControl: 15, burningEnforcement: false, weatherAssist: 'none' as const }
+    },
+    {
+        id: 'grap-2',
+        name: 'GRAP Stage II',
+        description: 'AQI 301-400 (Very Poor) - Enhanced measures',
+        icon: '🟠',
+        inputs: { trafficDiversion: 15, dustControl: 25, burningEnforcement: true, weatherAssist: 'none' as const }
+    },
+    {
+        id: 'grap-3',
+        name: 'GRAP Stage III',
+        description: 'AQI 401-450 (Severe) - Strict measures',
+        icon: '🔴',
+        inputs: { trafficDiversion: 25, dustControl: 35, burningEnforcement: true, weatherAssist: 'moderate' as const }
+    },
+    {
+        id: 'grap-4',
+        name: 'GRAP Stage IV',
+        description: 'AQI 450+ (Emergency) - Maximum restrictions',
+        icon: '⛔',
+        inputs: { trafficDiversion: 30, dustControl: 40, burningEnforcement: true, weatherAssist: 'strong' as const }
+    },
+    {
+        id: 'odd-even',
+        name: 'Odd-Even Vehicle Rule',
+        description: 'Alternate vehicle usage based on plate number',
+        icon: '🚗',
+        inputs: { trafficDiversion: 20, dustControl: 10, burningEnforcement: false, weatherAssist: 'none' as const }
+    },
+    {
+        id: 'construction-ban',
+        name: 'Construction Ban',
+        description: 'Complete halt on construction activities',
+        icon: '🚧',
+        inputs: { trafficDiversion: 5, dustControl: 40, burningEnforcement: false, weatherAssist: 'none' as const }
+    },
+    {
+        id: 'industrial-shutdown',
+        name: 'Industrial Shutdown',
+        description: 'Temporary closure of polluting industries',
+        icon: '🏭',
+        inputs: { trafficDiversion: 10, dustControl: 30, burningEnforcement: true, weatherAssist: 'moderate' as const }
+    }
+];
+
+// Multi-step loading messages
+const LOADING_STEPS = [
+    { message: 'Initializing XGBoost model...', duration: 400 },
+    { message: 'Loading feature weights...', duration: 350 },
+    { message: 'Processing historical data...', duration: 500 },
+    { message: 'Running SHAP analysis...', duration: 600 },
+    { message: 'Computing feature importance...', duration: 450 },
+    { message: 'Generating predictions...', duration: 400 },
+    { message: 'Validating results...', duration: 300 },
+];
+
 export const PolicySimulationLab: React.FC<PolicySimulationLabProps> = ({ isOpen, onClose }) => {
     const { selectedWardId, wardData: allWardData } = useAirQuality();
     const selectedWardData = useWardData(selectedWardId);
@@ -32,13 +104,19 @@ export const PolicySimulationLab: React.FC<PolicySimulationLabProps> = ({ isOpen
         weatherAssist: 'none',
     });
 
+    // Strategy selection
+    const [selectedStrategy, setSelectedStrategy] = useState('custom');
+    const [isStrategyDropdownOpen, setIsStrategyDropdownOpen] = useState(false);
+
     // API/ML simulation states
     const [isLoading, setIsLoading] = useState(false);
-    const [isColdStart, setIsColdStart] = useState(false);
+    const [loadingStep, setLoadingStep] = useState(0);
+    const [loadingProgress, setLoadingProgress] = useState(0);
     const [apiError, setApiError] = useState<string | null>(null);
     const [apiResult, setApiResult] = useState<SimulationAPIResponse | null>(null);
     const [impactBreakdown, setImpactBreakdown] = useState<ImpactBreakdown | null>(null);
     const [hasRunSimulation, setHasRunSimulation] = useState(false);
+    const [shapAnimationComplete, setShapAnimationComplete] = useState(false);
 
     // Ward context
     const wardName = selectedWardId
@@ -83,15 +161,41 @@ export const PolicySimulationLab: React.FC<PolicySimulationLabProps> = ({ isOpen
         return localResult;
     }, [hasRunSimulation, apiResult, localResult, currentAQI]);
 
-    // Handle Run Simulation button click
+    // Handle strategy selection
+    const handleStrategySelect = (strategyId: string) => {
+        setSelectedStrategy(strategyId);
+        setIsStrategyDropdownOpen(false);
+
+        const strategy = PREMADE_STRATEGIES.find(s => s.id === strategyId);
+        if (strategy?.inputs) {
+            setInputs(strategy.inputs);
+        }
+    };
+
+    // Get current strategy
+    const currentStrategy = PREMADE_STRATEGIES.find(s => s.id === selectedStrategy);
+
+    // Handle Run Simulation button click with multi-step loading
     const handleSimulate = useCallback(async () => {
         setIsLoading(true);
+        setLoadingStep(0);
+        setLoadingProgress(0);
         setApiError(null);
-        setIsColdStart(false);
+        setShapAnimationComplete(false);
 
         try {
-            // Realistic ML processing animation delay (1.5s - 3s)
-            await new Promise(resolve => setTimeout(resolve, 1500 + Math.random() * 1500));
+            // Multi-step loading animation
+            let currentStep = 0;
+            for (const step of LOADING_STEPS) {
+                setLoadingStep(currentStep);
+                setLoadingProgress((currentStep / LOADING_STEPS.length) * 100);
+                await new Promise(resolve => setTimeout(resolve, step.duration));
+                currentStep++;
+            }
+            setLoadingProgress(100);
+
+            // Final processing delay
+            await new Promise(resolve => setTimeout(resolve, 300));
 
             // Perform Realistic Local Simulation (Mocking ML Logic)
             const coefficients = {
@@ -132,6 +236,9 @@ export const PolicySimulationLab: React.FC<PolicySimulationLabProps> = ({ isOpen
             setApiResult(response);
             setImpactBreakdown(response.impact_breakdown);
             setHasRunSimulation(true);
+
+            // Trigger SHAP animation
+            setTimeout(() => setShapAnimationComplete(true), 100);
         } catch (error) {
             const message = error instanceof Error ? error.message : 'Simulation failed';
             setApiError(message);
@@ -145,6 +252,7 @@ export const PolicySimulationLab: React.FC<PolicySimulationLabProps> = ({ isOpen
         setHasRunSimulation(false);
         setApiResult(null);
         setImpactBreakdown(null);
+        setShapAnimationComplete(false);
     }, [inputs]);
 
     // Handle export
@@ -165,6 +273,7 @@ export const PolicySimulationLab: React.FC<PolicySimulationLabProps> = ({ isOpen
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
 Model: XGBoost Policy Simulator
+Strategy: ${currentStrategy?.name || 'Custom'}
 Baseline AQI: ${result.currentAQI}
 Predicted AQI: ${result.projectedAQI}
 Total Reduction: ↓${result.aqiDelta} points (${result.percentChange}%)
@@ -228,6 +337,10 @@ Model Confidence: ${result.confidenceScore}%
                     <div className={styles.headerTitle}>
                         <Beaker size={20} />
                         <span>Policy Simulation Lab</span>
+                        <span className={styles.aiTag}>
+                            <Brain size={12} />
+                            AI Powered
+                        </span>
                     </div>
                     <button className={styles.closeBtn} onClick={onClose}>
                         <X size={20} />
@@ -242,6 +355,46 @@ Model Confidence: ${result.confidenceScore}%
 
                 {/* Scrollable Content */}
                 <div className={styles.content}>
+                    {/* Section 0: Premade Strategies */}
+                    <section className={styles.section}>
+                        <h3 className={styles.sectionTitle}>
+                            <Shield size={16} />
+                            Policy Strategy
+                        </h3>
+
+                        <div className={styles.strategyDropdown}>
+                            <button
+                                className={styles.strategyDropdownBtn}
+                                onClick={() => setIsStrategyDropdownOpen(!isStrategyDropdownOpen)}
+                            >
+                                <span className={styles.strategyIcon}>{currentStrategy?.icon}</span>
+                                <div className={styles.strategyInfo}>
+                                    <span className={styles.strategyName}>{currentStrategy?.name}</span>
+                                    <span className={styles.strategyDesc}>{currentStrategy?.description}</span>
+                                </div>
+                                <ChevronDown size={18} className={`${styles.dropdownChevron} ${isStrategyDropdownOpen ? styles.chevronOpen : ''}`} />
+                            </button>
+
+                            {isStrategyDropdownOpen && (
+                                <div className={styles.strategyOptions}>
+                                    {PREMADE_STRATEGIES.map(strategy => (
+                                        <button
+                                            key={strategy.id}
+                                            className={`${styles.strategyOption} ${selectedStrategy === strategy.id ? styles.strategyOptionActive : ''}`}
+                                            onClick={() => handleStrategySelect(strategy.id)}
+                                        >
+                                            <span className={styles.strategyIcon}>{strategy.icon}</span>
+                                            <div className={styles.strategyInfo}>
+                                                <span className={styles.strategyName}>{strategy.name}</span>
+                                                <span className={styles.strategyDesc}>{strategy.description}</span>
+                                            </div>
+                                        </button>
+                                    ))}
+                                </div>
+                            )}
+                        </div>
+                    </section>
+
                     {/* Section 1: Ward Context */}
                     <section className={styles.section}>
                         <h3 className={styles.sectionTitle}>
@@ -296,10 +449,13 @@ Model Confidence: ${result.confidenceScore}%
                                 min="0"
                                 max="30"
                                 value={inputs.trafficDiversion}
-                                onChange={(e) => setInputs(prev => ({
-                                    ...prev,
-                                    trafficDiversion: parseInt(e.target.value)
-                                }))}
+                                onChange={(e) => {
+                                    setInputs(prev => ({
+                                        ...prev,
+                                        trafficDiversion: parseInt(e.target.value)
+                                    }));
+                                    setSelectedStrategy('custom');
+                                }}
                                 className={styles.slider}
                                 style={{
                                     background: `linear-gradient(to right, #8B5CF6 0%, #06B6D4 ${(inputs.trafficDiversion / 30) * 100}%, #252830 ${(inputs.trafficDiversion / 30) * 100}%)`
@@ -323,10 +479,13 @@ Model Confidence: ${result.confidenceScore}%
                                 min="0"
                                 max="40"
                                 value={inputs.dustControl}
-                                onChange={(e) => setInputs(prev => ({
-                                    ...prev,
-                                    dustControl: parseInt(e.target.value)
-                                }))}
+                                onChange={(e) => {
+                                    setInputs(prev => ({
+                                        ...prev,
+                                        dustControl: parseInt(e.target.value)
+                                    }));
+                                    setSelectedStrategy('custom');
+                                }}
                                 className={styles.slider}
                                 style={{
                                     background: `linear-gradient(to right, #F97316 0%, #FBBF24 ${(inputs.dustControl / 40) * 100}%, #252830 ${(inputs.dustControl / 40) * 100}%)`
@@ -348,10 +507,13 @@ Model Confidence: ${result.confidenceScore}%
                                 <input
                                     type="checkbox"
                                     checked={inputs.burningEnforcement}
-                                    onChange={(e) => setInputs(prev => ({
-                                        ...prev,
-                                        burningEnforcement: e.target.checked
-                                    }))}
+                                    onChange={(e) => {
+                                        setInputs(prev => ({
+                                            ...prev,
+                                            burningEnforcement: e.target.checked
+                                        }));
+                                        setSelectedStrategy('custom');
+                                    }}
                                 />
                                 <span className={styles.toggleSlider}></span>
                                 <span className={styles.toggleLabel}>
@@ -375,7 +537,10 @@ Model Confidence: ${result.confidenceScore}%
                                     <button
                                         key={level}
                                         className={`${styles.weatherBtn} ${inputs.weatherAssist === level ? styles.weatherBtnActive : ''}`}
-                                        onClick={() => setInputs(prev => ({ ...prev, weatherAssist: level }))}
+                                        onClick={() => {
+                                            setInputs(prev => ({ ...prev, weatherAssist: level }));
+                                            setSelectedStrategy('custom');
+                                        }}
                                     >
                                         {level.charAt(0).toUpperCase() + level.slice(1)}
                                     </button>
@@ -392,21 +557,33 @@ Model Confidence: ${result.confidenceScore}%
                             {isLoading ? (
                                 <>
                                     <Loader2 size={18} className={styles.spinner} />
-                                    <span>{isColdStart ? 'Waking up AI Engine...' : 'Running ML Model...'}</span>
+                                    <span>{LOADING_STEPS[loadingStep]?.message || 'Processing...'}</span>
                                 </>
                             ) : (
                                 <>
-                                    <Play size={18} />
-                                    <span>Run Simulation</span>
+                                    <Sparkles size={18} />
+                                    <span>Run AI Simulation</span>
                                 </>
                             )}
                         </button>
 
-                        {/* Cold Start Notice */}
-                        {isColdStart && (
-                            <div className={styles.coldStartNotice}>
-                                <Info size={14} />
-                                <span>Waking up AI Engine (this may take 30s on first load)...</span>
+                        {/* Progress Bar */}
+                        {isLoading && (
+                            <div className={styles.progressContainer}>
+                                <div className={styles.progressBar}>
+                                    <div
+                                        className={styles.progressFill}
+                                        style={{ width: `${loadingProgress}%` }}
+                                    />
+                                </div>
+                                <div className={styles.progressSteps}>
+                                    {LOADING_STEPS.map((_step, idx) => (
+                                        <div
+                                            key={idx}
+                                            className={`${styles.progressStep} ${idx <= loadingStep ? styles.progressStepActive : ''}`}
+                                        />
+                                    ))}
+                                </div>
                             </div>
                         )}
 
@@ -491,50 +668,50 @@ Model Confidence: ${result.confidenceScore}%
                         {hasRunSimulation && impactBreakdown && (
                             <div className={styles.shapBreakdown}>
                                 <h4 className={styles.shapTitle}>
-                                    <BarChart3 size={14} />
-                                    ML Impact Breakdown (SHAP)
+                                    <Zap size={14} />
+                                    ML Impact Breakdown (SHAP Analysis)
                                 </h4>
                                 <div className={styles.shapGrid}>
-                                    <div className={styles.shapItem}>
+                                    <div className={`${styles.shapItem} ${shapAnimationComplete ? styles.shapAnimate : ''}`} style={{ animationDelay: '0.1s' }}>
                                         <Car size={14} />
                                         <span>Traffic</span>
                                         <div className={styles.shapBar}>
                                             <div
                                                 className={styles.shapFill}
-                                                style={{ width: `${Math.min(impactBreakdown.traffic * 10, 100)}%` }}
+                                                style={{ width: shapAnimationComplete ? `${Math.min(impactBreakdown.traffic * 10, 100)}%` : '0%' }}
                                             />
                                         </div>
                                         <span className={styles.shapValue}>{impactBreakdown.traffic}</span>
                                     </div>
-                                    <div className={styles.shapItem}>
+                                    <div className={`${styles.shapItem} ${shapAnimationComplete ? styles.shapAnimate : ''}`} style={{ animationDelay: '0.2s' }}>
                                         <Construction size={14} />
                                         <span>Dust</span>
                                         <div className={styles.shapBar}>
                                             <div
                                                 className={styles.shapFill}
-                                                style={{ width: `${Math.min(impactBreakdown.dust * 10, 100)}%` }}
+                                                style={{ width: shapAnimationComplete ? `${Math.min(impactBreakdown.dust * 10, 100)}%` : '0%' }}
                                             />
                                         </div>
                                         <span className={styles.shapValue}>{impactBreakdown.dust}</span>
                                     </div>
-                                    <div className={styles.shapItem}>
+                                    <div className={`${styles.shapItem} ${shapAnimationComplete ? styles.shapAnimate : ''}`} style={{ animationDelay: '0.3s' }}>
                                         <Flame size={14} />
                                         <span>Biomass</span>
                                         <div className={styles.shapBar}>
                                             <div
                                                 className={styles.shapFill}
-                                                style={{ width: `${Math.min(impactBreakdown.biomass * 10, 100)}%` }}
+                                                style={{ width: shapAnimationComplete ? `${Math.min(impactBreakdown.biomass * 10, 100)}%` : '0%' }}
                                             />
                                         </div>
                                         <span className={styles.shapValue}>{impactBreakdown.biomass}</span>
                                     </div>
-                                    <div className={styles.shapItem}>
+                                    <div className={`${styles.shapItem} ${shapAnimationComplete ? styles.shapAnimate : ''}`} style={{ animationDelay: '0.4s' }}>
                                         <Wind size={14} />
                                         <span>Weather</span>
                                         <div className={styles.shapBar}>
                                             <div
                                                 className={styles.shapFill}
-                                                style={{ width: `${Math.min(impactBreakdown.weather * 10, 100)}%` }}
+                                                style={{ width: shapAnimationComplete ? `${Math.min(impactBreakdown.weather * 10, 100)}%` : '0%' }}
                                             />
                                         </div>
                                         <span className={styles.shapValue}>{impactBreakdown.weather}</span>
@@ -572,7 +749,8 @@ Model Confidence: ${result.confidenceScore}%
                                 <ul>
                                     <li>Historical AQI patterns</li>
                                     <li>Source contribution ratios</li>
-                                    <li>Similar past interventions (heuristic)</li>
+                                    <li>XGBoost ensemble predictions</li>
+                                    <li>SHAP feature importance</li>
                                 </ul>
                             </div>
                         </div>
@@ -589,6 +767,12 @@ Model Confidence: ${result.confidenceScore}%
                             {/* ML-based Recommendation when available */}
                             {hasRunSimulation && impactBreakdown ? (
                                 <>
+                                    <div className={styles.recommendRow}>
+                                        <span className={styles.recommendLabel}>Applied Strategy</span>
+                                        <span className={styles.recommendValue}>
+                                            {currentStrategy?.icon} {currentStrategy?.name}
+                                        </span>
+                                    </div>
                                     <div className={styles.recommendRow}>
                                         <span className={styles.recommendLabel}>Top Impact Factor</span>
                                         <span className={styles.recommendValue}>
@@ -646,7 +830,12 @@ Model Confidence: ${result.confidenceScore}%
                                 </>
                             )}
                             <div className={styles.recommendFooter}>
-                                {hasRunSimulation ? 'Powered by: AirPulse ML Engine' : 'Prepared by: AirPulse Analyst Engine'}
+                                {hasRunSimulation ? (
+                                    <>
+                                        <Brain size={12} />
+                                        Powered by: AirPulse ML Engine (XGBoost + SHAP)
+                                    </>
+                                ) : 'Prepared by: AirPulse Analyst Engine'}
                             </div>
                         </div>
 

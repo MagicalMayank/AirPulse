@@ -27,6 +27,16 @@ const createComplaintIcon = (status: string) => {
     });
 };
 
+// Team deployment marker icon
+const createTeamIcon = (teamName: string) => {
+    return L.divIcon({
+        html: `<div class="${styles.teamMarker}"><svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg></div>`,
+        className: '',
+        iconSize: [28, 28],
+        iconAnchor: [14, 14],
+    });
+};
+
 interface InteractiveMapProps {
     onWardSelect?: (ward: WardProperties | null) => void;
     role?: 'citizen' | 'authority' | 'analyst';
@@ -112,6 +122,7 @@ export const InteractiveMap = forwardRef<InteractiveMapHandle, InteractiveMapPro
         lastUpdated,
         filters,
         selectedCity,
+        deployedTeams,
         setGeoData: setContextGeoData,
         selectWard,
         refetch
@@ -281,14 +292,20 @@ export const InteractiveMap = forwardRef<InteractiveMapHandle, InteractiveMapPro
     const canSeeComplaints = role === 'authority' || role === 'analyst';
     const showComplaints = canSeeComplaints && filters.layers.complaints;
 
-    // Filter complaints by visibility rules
+    // Filter complaints by visibility rules and status filter from Right Panel
+    const statusFilter = filters.layers.complaintStatusFilter;
     const visibleComplaints = complaints.filter(complaint => {
         if (!complaint.latitude || !complaint.longitude) return false;
         if (complaint.status === 'invalid') return false; // Never show invalid
-        if (complaint.status === 'resolved') {
-            return filters.layers.showResolvedComplaints; // Only show if filter enabled
+
+        // Apply status filter from Right Panel
+        if (statusFilter !== 'all' && complaint.status !== statusFilter) return false;
+
+        // Resolved only visible when explicitly filtered
+        if (statusFilter !== 'resolved' && complaint.status === 'resolved') {
+            return filters.layers.showResolvedComplaints;
         }
-        return true; // Always show pending and in_progress
+        return true;
     });
 
     return (
@@ -380,6 +397,29 @@ export const InteractiveMap = forwardRef<InteractiveMapHandle, InteractiveMapPro
                                     </a>
                                 )}
                                 <small className={styles.popupDate}>{new Date(complaint.created_at).toLocaleString()}</small>
+                            </div>
+                        </Popup>
+                    </Marker>
+                ))}
+
+                {/* Team deployment markers layer - Shows deployed teams on map */}
+                {(role === 'authority' || role === 'analyst') && deployedTeams.map(team => (
+                    <Marker
+                        key={team.id}
+                        position={[team.lat, team.lng]}
+                        icon={createTeamIcon(team.teamName)}
+                    >
+                        <Popup>
+                            <div className={styles.popupContent}>
+                                <div className={styles.complaintPopupHeader}>
+                                    <strong>🚔 {team.teamName}</strong>
+                                </div>
+                                <div className={styles.complaintMeta}>
+                                    <MapPin size={10} /> {team.wardName}
+                                </div>
+                                <div className={styles.complaintStatus} data-status="in_progress">
+                                    Deployed: {new Date(team.deployedAt).toLocaleTimeString()}
+                                </div>
                             </div>
                         </Popup>
                     </Marker>
