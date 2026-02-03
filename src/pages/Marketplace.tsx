@@ -42,7 +42,7 @@ const PRODUCTS: Product[] = [
         description: 'Digital code sent instantly to your registered email.',
         price: 1000,
         category: 'gift',
-        image: 'https://images.unsplash.com/photo-1556742049-0cfed4f6a45d?w=400&h=400&fit=crop',
+        image: 'https://wallpapers.com/png/amazon-gift-card-black-design-1f95g2n3hrkfpxun-2.html',
         icon: <Gift size={16} />
     },
     {
