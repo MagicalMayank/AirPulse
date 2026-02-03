@@ -51,7 +51,7 @@ const PRODUCTS: Product[] = [
         description: 'High efficiency smart air purifier. Removes 99.97% of smoke.',
         price: 5000,
         category: 'tech',
-        image: 'https://images.unsplash.com/photo-1585771724684-38269d6639fd?w=400&h=400&fit=crop',
+        image: 'https://www.mi.com/in/product/xiaomi-smart-air-purifier-4/?srsltid=AfmBOooDE-BCrKbLCQOwWRSjH5mTDdltA5E-GBRe7Wba6iFFmNMjZIfM',
         icon: <Wind size={16} />
     },
     {
