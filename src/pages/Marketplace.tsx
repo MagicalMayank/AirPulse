@@ -42,7 +42,7 @@ const PRODUCTS: Product[] = [
         description: 'Digital code sent instantly to your registered email.',
         price: 1000,
         category: 'gift',
-        image: 'https://images.unsplash.com/photo-1556742049-0cfed4f6a45d?w=400&h=400&fit=crop',
+        image: 'https://images.unsplash.com/photo-1649734926695-1b1664e98842?q=80&w=1162&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D',
         icon: <Gift size={16} />
     },
     {
@@ -51,7 +51,7 @@ const PRODUCTS: Product[] = [
         description: 'High efficiency smart air purifier. Removes 99.97% of smoke.',
         price: 5000,
         category: 'tech',
-        image: 'https://images.unsplash.com/photo-1585771724684-38269d6639fd?w=400&h=400&fit=crop',
+        image: 'https://images.unsplash.com/photo-1652352529254-5106f4c8e03c?q=80&w=764&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D',
         icon: <Wind size={16} />
     },
     {
