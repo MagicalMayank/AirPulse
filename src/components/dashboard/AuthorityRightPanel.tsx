@@ -95,18 +95,37 @@ const ActionsTab = () => {
     const handleGrantPoints = async (complaint: Complaint, points: number) => {
         console.log('[Authority] Granting', points, 'PulseCoins to user:', complaint.user_id);
 
+        // Validate user_id exists
+        if (!complaint.user_id) {
+            console.error('[Authority] Cannot grant points - no user_id on complaint');
+            alert('Error: Cannot grant points - complaint has no user ID');
+            return;
+        }
+
         try {
             // Direct Firestore update to user's profile
             const userDocRef = doc(db, 'users', complaint.user_id);
             const userDoc = await getDoc(userDocRef);
 
-            const currentBalance = userDoc.exists() ? (userDoc.data()?.pulseCoins || 0) : 0;
-            const newBalance = currentBalance + points;
+            if (!userDoc.exists()) {
+                // Create user document if it doesn't exist (for anonymous users)
+                console.log('[Authority] User document does not exist, creating with initial points...');
+                await setDoc(userDocRef, { pulseCoins: points }, { merge: true });
+                console.log('[Authority] Created user doc with', points, 'PulseCoins');
+            } else {
+                const currentBalance = userDoc.data()?.pulseCoins || 0;
+                const newBalance = currentBalance + points;
+                await setDoc(userDocRef, { pulseCoins: newBalance }, { merge: true });
+                console.log('[Authority] Updated PulseCoins:', currentBalance, '->', newBalance);
+            }
 
-            await setDoc(userDocRef, { pulseCoins: newBalance }, { merge: true });
-            console.log('[Authority] Updated PulseCoins:', currentBalance, '->', newBalance);
-        } catch (err) {
+            // Show success feedback
+            alert(`✅ ${points} PulseCoins awarded successfully!`);
+
+        } catch (err: any) {
             console.error('[Authority] Failed to update PulseCoins:', err);
+            alert(`Error granting points: ${err.message || 'Unknown error'}`);
+            return; // Don't send email if points failed
         }
 
         // Send points awarded email notification
