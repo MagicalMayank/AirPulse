@@ -70,9 +70,12 @@ export const Marketplace = () => {
     const { profile, updatePulseCoins } = useAuth();
     const [selectedProduct, setSelectedProduct] = useState<Product | null>(null);
     const [showConfirmModal, setShowConfirmModal] = useState(false);
+    const [showAddressModal, setShowAddressModal] = useState(false);
     const [showSuccessToast, setShowSuccessToast] = useState(false);
     const [isRedeeming, setIsRedeeming] = useState(false);
     const [claimedOrderId, setClaimedOrderId] = useState('');
+    const [shippingAddress, setShippingAddress] = useState('');
+    const [formError, setFormError] = useState('');
 
     const userBalance = profile?.pulseCoins || 0;
 
@@ -81,26 +84,56 @@ export const Marketplace = () => {
         setShowConfirmModal(true);
     };
 
-    const confirmRedemption = async () => {
+    const confirmRedemption = () => {
+        if (!selectedProduct) return;
+
+        // If it's a physical product, show address modal first
+        if (selectedProduct.category === 'health' || selectedProduct.category === 'tech') {
+            setShowConfirmModal(false);
+            setShowAddressModal(true);
+            return;
+        }
+
+        // For digital/donation products, finalize immediately
+        finalizeRedemption();
+    };
+
+    const finalizeRedemption = async () => {
         if (!selectedProduct) return;
 
         setIsRedeeming(true);
 
-        // Deduct points
-        await updatePulseCoins(-selectedProduct.price);
+        try {
+            // Deduct points
+            await updatePulseCoins(-selectedProduct.price);
 
-        // Generate order ID
-        const orderId = Math.random().toString(36).substring(2, 6).toUpperCase();
-        setClaimedOrderId(orderId);
+            // Generate order ID
+            const orderId = Math.random().toString(36).substring(2, 6).toUpperCase();
+            setClaimedOrderId(orderId);
 
-        setIsRedeeming(false);
-        setShowConfirmModal(false);
-        setShowSuccessToast(true);
+            setShowConfirmModal(false);
+            setShowAddressModal(false);
+            setShowSuccessToast(true);
 
-        // Hide toast after 5 seconds
-        setTimeout(() => {
-            setShowSuccessToast(false);
-        }, 5000);
+            // Hide toast after 5 seconds
+            setTimeout(() => {
+                setShowSuccessToast(false);
+            }, 5000);
+        } catch (error) {
+            console.error('Redemption failed:', error);
+        } finally {
+            setIsRedeeming(false);
+        }
+    };
+
+    const handleAddressSubmit = (e: React.FormEvent) => {
+        e.preventDefault();
+        if (!shippingAddress.trim()) {
+            setFormError('Please enter your delivery address');
+            return;
+        }
+        setFormError('');
+        finalizeRedemption();
     };
 
     const getProgressPercent = (price: number) => {
@@ -252,6 +285,51 @@ export const Marketplace = () => {
                                     {isRedeeming ? 'Processing...' : 'Confirm'}
                                 </button>
                             </div>
+                        </div>
+                    </div>
+                )}
+
+                {/* Address Modal */}
+                {showAddressModal && selectedProduct && (
+                    <div className={styles.modalBackdrop} onClick={() => setShowAddressModal(false)}>
+                        <div className={styles.modal} onClick={e => e.stopPropagation()}>
+                            <h3 className={styles.modalTitle}>Delivery Address</h3>
+                            <p className={styles.modalText}>
+                                Please provide your delivery address for <strong>{selectedProduct.name}</strong>.
+                            </p>
+
+                            <form onSubmit={handleAddressSubmit} className={styles.addressForm}>
+                                <div className={styles.inputGroup}>
+                                    <label htmlFor="address" className={styles.inputLabel}>Full Address</label>
+                                    <textarea
+                                        id="address"
+                                        placeholder="Enter your complete shipping address (Street, City, Zip, Phone)"
+                                        value={shippingAddress}
+                                        onChange={(e) => setShippingAddress(e.target.value)}
+                                        className={styles.addressInput}
+                                        rows={4}
+                                        autoFocus
+                                    />
+                                    {formError && <span className={styles.errorMessage}>{formError}</span>}
+                                </div>
+
+                                <div className={styles.modalButtons}>
+                                    <button
+                                        type="button"
+                                        className={styles.cancelButton}
+                                        onClick={() => setShowAddressModal(false)}
+                                    >
+                                        Back
+                                    </button>
+                                    <button
+                                        type="submit"
+                                        className={styles.confirmButton}
+                                        disabled={isRedeeming}
+                                    >
+                                        {isRedeeming ? 'Processing...' : 'Confirm Delivery'}
+                                    </button>
+                                </div>
+                            </form>
                         </div>
                     </div>
                 )}
