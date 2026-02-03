@@ -29,6 +29,7 @@ export interface LayerFilters {
     sensors: boolean;
     traffic: boolean;
     complaints: boolean;
+    showResolvedComplaints: boolean;
 }
 
 export type TimeRange = 'live' | '24h' | '7d';
@@ -113,6 +114,7 @@ const defaultFilters: AirQualityFilters = {
         sensors: false,
         traffic: false,
         complaints: true,
+        showResolvedComplaints: false,
     },
     searchQuery: '',
 };
@@ -231,10 +233,10 @@ export function AirQualityProvider({ children }: { children: ReactNode }) {
 
         const unsubscribeAlerts = subscribeToAlerts((data) => {
             console.log('[AirQualityContext] Real-time alerts update:', data.length);
-            console.log('[AirQualityContext] Alerts data:', data.map(a => ({ 
-                title: a.title, 
-                targetRole: a.targetRole, 
-                createdByAuthorityId: a.createdByAuthorityId 
+            console.log('[AirQualityContext] Alerts data:', data.map(a => ({
+                title: a.title,
+                targetRole: a.targetRole,
+                createdByAuthorityId: a.createdByAuthorityId
             })));
             setAlerts(data);
             setAlertsLoading(false);

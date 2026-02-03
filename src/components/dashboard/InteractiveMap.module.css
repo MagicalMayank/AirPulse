@@ -125,15 +125,25 @@
     display: flex;
     align-items: center;
     justify-content: center;
-    background: #d90429;
     color: white;
     width: 24px;
     height: 24px;
     border-radius: 50%;
     border: 2px solid white;
-    box-shadow: 0 0 10px rgba(217, 4, 41, 0.5);
     cursor: pointer;
+}
+
+/* Status-based pulse animations */
+.pulsePending {
     animation: pulse-red 2s infinite;
+}
+
+.pulseInProgress {
+    animation: pulse-yellow 2s infinite;
+}
+
+.pulseResolved {
+    animation: pulse-green 2s infinite;
 }
 
 @keyframes pulse-red {
@@ -150,6 +160,40 @@
     100% {
         transform: scale(0.95);
         box-shadow: 0 0 0 0 rgba(217, 4, 41, 0);
+    }
+}
+
+@keyframes pulse-yellow {
+    0% {
+        transform: scale(0.95);
+        box-shadow: 0 0 0 0 rgba(255, 171, 0, 0.7);
+    }
+
+    70% {
+        transform: scale(1);
+        box-shadow: 0 0 0 10px rgba(255, 171, 0, 0);
+    }
+
+    100% {
+        transform: scale(0.95);
+        box-shadow: 0 0 0 0 rgba(255, 171, 0, 0);
+    }
+}
+
+@keyframes pulse-green {
+    0% {
+        transform: scale(0.95);
+        box-shadow: 0 0 0 0 rgba(56, 176, 0, 0.7);
+    }
+
+    70% {
+        transform: scale(1);
+        box-shadow: 0 0 0 10px rgba(56, 176, 0, 0);
+    }
+
+    100% {
+        transform: scale(0.95);
+        box-shadow: 0 0 0 0 rgba(56, 176, 0, 0);
     }
 }
 

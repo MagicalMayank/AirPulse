@@ -9,7 +9,7 @@
 
 .content {
     display: grid;
-    grid-template-columns: 300px 1fr 320px;
+    grid-template-columns: 340px 1fr 360px;
     /* Narrower sidebars */
     flex: 1;
     overflow: hidden;

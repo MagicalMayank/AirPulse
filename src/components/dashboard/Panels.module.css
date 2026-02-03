@@ -336,6 +336,129 @@
     border-radius: 4px;
 }
 
+.badgeGreen {
+    background: rgba(0, 200, 117, 0.1);
+    color: #00c875;
+    padding: 2px 6px;
+    border-radius: 4px;
+}
+
+/* Weather Section */
+.weatherCard {
+    background: linear-gradient(135deg, rgba(25, 30, 45, 0.95) 0%, rgba(35, 45, 70, 0.9) 100%);
+    border: 1px solid rgba(100, 150, 255, 0.15);
+    border-radius: 16px;
+    padding: 1.25rem;
+    position: relative;
+    overflow: hidden;
+    backdrop-filter: blur(10px);
+}
+
+.weatherCard::before {
+    content: '';
+    position: absolute;
+    top: -50%;
+    right: -50%;
+    width: 100%;
+    height: 100%;
+    background: radial-gradient(circle, rgba(100, 150, 255, 0.05) 0%, transparent 70%);
+    pointer-events: none;
+}
+
+.weatherHeader {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 1rem;
+}
+
+.weatherCity {
+    font-size: 0.85rem;
+    font-weight: 600;
+    color: var(--text-primary);
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.weatherTime {
+    font-size: 0.65rem;
+    color: #888;
+}
+
+.weatherMain {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    margin-bottom: 1rem;
+}
+
+.weatherIcon {
+    font-size: 3rem;
+    filter: drop-shadow(0 4px 8px rgba(0, 0, 0, 0.3));
+}
+
+.weatherTemp {
+    font-size: 2.5rem;
+    font-weight: 700;
+    color: var(--text-primary);
+    line-height: 1;
+}
+
+.weatherTempUnit {
+    font-size: 1rem;
+    color: #888;
+    font-weight: 400;
+}
+
+.weatherCondition {
+    font-size: 0.85rem;
+    color: var(--text-secondary);
+    text-transform: capitalize;
+}
+
+.weatherDetails {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 0.75rem;
+    background: rgba(0, 0, 0, 0.2);
+    border-radius: 12px;
+    padding: 0.75rem;
+}
+
+.weatherDetailItem {
+    text-align: center;
+}
+
+.weatherDetailLabel {
+    font-size: 0.6rem;
+    color: #666;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    margin-bottom: 0.25rem;
+}
+
+.weatherDetailValue {
+    font-size: 0.9rem;
+    font-weight: 600;
+    color: var(--text-primary);
+}
+
+.weatherLoading {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 120px;
+    color: #666;
+}
+
+.weatherError {
+    text-align: center;
+    color: #ff6b6b;
+    font-size: 0.8rem;
+    padding: 1rem;
+}
+
 .sentimentFeed {
     display: flex;
     flex-direction: column;
@@ -516,4 +639,17 @@
     height: 100%;
     border-radius: 3px;
     transition: width 0.5s ease;
+}
+
+/* Fade In Animation for Live Sentiment */
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+        transform: translateY(-10px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
 }

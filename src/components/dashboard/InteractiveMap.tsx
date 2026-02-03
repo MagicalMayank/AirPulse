@@ -10,13 +10,22 @@ import type { WardProperties } from '../../types';
 import styles from './InteractiveMap.module.css';
 import { AlertCircle, MapPin, ExternalLink } from 'lucide-react';
 
-// Custom icons for complaints
-const complaintIcon = L.divIcon({
-    html: `<div class="${styles.complaintMarker}"><svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-alert-circle"><circle cx="12" cy="12" r="10"/><line x1="12" x2="12" y1="8" y2="12"/><line x1="12" x2="12.01" y1="16" y2="16"/></svg></div>`,
-    className: '',
-    iconSize: [24, 24],
-    iconAnchor: [12, 12],
-});
+// Status-based complaint marker icons
+const createComplaintIcon = (status: string) => {
+    const colorConfig: Record<string, { bg: string; animation: string }> = {
+        pending: { bg: '#d90429', animation: styles.pulsePending },
+        in_progress: { bg: '#ffab00', animation: styles.pulseInProgress },
+        resolved: { bg: '#38b000', animation: styles.pulseResolved }
+    };
+    const config = colorConfig[status] || colorConfig.pending;
+
+    return L.divIcon({
+        html: `<div class="${styles.complaintMarker} ${config.animation}" style="background: ${config.bg};"><svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" x2="12" y1="8" y2="12"/><line x1="12" x2="12.01" y1="16" y2="16"/></svg></div>`,
+        className: '',
+        iconSize: [24, 24],
+        iconAnchor: [12, 12],
+    });
+};
 
 interface InteractiveMapProps {
     onWardSelect?: (ward: WardProperties | null) => void;
@@ -268,8 +277,19 @@ export const InteractiveMap = forwardRef<InteractiveMapHandle, InteractiveMapPro
     }, [wardData, filters.layers.heat, currentTheme, selectedCity.id, selectedCity.wardIdProp]);
 
     const showSensors = filters.layers.sensors;
-    // Always show complaints for authority, otherwise follow layer filter
-    const showComplaints = role === 'authority' ? true : filters.layers.complaints;
+    // Only Authority and Analyst can see complaint markers, Citizens cannot
+    const canSeeComplaints = role === 'authority' || role === 'analyst';
+    const showComplaints = canSeeComplaints && filters.layers.complaints;
+
+    // Filter complaints by visibility rules
+    const visibleComplaints = complaints.filter(complaint => {
+        if (!complaint.latitude || !complaint.longitude) return false;
+        if (complaint.status === 'invalid') return false; // Never show invalid
+        if (complaint.status === 'resolved') {
+            return filters.layers.showResolvedComplaints; // Only show if filter enabled
+        }
+        return true; // Always show pending and in_progress
+    });
 
     return (
         <div className={styles.interactiveMap}>
@@ -334,37 +354,35 @@ export const InteractiveMap = forwardRef<InteractiveMapHandle, InteractiveMapPro
                     </CircleMarker>
                 ))}
 
-                {/* Complaint markers layer */}
-                {showComplaints && complaints.map(complaint => (
-                    complaint.latitude && complaint.longitude && (
-                        <Marker
-                            key={complaint.id}
-                            position={[complaint.latitude, complaint.longitude]}
-                            icon={complaintIcon}
-                        >
-                            <Popup>
-                                <div className={styles.popupContent}>
-                                    <div className={styles.complaintPopupHeader}>
-                                        <AlertCircle size={14} color="var(--status-error)" />
-                                        <strong>{complaint.pollution_type}</strong>
-                                    </div>
-                                    <p className={styles.complaintDesc}>{complaint.description}</p>
-                                    <div className={styles.complaintMeta}>
-                                        <MapPin size={10} /> {complaint.location_text}
-                                    </div>
-                                    <div className={styles.complaintStatus} data-status={complaint.status}>
-                                        Status: {complaint.status.replace('_', ' ')}
-                                    </div>
-                                    {complaint.photo_url && (
-                                        <a href={complaint.photo_url} target="_blank" rel="noopener noreferrer" className={styles.viewPhotoBtn}>
-                                            <ExternalLink size={12} /> View Photo
-                                        </a>
-                                    )}
-                                    <small className={styles.popupDate}>{new Date(complaint.created_at).toLocaleString()}</small>
+                {/* Complaint markers layer - Only Authority/Analyst, status-based colors */}
+                {showComplaints && visibleComplaints.map(complaint => (
+                    <Marker
+                        key={complaint.id}
+                        position={[complaint.latitude!, complaint.longitude!]}
+                        icon={createComplaintIcon(complaint.status)}
+                    >
+                        <Popup>
+                            <div className={styles.popupContent}>
+                                <div className={styles.complaintPopupHeader}>
+                                    <AlertCircle size={14} color="var(--status-error)" />
+                                    <strong>{complaint.pollution_type}</strong>
                                 </div>
-                            </Popup>
-                        </Marker>
-                    )
+                                <p className={styles.complaintDesc}>{complaint.description}</p>
+                                <div className={styles.complaintMeta}>
+                                    <MapPin size={10} /> {complaint.location_text}
+                                </div>
+                                <div className={styles.complaintStatus} data-status={complaint.status}>
+                                    Status: {complaint.status.replace('_', ' ')}
+                                </div>
+                                {complaint.photo_url && (
+                                    <a href={complaint.photo_url} target="_blank" rel="noopener noreferrer" className={styles.viewPhotoBtn}>
+                                        <ExternalLink size={12} /> View Photo
+                                    </a>
+                                )}
+                                <small className={styles.popupDate}>{new Date(complaint.created_at).toLocaleString()}</small>
+                            </div>
+                        </Popup>
+                    </Marker>
                 ))}
             </MapContainer>
         </div>

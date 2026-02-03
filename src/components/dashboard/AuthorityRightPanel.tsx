@@ -8,7 +8,7 @@
  * - Update complaint status (Pending -> In Progress -> Resolved)
  */
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { ClipboardList, BarChart3, Users, Bell, MapPin, Loader2, ExternalLink, Filter, ChevronDown, ChevronUp } from 'lucide-react';
 import styles from './AuthorityPanels.module.css';
 import { useAirQuality } from '../../context/AirQualityContext';
@@ -59,9 +59,14 @@ export const AuthorityRightPanel = () => {
 };
 
 const ActionsTab = () => {
-    const { complaints, complaintsLoading: loading, complaintsError: error, refreshComplaints, updateComplaintStatus } = useAirQuality();
+    const { complaints, complaintsLoading: loading, complaintsError: error, refreshComplaints, updateComplaintStatus, setLayerFilter } = useAirQuality();
     const [statusFilter, setStatusFilter] = useState<StatusFilter>('all');
     const [isExpanded, setIsExpanded] = useState(false);
+
+    // Sync filter with map visibility - show resolved markers only when filter is 'resolved'
+    useEffect(() => {
+        setLayerFilter('showResolvedComplaints', statusFilter === 'resolved');
+    }, [statusFilter, setLayerFilter]);
 
     const handleUpdateStatus = async (id: string, newStatus: 'pending' | 'in_progress' | 'resolved' | 'invalid') => {
         await updateComplaintStatus(id, newStatus);
