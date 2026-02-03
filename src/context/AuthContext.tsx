@@ -29,7 +29,7 @@ import {
     signOut as firebaseSignOut,
 } from 'firebase/auth';
 import type { User } from 'firebase/auth';
-import { doc, getDoc, setDoc, serverTimestamp } from 'firebase/firestore';
+import { doc, getDoc, setDoc, serverTimestamp, onSnapshot } from 'firebase/firestore';
 import { auth, db } from '../lib/firebase';
 import type { UserRole } from '../types';
 
@@ -178,13 +178,21 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
      */
     useEffect(() => {
         console.log('[AuthContext] Setting up auth listener...');
+        let profileUnsubscribe: (() => void) | null = null;
 
         const unsubscribe = onAuthStateChanged(auth, async (firebaseUser) => {
             console.log('[AuthContext] Auth state changed:', firebaseUser?.email || firebaseUser?.uid || 'none');
 
             setUser(firebaseUser);
 
+            // Clean up previous profile listener
+            if (profileUnsubscribe) {
+                profileUnsubscribe();
+                profileUnsubscribe = null;
+            }
+
             if (firebaseUser) {
+                // Initial fetch
                 const profileData = await fetchProfile(firebaseUser);
                 setProfile(profileData);
 
@@ -195,6 +203,23 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
                         : profileData.theme;
                     document.documentElement.setAttribute('data-theme', theme);
                 }
+
+                // Set up real-time listener for profile updates (e.g., PulseCoin changes)
+                const docRef = doc(db, 'users', firebaseUser.uid);
+                profileUnsubscribe = onSnapshot(docRef, (docSnap) => {
+                    if (docSnap.exists()) {
+                        const data = docSnap.data();
+                        console.log('[AuthContext] Profile updated in real-time, pulseCoins:', data.pulseCoins);
+                        setProfile(prev => prev ? {
+                            ...prev,
+                            pulseCoins: data.pulseCoins || 0,
+                            name: data.name || prev.name,
+                            photoURL: data.photoURL || prev.photoURL,
+                        } : null);
+                    }
+                }, (error) => {
+                    console.error('[AuthContext] Profile listener error:', error);
+                });
             } else {
                 setProfile(null);
                 document.documentElement.setAttribute('data-theme', 'dark'); // Default
@@ -203,7 +228,12 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
             setLoading(false);
         });
 
-        return () => unsubscribe();
+        return () => {
+            unsubscribe();
+            if (profileUnsubscribe) {
+                profileUnsubscribe();
+            }
+        };
     }, [fetchProfile]);
 
     /**
