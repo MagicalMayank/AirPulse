@@ -471,7 +471,7 @@ const CorrelationExplorerTab = () => {
 
 /* Tab 3: Seasonality & Anomaly - ENHANCED */
 const SeasonalityAnomalyTab = () => {
-    const [isScanning, setIsScanning] = useState(true);
+    const [isScanning] = useState(true);
     const [anomalyConfidence, setAnomalyConfidence] = useState(94);
 
     useEffect(() => {

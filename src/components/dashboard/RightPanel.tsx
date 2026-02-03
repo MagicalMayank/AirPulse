@@ -508,13 +508,4 @@ const LiveSentimentFeed: React.FC = () => {
     );
 };
 
-const SentimentItem = ({ user, time, text, borderColor }: any) => (
-    <div className={styles.sentimentItem} style={{ borderLeftColor: borderColor }}>
-        <div className={styles.sentHeader}>
-            <span className={styles.user}>{user}</span>
-            <span className={styles.time}>{time}</span>
-        </div>
-        <p className={styles.sentText}>{text}</p>
-    </div>
-);
 
