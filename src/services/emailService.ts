@@ -9,9 +9,9 @@ import emailjs from '@emailjs/browser';
  * 3. Replace placeholders below with your keys
  */
 
-const SERVICE_ID = 'service_pdzm8gz';
-const TEMPLATE_ID = 'template_uy0uvht';
-const PUBLIC_KEY = 'pMih5gbLdEAzG7Gu7';
+const SERVICE_ID = 'service_pckcyuo';
+const TEMPLATE_ID = 'template_3bk7jkc';
+const PUBLIC_KEY = 'm2OqHedxRQmtCexNZ';
 
 export interface EmailParams {
     to_email: string;
