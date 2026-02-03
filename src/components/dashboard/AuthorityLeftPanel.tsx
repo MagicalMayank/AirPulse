@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Search, AlertCircle, Users, CheckCircle, Clock, MapPin, ChevronDown, ChevronUp, Filter, Loader2 } from 'lucide-react';
+import { Search, AlertCircle, Users, CheckCircle, Clock, MapPin, ChevronDown, ChevronUp, Loader2 } from 'lucide-react';
 import { Button } from '../common/Button';
 import type { WardProperties } from '../../types';
 import styles from './AuthorityPanels.module.css';
@@ -13,7 +13,6 @@ interface AuthorityLeftPanelProps {
 
 export const AuthorityLeftPanel = ({ selectedWard }: AuthorityLeftPanelProps) => {
     const { complaints, complaintsLoading: loading, complaintsError: error } = useAirQuality();
-    const [statusFilter, setStatusFilter] = useState<'all' | 'pending' | 'in_progress' | 'resolved'>('all');
     const [expandedSections, setExpandedSections] = useState({
         hotspots: true,
         teams: false
@@ -175,25 +174,6 @@ ${complaints.map((c, i) => `
                         label="Escalated"
                         color="var(--status-error)"
                     />
-                </div>
-            </div>
-
-            {/* Status Filter */}
-            <div className={styles.section}>
-                <div className={styles.sectionHeader}>
-                    <Filter size={14} />
-                    <span>Filter by Status</span>
-                </div>
-                <div className={styles.filterButtons}>
-                    {(['all', 'pending', 'in_progress', 'resolved'] as const).map(status => (
-                        <button
-                            key={status}
-                            className={`${styles.filterBtn} ${statusFilter === status ? styles.filterBtnActive : ''}`}
-                            onClick={() => setStatusFilter(status)}
-                        >
-                            {status === 'in_progress' ? 'In Progress' : status.charAt(0).toUpperCase() + status.slice(1)}
-                        </button>
-                    ))}
                 </div>
             </div>
 
