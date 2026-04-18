@@ -18,7 +18,6 @@ interface LineChartProps {
     series?: ChartSeries[];
     height?: number;
     color?: string;
-    secondaryColor?: string;
     showArea?: boolean;
     showPoints?: boolean;
     className?: string;
@@ -57,7 +56,6 @@ export const LineChart: React.FC<LineChartProps> = ({
     series,
     height = 140,
     color = '#8B5CF6',
-    secondaryColor = '#06B6D4',
     showArea = true,
     showPoints = true,
     className

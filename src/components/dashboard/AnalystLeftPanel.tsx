@@ -1,6 +1,5 @@
 import { useState, useEffect, useRef } from 'react';
 import { Search, ChevronDown, ChevronUp, Layers, MapPin, Calendar, Filter, X } from 'lucide-react';
-import { Button } from '../common/Button';
 import { useAirQuality, type PollutantFilters, type LayerFilters } from '../../context/AirQualityContext';
 import { getPollutantDisplayName } from '../../utils/aqiCalculator';
 import type { WardProperties } from '../../types';

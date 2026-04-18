@@ -142,7 +142,7 @@ const TrendsTab = () => {
                 });
             }
 
-            comparisonWardIds.forEach((id, idx) => {
+            comparisonWardIds.forEach((id) => {
                 const data = allWardData.get(id);
                 series.push({
                     id,

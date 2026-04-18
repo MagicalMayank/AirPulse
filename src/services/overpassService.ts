@@ -1,4 +1,4 @@
-import { Park } from '../data/parks';
+import type { Park } from '../data/parks';
 
 /**
  * Fetches parks near a given coordinate using Overpass API (OpenStreetMap)

@@ -1,5 +1,5 @@
-import React, { useState, useEffect, useMemo } from 'react';
-import { Lightbulb, ThumbsUp, ThumbsDown, Clock, Send, X, PlusCircle, CheckCircle2 } from 'lucide-react';
+import React, { useState, useMemo } from 'react';
+import { Lightbulb, ThumbsUp, ThumbsDown, Clock, Send, X, PlusCircle } from 'lucide-react';
 import styles from './SuggestInitiative.module.css';
 
 interface Initiative {

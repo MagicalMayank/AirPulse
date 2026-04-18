@@ -1,5 +1,5 @@
 import React, { useMemo } from 'react';
-import { MapPin, TreePine, Sparkles, Coins } from 'lucide-react';
+import { MapPin, Sparkles, Coins } from 'lucide-react';
 import styles from './ParkRecommendation.module.css';
 import { useAirQuality } from '../../context/AirQualityContext';
 import { getAQIStatusColor } from '../../utils/aqiCalculator';

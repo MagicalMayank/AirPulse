@@ -10,6 +10,7 @@ import type { CityConfig } from '../config/cities';
 
 export interface WardAQIData {
     wardId: string | number;
+    name: string;
     aqi: number;
     status: string;
     statusColor: string;
@@ -203,6 +204,7 @@ export function mapWardsToAQI(
 
             wardAQIMap.set(wardId, {
                 wardId,
+                name: wardName || `Ward ${wardId}`,
                 aqi: aqiResult.aqi,
                 status: aqiResult.status,
                 statusColor: aqiResult.statusColor,
@@ -293,6 +295,7 @@ export function mapWardsToAQI(
 
                     wardAQIMap.set(silentId, {
                         wardId: silentId,
+                        name: feature?.properties?.[city.wardNameProp] || `Ward ${silentId}`,
                         aqi: aqiResult.aqi,
                         status: aqiResult.status,
                         statusColor: aqiResult.statusColor,

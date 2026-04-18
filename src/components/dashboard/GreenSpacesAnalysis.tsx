@@ -1,7 +1,7 @@
 import React, { useState, useMemo } from 'react';
 import { 
-    Leaf, Droplets, FlaskConical, Activity, TreeDeciduous, Users, Camera, 
-    ChevronRight, Info, MapPin, AlertTriangle, CheckCircle2, XCircle, 
+    Leaf, FlaskConical, Activity, TreeDeciduous, Camera, 
+    ChevronRight, MapPin, AlertTriangle, CheckCircle2, XCircle, 
     Zap, Target, TrendingUp, Sparkles, ShieldAlert, BarChart3
 } from 'lucide-react';
 import styles from './AuthorityPanels.module.css';
@@ -384,18 +384,5 @@ const TextureLabel = ({ dot, label, value }: { dot: string; label: string; value
     <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
         <div style={{ width: '6px', height: '6px', borderRadius: '50%', background: dot }} />
         <span style={{ fontSize: '0.6rem', color: 'var(--text-secondary)', fontWeight: 600 }}>{label}: <b>{value}%</b></span>
-    </div>
-);
-
-const MetricItem = ({ label, value, status, unit = '' }: { label: string; value: string | number; status: Classification; unit?: string }) => (
-    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '10px', background: 'var(--bg-main)', borderRadius: '10px', border: '1px solid var(--border-color)' }}>
-        <div style={{ display: 'flex', flexDirection: 'column' }}>
-            <span style={{ fontSize: '0.65rem', fontWeight: 700, color: 'var(--text-secondary)', textTransform: 'uppercase' }}>{label}</span>
-            <span style={{ fontSize: '0.9rem', fontWeight: 800 }}>{value} <small style={{ fontSize: '0.6rem', opacity: 0.6 }}>{unit}</small></span>
-        </div>
-        <div style={{ display: 'flex', alignItems: 'center', gap: '6px', background: 'var(--bg-card)', padding: '4px 8px', borderRadius: '6px', border: '1px solid var(--border-color)' }}>
-            <StatusIcon status={status} />
-            <span style={{ fontSize: '0.6rem', fontWeight: 800, color: status === 'Good' ? 'var(--status-success)' : status === 'Moderate' ? 'var(--status-warning)' : 'var(--status-error)' }}>{status.toUpperCase()}</span>
-        </div>
     </div>
 );

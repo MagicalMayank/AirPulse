@@ -9,7 +9,7 @@
  */
 
 import { useState, useEffect } from 'react';
-import { ClipboardList, BarChart3, Users, Bell, MapPin, Loader2, ExternalLink, Filter, ChevronDown, ChevronUp, Leaf, X, CheckSquare, Square } from 'lucide-react';
+import { ClipboardList, BarChart3, Users, Bell, MapPin, Loader2, ExternalLink, Filter, ChevronDown, ChevronUp, Leaf, CheckSquare, Square } from 'lucide-react';
 import styles from './AuthorityPanels.module.css';
 import { useAirQuality } from '../../context/AirQualityContext';
 import { STATIC_PARKS } from '../../data/parks';
@@ -863,7 +863,7 @@ const ComparisonRow = ({ label, metric, parks, unit = '' }: { label: string; met
             <div className={styles.labelCell}>{label}</div>
             {parks.map(id => {
                 const val = getValue(id);
-                const numVal = parseFloat(val);
+                const numVal = parseFloat(String(val));
                 let color = 'white';
                 if (metric === 'ndvi' && numVal > 0.6) color = '#00ff85';
                 if (metric === 'ndvi' && numVal < 0.5) color = '#ff4d6d';

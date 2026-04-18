@@ -8,7 +8,7 @@ import { useAuth } from '../../context/AuthContext';
 import { getAQIColor } from '../../utils/aqiCalculator';
 import type { WardProperties } from '../../types';
 import styles from './InteractiveMap.module.css';
-import { AlertCircle, MapPin, ExternalLink, TreeDeciduous } from 'lucide-react';
+import { AlertCircle, MapPin, ExternalLink } from 'lucide-react';
 import { STATIC_PARKS } from '../../data/parks';
 
 // Status-based complaint marker icons
