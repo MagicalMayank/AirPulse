@@ -30,6 +30,7 @@ export const Dashboard = () => {
     const { userRole, loading, isAuthenticated } = useAuth();
     const navigate = useNavigate();
     const [selectedWard, setSelectedWard] = useState<WardProperties | null>(null);
+    const [selectedPark, setSelectedPark] = useState<{name: string; lat: number; lng: number; desc: string; area: string} | null>(null);
     const [advancedMode, setAdvancedMode] = useState(false);
     const [showAuthModal, setShowAuthModal] = useState(false);
     
@@ -136,7 +137,7 @@ export const Dashboard = () => {
             case 'authority':
                 return <AuthorityRightPanel />;
             default:
-                return <RightPanel />;
+                return <RightPanel onParkSelect={setSelectedPark} />;
         }
     };
 
@@ -169,7 +170,7 @@ export const Dashboard = () => {
             />
             <DashboardLayout
                 leftPanel={getLeftPanel()}
-                centerPanel={<MapContainer onWardSelect={setSelectedWard} role={activeRole} />}
+                centerPanel={<MapContainer onWardSelect={setSelectedWard} role={activeRole} parkMarker={selectedPark} />}
                 rightPanel={getRightPanel()}
             />
         </>

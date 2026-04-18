@@ -29,6 +29,7 @@ export interface LayerFilters {
     sensors: boolean;
     traffic: boolean;
     complaints: boolean;
+    parks: boolean;
     showResolvedComplaints: boolean;
     complaintStatusFilter: 'all' | 'pending' | 'in_progress' | 'resolved';
 }
@@ -79,6 +80,12 @@ export interface AirQualityState {
 
     // Multi-city support
     selectedCity: CityConfig;
+
+    // Comparison for Analyst Dashboard
+    comparisonWardIds: (number | string)[];
+
+    // Green Spaces Analysis Modal State
+    isGreenAnalysisOpen: boolean;
 }
 
 // Context actions type
@@ -104,6 +111,13 @@ export interface AirQualityActions {
     deployTeam: (teamName: string, wardName: string, lat: number, lng: number, complaintId: string) => void;
     removeDeployedTeam: (teamId: string) => void;
 
+    // Green Spaces Analysis Actions
+    setGreenAnalysisOpen: (open: boolean) => void;
+
+    // Comparison actions
+    toggleComparisonWard: (wardId: number | string) => void;
+    clearComparison: () => void;
+
     // Helpers
     getWardAQI: (wardId: string | number) => WardAQIData | undefined;
     getActivePollutants: () => Set<keyof PollutantData>;
@@ -128,6 +142,7 @@ const defaultFilters: AirQualityFilters = {
         sensors: false,
         traffic: false,
         complaints: true,
+        parks: false,
         showResolvedComplaints: false,
         complaintStatusFilter: 'all',
     },
@@ -159,6 +174,8 @@ export function AirQualityProvider({ children }: { children: ReactNode }) {
     const [selectedWardId, setSelectedWardId] = useState<number | string | null>(null);
     const [selectedCity, setSelectedCity] = useState<CityConfig>(DEFAULT_CITY);
     const [deployedTeams, setDeployedTeams] = useState<DeployedTeam[]>([]);
+    const [isGreenAnalysisOpen, setIsGreenAnalysisOpen] = useState(false);
+    const [comparisonWardIds, setComparisonWardIds] = useState<(number | string)[]>([]);
     const stationsRef = useRef<StationData[]>([]);
 
     // Update ref when stations change
@@ -451,6 +468,17 @@ export function AirQualityProvider({ children }: { children: ReactNode }) {
             setDeployedTeams(prev => prev.filter(t => t.id !== teamId));
             console.log('[AirQualityContext] Team removed:', teamId);
         },
+        isGreenAnalysisOpen,
+        setGreenAnalysisOpen: setIsGreenAnalysisOpen,
+        comparisonWardIds,
+        toggleComparisonWard: (wardId: number | string) => {
+            setComparisonWardIds(prev => 
+                prev.includes(wardId) 
+                    ? prev.filter(id => id !== wardId)
+                    : prev.length < 3 ? [...prev, wardId] : prev
+            );
+        },
+        clearComparison: () => setComparisonWardIds([]),
     };
 
     return (

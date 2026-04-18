@@ -18,9 +18,10 @@ import { createComplaint } from '../../services/complaints';
 interface MapContainerProps {
     onWardSelect?: (ward: WardProperties | null) => void;
     role?: 'citizen' | 'authority' | 'analyst';
+    parkMarker?: { name: string; lat: number; lng: number; desc: string; area: string } | null;
 }
 
-export const MapContainer = ({ onWardSelect, role = 'citizen' }: MapContainerProps) => {
+export const MapContainer = ({ onWardSelect, role = 'citizen', parkMarker }: MapContainerProps) => {
     const [showReportModal, setShowReportModal] = useState(false);
     const { user, isAuthenticated } = useAuth();
     const { selectedCity } = useAirQuality();
@@ -47,7 +48,7 @@ export const MapContainer = ({ onWardSelect, role = 'citizen' }: MapContainerPro
     return (
         <div className={styles.mapContainer}>
             <div className={styles.mapWrapper}>
-                <InteractiveMap onWardSelect={onWardSelect} ref={mapRef} role={role} />
+                <InteractiveMap onWardSelect={onWardSelect} ref={mapRef} role={role} parkMarker={parkMarker} />
             </div>
 
             {/* Floating Controls Overlay */}

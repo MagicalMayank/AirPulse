@@ -6,8 +6,16 @@ interface DataPoint {
     value: number;
 }
 
-interface LineChartProps {
+export interface ChartSeries {
+    id: string | number;
+    name: string;
     data: DataPoint[];
+    color: string;
+}
+
+interface LineChartProps {
+    data?: DataPoint[];
+    series?: ChartSeries[];
     height?: number;
     color?: string;
     secondaryColor?: string;
@@ -46,9 +54,10 @@ function generateSmoothPath(
 
 export const LineChart: React.FC<LineChartProps> = ({
     data,
+    series,
     height = 140,
-    color = '#8B5CF6', // Purple default
-    secondaryColor = '#06B6D4', // Cyan secondary
+    color = '#8B5CF6',
+    secondaryColor = '#06B6D4',
     showArea = true,
     showPoints = true,
     className
@@ -58,53 +67,76 @@ export const LineChart: React.FC<LineChartProps> = ({
     const chartWidth = width - padding.left - padding.right;
     const chartHeight = height - padding.top - padding.bottom;
 
-    const { points, areaPath, linePath, yLabels } = useMemo(() => {
-        if (!data || data.length === 0) {
-            return { points: [], areaPath: '', linePath: '', maxVal: 0, minVal: 0, yLabels: [] };
+    // Normalize data into series
+    const normalizedSeries = useMemo(() => {
+        if (series && series.length > 0) return series;
+        if (data && data.length > 0) {
+            return [{
+                id: 'default',
+                name: 'Main',
+                data,
+                color
+            }];
+        }
+        return [];
+    }, [series, data, color]);
+
+    const { processedSeries, yLabels, allPoints } = useMemo(() => {
+        if (normalizedSeries.length === 0) {
+            return { processedSeries: [], yLabels: [], allPoints: [] };
         }
 
-        const values = data.map(d => d.value);
-        const min = Math.min(...values) * 0.9;
-        const max = Math.max(...values) * 1.1;
+        // Find global min/max across all series
+        let min = Infinity;
+        let max = -Infinity;
+        let maxLen = 0;
+
+        normalizedSeries.forEach(s => {
+            s.data.forEach(d => {
+                if (d.value < min) min = d.value;
+                if (d.value > max) max = d.value;
+            });
+            if (s.data.length > maxLen) maxLen = s.data.length;
+        });
+
+        // Add padding to range
+        min = min * 0.9;
+        max = max * 1.1;
         const range = max - min || 1;
 
-        // Create points
-        const pts = data.map((d, i) => ({
-            x: padding.left + (i / (data.length - 1)) * chartWidth,
-            y: padding.top + chartHeight - ((d.value - min) / range) * chartHeight,
-            value: d.value,
-            timestamp: d.timestamp
-        }));
+        const processed = normalizedSeries.map(s => {
+            const pts = s.data.map((d, i) => ({
+                x: padding.left + (i / (s.data.length - 1)) * chartWidth,
+                y: padding.top + chartHeight - ((d.value - min) / range) * chartHeight,
+                value: d.value,
+                timestamp: d.timestamp
+            }));
 
-        // Generate smooth line path
-        const line = generateSmoothPath(pts.map(p => ({ x: p.x, y: p.y })));
+            const line = generateSmoothPath(pts.map(p => ({ x: p.x, y: p.y })));
+            const area = line +
+                ` L ${pts[pts.length - 1].x},${height - padding.bottom}` +
+                ` L ${pts[0].x},${height - padding.bottom} Z`;
 
-        // Generate area path (closed shape)
-        const area = line +
-            ` L ${pts[pts.length - 1].x},${height - padding.bottom}` +
-            ` L ${pts[0].x},${height - padding.bottom} Z`;
+            return {
+                ...s,
+                points: pts,
+                linePath: line,
+                areaPath: area
+            };
+        });
 
-        // Y-axis labels
         const labels = [
             { value: Math.round(max), y: padding.top },
             { value: Math.round((max + min) / 2), y: padding.top + chartHeight / 2 },
             { value: Math.round(min), y: padding.top + chartHeight }
         ];
 
-        return { points: pts, areaPath: area, linePath: line, maxVal: max, minVal: min, yLabels: labels };
-    }, [data, height, chartHeight, chartWidth, padding.left, padding.top, padding.bottom]);
+        return { processedSeries: processed, yLabels: labels, allPoints: processed[0]?.points || [] };
+    }, [normalizedSeries, height, chartHeight, chartWidth, padding.left, padding.top, padding.bottom]);
 
-    if (!data.length) {
+    if (normalizedSeries.length === 0) {
         return <div className={styles.chartPlaceholder}>No data available</div>;
     }
-
-    const chartId = `lineGradient-${Math.random().toString(36).substr(2, 9)}`;
-    const areaGradientId = `areaGradient-${chartId}`;
-    const lineGradientId = `lineGradient-${chartId}`;
-
-    // Get current value (last point)
-    const currentPoint = points[points.length - 1];
-    const currentValue = currentPoint?.value || 0;
 
     return (
         <div className={styles.lineChartContainer}>
@@ -114,28 +146,24 @@ export const LineChart: React.FC<LineChartProps> = ({
                 preserveAspectRatio="xMidYMid meet"
             >
                 <defs>
-                    {/* Area gradient - vertical fade */}
-                    <linearGradient id={areaGradientId} x1="0%" y1="0%" x2="0%" y2="100%">
-                        <stop offset="0%" stopColor={color} stopOpacity="0.4" />
-                        <stop offset="50%" stopColor={color} stopOpacity="0.15" />
-                        <stop offset="100%" stopColor={color} stopOpacity="0" />
-                    </linearGradient>
-
-                    {/* Line gradient - horizontal color transition */}
-                    <linearGradient id={lineGradientId} x1="0%" y1="0%" x2="100%" y2="0%">
-                        <stop offset="0%" stopColor={secondaryColor} />
-                        <stop offset="40%" stopColor={color} />
-                        <stop offset="100%" stopColor="#EC4899" />
-                    </linearGradient>
-
-                    {/* Glow filter */}
-                    <filter id={`glow-${chartId}`} x="-50%" y="-50%" width="200%" height="200%">
-                        <feGaussianBlur stdDeviation="2" result="coloredBlur" />
-                        <feMerge>
-                            <feMergeNode in="coloredBlur" />
-                            <feMergeNode in="SourceGraphic" />
-                        </feMerge>
-                    </filter>
+                    {processedSeries.map((s, i) => {
+                        const chartId = `series-${s.id}-${i}`;
+                        return (
+                            <React.Fragment key={chartId}>
+                                <linearGradient id={`areaGradient-${chartId}`} x1="0%" y1="0%" x2="0%" y2="100%">
+                                    <stop offset="0%" stopColor={s.color} stopOpacity="0.4" />
+                                    <stop offset="100%" stopColor={s.color} stopOpacity="0" />
+                                </linearGradient>
+                                <filter id={`glow-${chartId}`} x="-50%" y="-50%" width="200%" height="200%">
+                                    <feGaussianBlur stdDeviation="2" result="coloredBlur" />
+                                    <feMerge>
+                                        <feMergeNode in="coloredBlur" />
+                                        <feMergeNode in="SourceGraphic" />
+                                    </feMerge>
+                                </filter>
+                            </React.Fragment>
+                        );
+                    })}
                 </defs>
 
                 {/* Horizontal grid lines */}
@@ -165,92 +193,60 @@ export const LineChart: React.FC<LineChartProps> = ({
                     </text>
                 ))}
 
-                {/* Filled area under curve */}
-                {showArea && (
-                    <path
-                        d={areaPath}
-                        fill={`url(#${areaGradientId})`}
-                        style={{ transition: 'all 0.5s ease' }}
-                    />
-                )}
+                {/* Series Tracks */}
+                {processedSeries.map((s, i) => {
+                    const chartId = `series-${s.id}-${i}`;
+                    const currentPoint = s.points[s.points.length - 1];
 
-                {/* Main line with gradient */}
-                <path
-                    d={linePath}
-                    fill="none"
-                    stroke={`url(#${lineGradientId})`}
-                    strokeWidth="3"
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    filter={`url(#glow-${chartId})`}
-                    style={{ transition: 'all 0.5s ease' }}
-                />
-
-                {/* Current value indicator */}
-                {showPoints && currentPoint && (
-                    <g>
-                        {/* Outer glow */}
-                        <circle
-                            cx={currentPoint.x}
-                            cy={currentPoint.y}
-                            r="8"
-                            fill={color}
-                            opacity="0.3"
-                        />
-                        {/* Inner point */}
-                        <circle
-                            cx={currentPoint.x}
-                            cy={currentPoint.y}
-                            r="4"
-                            fill="#fff"
-                            stroke={color}
-                            strokeWidth="2"
-                        />
-                        {/* Value label box */}
-                        <rect
-                            x={currentPoint.x - 20}
-                            y={currentPoint.y - 28}
-                            width="40"
-                            height="18"
-                            rx="4"
-                            fill="rgba(139, 92, 246, 0.9)"
-                        />
-                        <text
-                            x={currentPoint.x}
-                            y={currentPoint.y - 16}
-                            fill="#fff"
-                            fontSize="10"
-                            fontWeight="600"
-                            textAnchor="middle"
-                        >
-                            {Math.round(currentValue)}
-                        </text>
-                    </g>
-                )}
+                    return (
+                        <g key={s.id}>
+                            {showArea && (
+                                <path
+                                    d={s.areaPath}
+                                    fill={`url(#areaGradient-${chartId})`}
+                                    style={{ transition: 'all 0.5s ease' }}
+                                />
+                            )}
+                            <path
+                                d={s.linePath}
+                                fill="none"
+                                stroke={s.color}
+                                strokeWidth="3"
+                                strokeLinecap="round"
+                                strokeLinejoin="round"
+                                filter={`url(#glow-${chartId})`}
+                                style={{ transition: 'all 0.5s ease' }}
+                            />
+                            {showPoints && currentPoint && (
+                                <g>
+                                    <circle
+                                        cx={currentPoint.x}
+                                        cy={currentPoint.y}
+                                        r="4"
+                                        fill="#fff"
+                                        stroke={s.color}
+                                        strokeWidth="2"
+                                    />
+                                </g>
+                            )}
+                        </g>
+                    );
+                })}
 
                 {/* X-axis time labels */}
-                {points.length > 0 && (
+                {allPoints.length > 0 && (
                     <>
                         <text
-                            x={points[0].x}
+                            x={allPoints[0].x}
                             y={height - 8}
                             fill="rgba(255,255,255,0.4)"
                             fontSize="9"
                             textAnchor="start"
                         >
-                            {new Date(points[0].timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                            {new Date(allPoints[0].timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
                         </text>
                         <text
-                            x={points[Math.floor(points.length / 2)].x}
-                            y={height - 8}
-                            fill="rgba(255,255,255,0.4)"
-                            fontSize="9"
-                            textAnchor="middle"
-                        >
-                            {new Date(points[Math.floor(points.length / 2)].timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
-                        </text>
-                        <text
-                            x={points[points.length - 1].x}
+                            x={allPoints[allPoints.length - 1].x}
                             y={height - 8}
                             fill="rgba(255,255,255,0.4)"
                             fontSize="9"

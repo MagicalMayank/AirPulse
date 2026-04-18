@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef } from 'react';
-import { Search, ChevronDown, ChevronUp, Layers, MapPin, Calendar, Filter } from 'lucide-react';
+import { Search, ChevronDown, ChevronUp, Layers, MapPin, Calendar, Filter, X } from 'lucide-react';
 import { Button } from '../common/Button';
 import { useAirQuality, type PollutantFilters, type LayerFilters } from '../../context/AirQualityContext';
 import { getPollutantDisplayName } from '../../utils/aqiCalculator';
@@ -18,7 +18,11 @@ export const AnalystLeftPanel = ({ selectedWard }: AnalystLeftPanelProps) => {
         setLayerFilter,
         wardData,
         geoData,
-        selectedCity
+        selectedCity,
+        comparisonWardIds,
+        toggleComparisonWard,
+        clearComparison,
+        selectWard
     } = useAirQuality();
 
     const [expandedSections, setExpandedSections] = useState({
@@ -149,11 +153,18 @@ export const AnalystLeftPanel = ({ selectedWard }: AnalystLeftPanelProps) => {
                                 key={result.wardId}
                                 className={styles.searchResultItem}
                                 onClick={() => {
-                                    setSearchQuery(result.name);
+                                    if (expandedSections.compare) {
+                                        toggleComparisonWard(result.wardId);
+                                    } else {
+                                        selectWard(result.wardId);
+                                    }
+                                    setSearchQuery('');
                                     setShowResults(false);
                                 }}
                             >
-                                {result.name} (Ward {result.wardId})
+                                {result.name}
+                                <span className={styles.searchId}>Ward {result.wardId}</span>
+                                {comparisonWardIds.includes(result.wardId) && <span className={styles.compareBadge}>Comparing</span>}
                             </button>
                         ))}
                     </div>
@@ -246,12 +257,54 @@ export const AnalystLeftPanel = ({ selectedWard }: AnalystLeftPanelProps) => {
             <div className={styles.collapsible}>
                 <button className={styles.collapseHeader} onClick={() => toggleSection('compare')}>
                     <MapPin size={14} />
-                    <span>Compare Locations</span>
+                    <span>Compare Locations ({comparisonWardIds.length}/3)</span>
                     {expandedSections.compare ? <ChevronUp size={16} /> : <ChevronDown size={16} />}
                 </button>
                 {expandedSections.compare && (
                     <div className={styles.collapseContent}>
-                        <Button variant="outline" size="sm" className={styles.addBtn}>+ Add Location</Button>
+                        <div className={styles.compareSearch}>
+                            <Search size={14} />
+                            <input 
+                                type="text" 
+                                placeholder="Add ward to compare..." 
+                                className={styles.compareInput}
+                                onFocus={() => setShowResults(true)}
+                                onChange={(e) => setSearchQuery(e.target.value)}
+                                value={searchQuery}
+                            />
+                        </div>
+
+                        <div className={styles.compareList}>
+                            {comparisonWardIds.map(id => {
+                                const data = wardData.get(id);
+                                return (
+                                    <div key={id} className={styles.compareItem}>
+                                        <div className={styles.compareItemInfo}>
+                                            <span className={styles.compareName}>{data?.name || `Ward ${id}`}</span>
+                                            <span className={styles.compareAqi} style={{ color: getAqiStatusColor(data?.status || 'POOR') }}>
+                                                AQI {data?.aqi || '--'}
+                                            </span>
+                                        </div>
+                                        <button 
+                                            className={styles.removeCompareBtn}
+                                            onClick={() => toggleComparisonWard(id)}
+                                        >
+                                            <X size={14} />
+                                        </button>
+                                    </div>
+                                );
+                            })}
+                            
+                            {comparisonWardIds.length === 0 && (
+                                <p className={styles.emptyCompare}>No locations selected for comparison.</p>
+                            )}
+
+                            {comparisonWardIds.length > 0 && (
+                                <button className={styles.clearAllBtn} onClick={clearComparison}>
+                                    Clear All
+                                </button>
+                            )}
+                        </div>
                     </div>
                 )}
             </div>
@@ -288,6 +341,14 @@ export const AnalystLeftPanel = ({ selectedWard }: AnalystLeftPanelProps) => {
                                 onChange={() => toggleLayer('traffic')}
                             />
                             <span>Traffic Density</span>
+                        </label>
+                        <label className={styles.layerCheck}>
+                            <input
+                                type="checkbox"
+                                checked={filters.layers.parks}
+                                onChange={() => toggleLayer('parks')}
+                            />
+                            <span>Delhi Greenspaces</span>
                         </label>
                     </div>
                 )}

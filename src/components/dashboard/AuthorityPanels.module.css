@@ -1108,3 +1108,264 @@
     margin-top: 0.75rem;
     font-weight: 600;
 }
+
+/* Greenspaces Analysis Button */
+.analysisBtn {
+    width: 100%;
+    background: linear-gradient(135deg, #2d5a27 0%, #1e3c1a 100%);
+    border: none;
+    border-radius: 12px;
+    padding: 1rem;
+    color: white;
+    cursor: pointer;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    box-shadow: 0 4px 15px rgba(45, 90, 39, 0.3);
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    margin-bottom: 0.5rem;
+}
+
+.analysisBtn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(45, 90, 39, 0.4);
+    filter: brightness(1.1);
+}
+
+.analysisBtn:active {
+    transform: translateY(0);
+}
+
+.analysisBtnContent {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+}
+
+.analysisBtnContent span {
+    font-size: 0.85rem;
+    font-weight: 800;
+    letter-spacing: 0.02em;
+}
+
+.analysisBtnBadge {
+    background: rgba(255, 255, 255, 0.2);
+    border: 1px solid rgba(255, 255, 255, 0.3);
+    font-size: 0.6rem;
+    font-weight: 800;
+    padding: 2px 6px;
+    border-radius: 4px;
+    backdrop-filter: blur(4px);
+}
+
+/* Modal Enhancements for Green Analysis */
+.modalBackdrop {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(0, 0, 0, 0.8);
+    backdrop-filter: blur(8px);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 10000;
+}
+
+.modalContent {
+    background: var(--bg-card);
+    border-radius: 20px;
+    overflow: hidden;
+    box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
+    border: 1px solid var(--border-color);
+    animation: modalSlideUp 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+@keyframes modalSlideUp {
+    from {
+        transform: translateY(30px) scale(0.95);
+        opacity: 0;
+    }
+    to {
+        transform: translateY(0) scale(1);
+        opacity: 1;
+    }
+}
+/* Ecology Tab Styles */
+.ecologyContainer {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+}
+
+.parkList {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    max-height: 300px;
+    overflow-y: auto;
+    padding-right: 4px;
+}
+
+.parkListItem {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 10px 12px;
+    background: rgba(255,255,255,0.03);
+    border-radius: 10px;
+    border: 1px solid rgba(255,255,255,0.05);
+    transition: all 0.2s;
+}
+
+.parkListItem:hover {
+    background: rgba(255,255,255,0.05);
+    border-color: rgba(255,255,255,0.1);
+}
+
+.parkInfo {
+    display: flex;
+    flex-direction: column;
+}
+
+.parkName {
+    font-size: 0.85rem;
+    font-weight: 700;
+    color: white;
+}
+
+.parkArea {
+    font-size: 0.7rem;
+    color: rgba(255,255,255,0.5);
+}
+
+.selectParkBtn {
+    background: none;
+    border: none;
+    cursor: pointer;
+    padding: 4px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 4px;
+    transition: all 0.2s;
+}
+
+.selectParkBtn:hover {
+    background: rgba(255,255,255,0.08);
+}
+
+.compareBtn {
+    width: 100%;
+    background: linear-gradient(135deg, #00ff85 0%, #00d1a1 100%);
+    color: #001a11;
+    border: none;
+    padding: 12px;
+    border-radius: 12px;
+    font-weight: 800;
+    font-size: 0.85rem;
+    cursor: pointer;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    box-shadow: 0 4px 15px rgba(0, 255, 133, 0.2);
+}
+
+.compareBtn:disabled {
+    background: rgba(255,255,255,0.05);
+    color: rgba(255,255,255,0.2);
+    cursor: not-allowed;
+    box-shadow: none;
+}
+
+.compareBtn:not(:disabled):hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(0, 255, 133, 0.3);
+}
+
+.comparisonOverlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(0,0,0,0.8);
+    backdrop-filter: blur(8px);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 99999;
+    padding: 2rem;
+}
+
+.comparisonModal {
+    background: linear-gradient(135deg, #0d1a0d 0%, #000000 100%);
+    border: 1px solid rgba(164, 244, 161, 0.2);
+    border-radius: 24px;
+    width: 100%;
+    max-width: 900px;
+    max-height: 90vh;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+    box-shadow: 0 30px 60px rgba(0,0,0,0.5);
+}
+
+.comparisonTable {
+    padding: 1.5rem;
+    overflow-x: auto;
+}
+
+.tableHeader {
+    display: grid;
+    grid-template-columns: 180px repeat(auto-fit, minmax(100px, 1fr));
+    border-bottom: 2px solid rgba(255,255,255,0.1);
+    padding-bottom: 1rem;
+    gap: 1rem;
+}
+
+.headerCell {
+    font-size: 0.8rem;
+    font-weight: 800;
+    color: #a4f4a1;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    text-align: center;
+}
+
+.headerCell:first-child {
+    text-align: left;
+    color: rgba(255,255,255,0.4);
+}
+
+.tableRow {
+    display: grid;
+    grid-template-columns: 180px repeat(auto-fit, minmax(100px, 1fr));
+    border-bottom: 1px solid rgba(255,255,255,0.05);
+    padding: 1rem 0;
+    gap: 1rem;
+    transition: background 0.2s;
+}
+
+.tableRow:hover {
+    background: rgba(255,255,255,0.02);
+}
+
+.labelCell {
+    font-size: 0.85rem;
+    font-weight: 600;
+    color: rgba(255,255,255,0.7);
+}
+
+.valueCell {
+    font-size: 1.1rem;
+    font-weight: 800;
+    text-align: center;
+    color: white;
+    font-family: monospace;
+}
+
+.modalFooter {
+    padding: 1rem 1.5rem;
+    background: rgba(0,0,0,0.3);
+    border-top: 1px solid rgba(255,255,255,0.05);
+}

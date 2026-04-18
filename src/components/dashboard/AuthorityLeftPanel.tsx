@@ -12,7 +12,8 @@ interface AuthorityLeftPanelProps {
 }
 
 export const AuthorityLeftPanel = ({ selectedWard }: AuthorityLeftPanelProps) => {
-    const { complaints, complaintsLoading: loading, complaintsError: error } = useAirQuality();
+    const { complaints, complaintsLoading: loading, complaintsError: error, filters, setLayerFilter } = useAirQuality();
+    const [statusFilter, setStatusFilter] = useState<'all' | 'pending' | 'in_progress' | 'resolved'>('all');
     const [expandedSections, setExpandedSections] = useState({
         hotspots: true,
         teams: false
@@ -177,6 +178,42 @@ ${complaints.map((c, i) => `
                 </div>
             </div>
 
+            {/* Map Layers */}
+            <div className={styles.section}>
+                <div className={styles.sectionHeader}>
+                    <Search size={14} /> {/* Changed Filter to Search as placeholder icon or just use standard */}
+                    <span>Map Layers</span>
+                </div>
+                <div className={styles.filterButtons} style={{ flexDirection: 'column', alignItems: 'flex-start', gap: '8px' }}>
+                    <label style={{ display: 'flex', alignItems: 'center', gap: '8px', cursor: 'pointer', fontSize: '0.75rem', color: 'var(--text-secondary)' }}>
+                        <input
+                            type="checkbox"
+                            checked={filters?.layers?.parks}
+                            onChange={() => setLayerFilter('parks', !filters?.layers?.parks)}
+                        />
+                        <span>Show Delhi Greenspaces</span>
+                    </label>
+                </div>
+            </div>
+
+            {/* Status Filter */}
+            <div className={styles.section}>
+                <div className={styles.sectionHeader}>
+                    <Search size={14} />
+                    <span>Filter by Status</span>
+                </div>
+                <div className={styles.filterButtons}>
+                    {(['all', 'pending', 'in_progress', 'resolved'] as const).map(status => (
+                        <button
+                            key={status}
+                            className={`${styles.filterBtn} ${statusFilter === status ? styles.filterBtnActive : ''}`}
+                            onClick={() => setStatusFilter(status)}
+                        >
+                            {status === 'in_progress' ? 'In Progress' : status.charAt(0).toUpperCase() + status.slice(1)}
+                        </button>
+                    ))}
+                </div>
+            </div>
             {/* Hotspot Alerts */}
             <div className={styles.collapsible}>
                 <button className={styles.collapseHeader} onClick={() => toggleSection('hotspots')}>

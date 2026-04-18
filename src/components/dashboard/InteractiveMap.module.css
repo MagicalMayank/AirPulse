@@ -313,3 +313,9 @@
     font-size: 0.6rem;
     text-align: right;
 }
+
+.fixedParkMarker {
+    width: 45px !important;
+    height: 45px !important;
+    transition: none !important;
+}

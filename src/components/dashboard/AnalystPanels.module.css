@@ -839,3 +839,159 @@
     color: var(--text-secondary);
     font-weight: 600;
 }
+/* Comparison Feature Styles */
+.compareSearch {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    background: rgba(255, 255, 255, 0.03);
+    padding: 8px 12px;
+    border-radius: 8px;
+    border: 1px solid var(--border-color);
+    margin-bottom: 12px;
+}
+
+.compareSearch svg {
+    color: var(--text-secondary);
+}
+
+.compareInput {
+    background: transparent;
+    border: none;
+    color: var(--text-primary);
+    font-size: 0.8rem;
+    width: 100%;
+}
+
+.compareInput:focus {
+    outline: none;
+}
+
+.compareList {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.compareItem {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    background: rgba(var(--brand-primary-rgb, 95, 39, 205), 0.05);
+    padding: 8px 12px;
+    border-radius: 12px;
+    border: 1px solid rgba(139, 92, 246, 0.2);
+    transition: all 0.2s;
+}
+
+.compareItem:hover {
+    border-color: var(--brand-primary);
+    background: rgba(139, 92, 246, 0.08);
+}
+
+.compareItemInfo {
+    display: flex;
+    flex-direction: column;
+}
+
+.compareName {
+    font-size: 0.85rem;
+    font-weight: 700;
+    color: var(--text-primary);
+}
+
+.compareAqi {
+    font-size: 0.75rem;
+    font-weight: 600;
+}
+
+.removeCompareBtn {
+    background: none;
+    border: none;
+    color: var(--text-secondary);
+    cursor: pointer;
+    padding: 4px;
+    border-radius: 8px;
+    transition: all 0.2s;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.removeCompareBtn:hover {
+    background: rgba(255, 77, 109, 0.1);
+    color: #ff4d6d;
+}
+
+.emptyCompare {
+    font-size: 0.75rem;
+    color: var(--text-secondary);
+    text-align: center;
+    padding: 12px;
+    font-style: italic;
+    opacity: 0.6;
+}
+
+.clearAllBtn {
+    background: none;
+    border: 1px solid var(--border-color);
+    color: var(--text-secondary);
+    font-size: 0.7rem;
+    font-weight: 600;
+    padding: 4px 10px;
+    border-radius: 6px;
+    cursor: pointer;
+    align-self: flex-end;
+    transition: all 0.2s;
+}
+
+.clearAllBtn:hover {
+    background: rgba(255, 77, 109, 0.05);
+    border-color: #ff4d6d;
+    color: #ff4d6d;
+}
+
+.searchId {
+    font-size: 0.7rem;
+    color: var(--text-secondary);
+    margin-left: 8px;
+    opacity: 0.7;
+}
+
+.compareBadge {
+    margin-left: auto;
+    font-size: 0.6rem;
+    background: var(--brand-secondary);
+    color: white;
+    padding: 1px 6px;
+    border-radius: 4px;
+    font-weight: 800;
+    text-transform: uppercase;
+}
+
+.comparisonLegend {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 12px;
+    margin-top: 8px;
+    padding-top: 12px;
+    border-top: 1px solid var(--border-color);
+}
+
+.legendItem {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.legendDot {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+}
+
+.legendName {
+    font-size: 0.7rem;
+    font-weight: 700;
+    color: var(--text-secondary);
+}

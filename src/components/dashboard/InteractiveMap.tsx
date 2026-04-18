@@ -8,7 +8,8 @@ import { useAuth } from '../../context/AuthContext';
 import { getAQIColor } from '../../utils/aqiCalculator';
 import type { WardProperties } from '../../types';
 import styles from './InteractiveMap.module.css';
-import { AlertCircle, MapPin, ExternalLink } from 'lucide-react';
+import { AlertCircle, MapPin, ExternalLink, TreeDeciduous } from 'lucide-react';
+import { STATIC_PARKS } from '../../data/parks';
 
 // Status-based complaint marker icons
 const createComplaintIcon = (status: string) => {
@@ -40,6 +41,7 @@ const createTeamIcon = (_teamName: string) => {
 interface InteractiveMapProps {
     onWardSelect?: (ward: WardProperties | null) => void;
     role?: 'citizen' | 'authority' | 'analyst';
+    parkMarker?: { name: string; lat: number; lng: number; desc: string; area: string } | null;
 }
 
 export interface InteractiveMapHandle {
@@ -90,7 +92,7 @@ const ErrorOverlay = ({ message, onRetry }: { message: string; onRetry: () => vo
     </div>
 );
 
-export const InteractiveMap = forwardRef<InteractiveMapHandle, InteractiveMapProps>(({ onWardSelect, role = 'citizen' }, ref) => {
+export const InteractiveMap = forwardRef<InteractiveMapHandle, InteractiveMapProps>(({ onWardSelect, role = 'citizen', parkMarker }, ref) => {
     const [geoData, setGeoData] = useState<GeoJSON.FeatureCollection | null>(null);
     const [geoKey, setGeoKey] = useState(0); // Force re-render of GeoJSON
     const mapInstanceRef = useRef<LeafletMap | null>(null);
@@ -125,7 +127,8 @@ export const InteractiveMap = forwardRef<InteractiveMapHandle, InteractiveMapPro
         deployedTeams,
         setGeoData: setContextGeoData,
         selectWard,
-        refetch
+        refetch,
+        setGreenAnalysisOpen
     } = useAirQuality();
 
     const handleMapReady = useCallback((map: LeafletMap) => {
@@ -183,6 +186,13 @@ export const InteractiveMap = forwardRef<InteractiveMapHandle, InteractiveMapPro
             })
             .catch(err => console.error(`Failed to load GeoJSON for ${selectedCity.name}:`, err));
     }, [selectedCity.geoJsonPath, setContextGeoData]);
+
+    // Fly to park marker when selected
+    useEffect(() => {
+        if (parkMarker && mapInstanceRef.current) {
+            mapInstanceRef.current.flyTo([parkMarker.lat, parkMarker.lng], 15);
+        }
+    }, [parkMarker]);
 
     // Force GeoJSON re-render when ward data updates or heat toggle changes
     useEffect(() => {
@@ -424,6 +434,68 @@ export const InteractiveMap = forwardRef<InteractiveMapHandle, InteractiveMapPro
                         </Popup>
                     </Marker>
                 ))}
+
+                {/* Delhi Greenspaces Layer */}
+                {filters.layers.parks && STATIC_PARKS.map(park => (
+                    <Marker
+                        key={park.id}
+                        position={[park.lat, park.lng]}
+                        icon={L.divIcon({
+                            html: `<div class="${styles.parkIconMarker}"><svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#2d5a27" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22v-7"/><path d="M5 12l7-10 7 10Z"/><path d="M12 18H5a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2v10a2 2 0 0 1-2 2h-7Z"/></svg></div>`,
+                            className: '',
+                            iconSize: [30, 30],
+                            iconAnchor: [15, 15],
+                        })}
+                        eventHandlers={{
+                            click: () => {
+                                // No immediate action on marker click other than showing popup
+                            }
+                        }}
+                    >
+                        <Popup>
+                            <div className={styles.popupContent}>
+                                <strong>🌳 {park.name}</strong>
+                                <p className={styles.complaintDesc}>{park.description}</p>
+                                <div className={styles.complaintMeta}>
+                                    <MapPin size={10} /> {park.area}
+                                </div>
+                                {(role === 'authority' || role === 'analyst') && (
+                                    <button 
+                                        onClick={() => setGreenAnalysisOpen(true)}
+                                        className={styles.viewPhotoBtn}
+                                        style={{ background: '#2d5a27', marginTop: '10px' }}
+                                    >
+                                        Open Eco-Audit
+                                    </button>
+                                )}
+                            </div>
+                        </Popup>
+                    </Marker>
+                ))}
+
+                {/* Park marker - shows when user clicks a park recommendation (Legacy marker) */}
+                {parkMarker && (
+                    <Marker
+                        position={[parkMarker.lat, parkMarker.lng]}
+                        icon={L.icon({
+                            iconUrl: '/park-icon.png',
+                            iconSize: [45, 45],
+                            iconAnchor: [22, 22],
+                            popupAnchor: [0, -20],
+                            className: styles.fixedParkMarker
+                        })}
+                    >
+                        <Popup>
+                            <div className={styles.popupContent}>
+                                <strong>🌳 {parkMarker.name}</strong>
+                                <p className={styles.complaintDesc}>{parkMarker.desc}</p>
+                                <div className={styles.complaintMeta}>
+                                    <MapPin size={10} /> {parkMarker.area}
+                                </div>
+                            </div>
+                        </Popup>
+                    </Marker>
+                )}
             </MapContainer>
         </div>
     );

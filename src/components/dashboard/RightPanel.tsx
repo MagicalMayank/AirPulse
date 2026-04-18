@@ -5,6 +5,8 @@ import { useAirQuality, useWardData } from '../../context/AirQualityContext';
 import { TrendChart } from './TrendChart';
 import { getStationHistory, type HistoryDataPoint } from '../../services/aqiService';
 import { calculateSubIndex } from '../../utils/aqiCalculator';
+import { ParkRecommendation } from './ParkRecommendation';
+import { SuggestInitiative } from './SuggestInitiative';
 
 const OPENWEATHER_API_KEY = import.meta.env.VITE_OPENWEATHER_API_KEY || '';
 
@@ -216,7 +218,7 @@ const WeatherSection: React.FC<{ selectedCity?: string }> = ({ selectedCity = 'd
     );
 };
 
-export const RightPanel: React.FC = () => {
+export const RightPanel: React.FC<{ onParkSelect?: (park: any) => void }> = ({ onParkSelect }) => {
     const { selectedWardId, stations, wardData, selectedCity } = useAirQuality();
     const selectedWardData = useWardData(selectedWardId);
 
@@ -321,9 +323,12 @@ export const RightPanel: React.FC = () => {
             <h4 className={styles.sectionHeader}>CITY WEATHER</h4>
             <WeatherSection selectedCity={selectedCity?.name || 'delhi'} />
 
-            {/* Live Sentiment - Auto-rotating with complaint reporting */}
-            <h4 className={styles.sectionHeader}>LIVE SENTIMENT</h4>
-            <LiveSentimentFeed />
+            {/* Park Recommendations */}
+            <ParkRecommendation selectedWardId={selectedWardId} onParkClick={onParkSelect} />
+
+            {/* Suggest Initiative Feature */}
+            <SuggestInitiative />
+
 
             {/* Attribution */}
             <div style={{ marginTop: 'auto', paddingTop: '20px', fontSize: '0.65rem', opacity: 0.5, textAlign: 'center', fontStyle: 'italic' }}>
@@ -333,179 +338,5 @@ export const RightPanel: React.FC = () => {
     );
 };
 
-// Pre-made fake tweets for Live Sentiment rotation
-const FAKE_TWEETS = [
-    {
-        id: 'fake-1',
-        user: '@DelhiCitizen',
-        text: "Can't even see the India Gate clearly today. Smog is terrible near CP! #DelhiPollution",
-        location: 'Connaught Place, Delhi',
-        ward: 'Connaught Place',
-        pollutionType: 'vehicle_emission',
-        borderColor: 'var(--sentiment-hotspot)',
-        lat: 28.6289,
-        lng: 77.2095
-    },
-    {
-        id: 'fake-2',
-        user: '@EcoWarrior',
-        text: 'Traffic jam at Ashram is adding to the fumes. Avoid that route. Air quality terrible!',
-        location: 'Ashram Chowk, Delhi',
-        ward: 'Ashram',
-        pollutionType: 'vehicle_emission',
-        borderColor: 'var(--source-traffic)',
-        lat: 28.5700,
-        lng: 77.2500
-    },
-    {
-        id: 'fake-3',
-        user: '@CleanAirIndia',
-        text: 'Garbage burning spotted in Okhla Industrial Area. The smoke is unbearable! 🔥💨',
-        location: 'Okhla Industrial Area, Delhi',
-        ward: 'Okhla',
-        pollutionType: 'garbage_burning',
-        borderColor: 'var(--source-biomass)',
-        lat: 28.5308,
-        lng: 77.2710
-    },
-    {
-        id: 'fake-4',
-        user: '@DelhiMom',
-        text: 'Kids had to skip outdoor games again. Construction dust at Dwarka is out of control! 😷',
-        location: 'Dwarka Sector 21, Delhi',
-        ward: 'Dwarka',
-        pollutionType: 'construction_dust',
-        borderColor: 'var(--source-construction)',
-        lat: 28.5521,
-        lng: 77.0588
-    },
-    {
-        id: 'fake-5',
-        user: '@LungCareDelhi',
-        text: 'Industrial smoke from factories in Anand Vihar visible from miles away. AQI crossed 400! ⚠️',
-        location: 'Anand Vihar, Delhi',
-        ward: 'Anand Vihar',
-        pollutionType: 'industrial_smoke',
-        borderColor: 'var(--source-industry)',
-        lat: 28.6469,
-        lng: 77.3164
-    },
-    {
-        id: 'fake-6',
-        user: '@GreenDelhi',
-        text: 'Vehicle emissions at ITO junction making it hard to breathe. Need urgent traffic management! 🚗💨',
-        location: 'ITO, Delhi',
-        ward: 'ITO',
-        pollutionType: 'vehicle_emission',
-        borderColor: 'var(--source-traffic)',
-        lat: 28.6280,
-        lng: 77.2410
-    }
-];
-
-// LiveSentimentFeed - Rotating fake tweets with auto-complaint reporting
-const LiveSentimentFeed: React.FC = () => {
-    const [currentIndex, setCurrentIndex] = useState(0);
-    const [displayedTweets, setDisplayedTweets] = useState(FAKE_TWEETS.slice(0, 2));
-    const [reportedIds, setReportedIds] = useState<Set<string>>(new Set());
-    const { complaints } = useAirQuality();
-
-    // Rotate tweets every 30 seconds
-    useEffect(() => {
-        const interval = setInterval(() => {
-            setCurrentIndex(prev => {
-                const nextIndex = (prev + 1) % FAKE_TWEETS.length;
-                // Show 2 tweets at a time, cycling through the list
-                const tweet1 = FAKE_TWEETS[nextIndex];
-                const tweet2 = FAKE_TWEETS[(nextIndex + 1) % FAKE_TWEETS.length];
-                setDisplayedTweets([tweet1, tweet2]);
-                return nextIndex;
-            });
-        }, 30000); // 30 seconds
-
-        return () => clearInterval(interval);
-    }, []);
-
-    // Auto-report tweets as complaints when displayed
-    useEffect(() => {
-        const reportTweet = async (tweet: typeof FAKE_TWEETS[0]) => {
-            // Skip if already reported or if a similar complaint exists
-            if (reportedIds.has(tweet.id)) return;
-
-            const existingComplaint = complaints.find(c =>
-                c.description.includes(tweet.text.substring(0, 30))
-            );
-            if (existingComplaint) return;
-
-            try {
-                const { createComplaint } = await import('../../services/complaints');
-                await createComplaint({
-                    userId: 'sentiment-bot',
-                    userEmail: 'sentiment@airpulse.demo',
-                    pollutionType: tweet.pollutionType,
-                    location: tweet.location,
-                    description: `[Live Sentiment] ${tweet.text}`,
-                    latitude: tweet.lat,
-                    longitude: tweet.lng,
-                    wardName: tweet.ward
-                });
-
-                setReportedIds(prev => new Set(prev).add(tweet.id));
-                console.log('[LiveSentiment] Auto-reported complaint:', tweet.location);
-            } catch (err) {
-                console.error('[LiveSentiment] Failed to report:', err);
-            }
-        };
-
-        // Report each displayed tweet
-        displayedTweets.forEach(tweet => reportTweet(tweet));
-    }, [displayedTweets, reportedIds, complaints]);
-
-    // Calculate time ago for dynamic display
-    const getTimeAgo = (index: number) => {
-        const times = ['just now', '2m ago', '5m ago', '10m ago', '15m ago', '30m ago'];
-        return times[index % times.length];
-    };
-
-    return (
-        <div className={styles.sentimentFeed}>
-            {displayedTweets.map((tweet, idx) => (
-                <div
-                    key={`${tweet.id}-${currentIndex}`}
-                    className={styles.sentimentItem}
-                    style={{
-                        borderLeftColor: tweet.borderColor,
-                        animation: 'fadeIn 0.5s ease-in-out'
-                    }}
-                >
-                    <div className={styles.sentHeader}>
-                        <span className={styles.user}>{tweet.user}</span>
-                        <span className={styles.time}>{getTimeAgo(idx)}</span>
-                    </div>
-                    <p className={styles.sentText}>{tweet.text}</p>
-                    <div style={{
-                        fontSize: '0.65rem',
-                        opacity: 0.6,
-                        marginTop: '4px',
-                        display: 'flex',
-                        alignItems: 'center',
-                        gap: '4px'
-                    }}>
-                        <MapPin size={10} />
-                        {tweet.location}
-                    </div>
-                </div>
-            ))}
-            <div style={{
-                fontSize: '0.6rem',
-                opacity: 0.4,
-                textAlign: 'center',
-                marginTop: '8px'
-            }}>
-                Updated every 30s • Refreshing...
-            </div>
-        </div>
-    );
-};
 
 

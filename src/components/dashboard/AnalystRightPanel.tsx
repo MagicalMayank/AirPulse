@@ -1,7 +1,7 @@
 import { useState, useEffect, useMemo } from 'react';
-import { TrendingUp, AlertTriangle, Brain, Cpu, Activity, Zap, RefreshCw, Beaker } from 'lucide-react';
+import { TrendingUp, AlertTriangle, Brain, Cpu, Activity, Zap, RefreshCw, Beaker, Leaf } from 'lucide-react';
 import styles from './AnalystPanels.module.css';
-import { LineChart } from './LineChart';
+import { LineChart, type ChartSeries } from './LineChart';
 import { PolicySimulationLab } from './PolicySimulationLab';
 import { useAirQuality, useWardData } from '../../context/AirQualityContext';
 import { getStationHistory, type HistoryDataPoint } from '../../services/aqiService';
@@ -11,17 +11,29 @@ type TabType = 'trends' | 'anomalies' | 'predict' | 'models';
 export const AnalystRightPanel = () => {
     const [activeTab, setActiveTab] = useState<TabType>('trends');
     const [showSimulation, setShowSimulation] = useState(false);
+    const { setGreenAnalysisOpen } = useAirQuality();
 
     return (
         <div className={styles.panelContainer}>
-            {/* Policy Simulation Lab Button */}
-            <button
-                className={styles.simulationLabBtn}
-                onClick={() => setShowSimulation(true)}
-            >
-                <Beaker size={16} />
-                <span>Policy Simulation Lab</span>
-            </button>
+            {/* Top Analysis Buttons */}
+            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '0.75rem', marginBottom: '1rem' }}>
+                <button
+                    className={styles.simulationLabBtn}
+                    onClick={() => setShowSimulation(true)}
+                    style={{ marginBottom: 0 }}
+                >
+                    <Beaker size={16} />
+                    <span>Policy Lab</span>
+                </button>
+                <button
+                    className={styles.simulationLabBtn}
+                    onClick={() => setGreenAnalysisOpen(true)}
+                    style={{ marginBottom: 0, background: 'linear-gradient(135deg, #2d5a27 0%, #1e3c1a 100%)', borderColor: 'rgba(164, 244, 161, 0.2)' }}
+                >
+                    <Leaf size={16} />
+                    <span>Ecology</span>
+                </button>
+            </div>
 
             {/* Tabs */}
             <div className={styles.tabs}>
@@ -75,71 +87,75 @@ export const AnalystRightPanel = () => {
 };
 
 const TrendsTab = () => {
-    const { selectedWardId, stations, wardData: allWardData } = useAirQuality();
+    const { selectedWardId, stations, wardData: allWardData, comparisonWardIds } = useAirQuality();
     const selectedWardData = useWardData(selectedWardId);
 
     const [history, setHistory] = useState<HistoryDataPoint[]>([]);
+    const [comparisonSeries, setComparisonSeries] = useState<ChartSeries[]>([]);
     const [loading, setLoading] = useState(false);
 
-    // Calculate overall AQI for mock data generation
     const overallAqi = useMemo(() => {
         if (selectedWardData?.aqi) return selectedWardData.aqi;
         if (allWardData.size > 0) {
             return Math.round([...allWardData.values()].reduce((a, b) => a + b.aqi, 0) / allWardData.size);
         }
-        return 285; // Default fallback
+        return 285;
     }, [selectedWardData, allWardData]);
 
-    // Generate mock 24h trend data based on a base AQI value
     const generateMockTrendData = (baseAqi: number): HistoryDataPoint[] => {
         const data: HistoryDataPoint[] = [];
         const now = new Date();
-
         for (let i = 23; i >= 0; i--) {
             const time = new Date(now.getTime() - i * 60 * 60 * 1000);
             const hourOfDay = time.getHours();
             let variation = 0;
-
-            // Morning rush (7-10am): +15-25%
-            if (hourOfDay >= 7 && hourOfDay <= 10) {
-                variation = baseAqi * (0.15 + Math.random() * 0.10);
-            }
-            // Midday (11am-4pm): -5-10%
-            else if (hourOfDay >= 11 && hourOfDay <= 16) {
-                variation = baseAqi * (-0.05 - Math.random() * 0.05);
-            }
-            // Evening rush (5-9pm): +20-35%
-            else if (hourOfDay >= 17 && hourOfDay <= 21) {
-                variation = baseAqi * (0.20 + Math.random() * 0.15);
-            }
-            // Night (10pm-6am): -15-25%
-            else {
-                variation = baseAqi * (-0.15 - Math.random() * 0.10);
-            }
-
+            if (hourOfDay >= 7 && hourOfDay <= 10) variation = baseAqi * (0.15 + Math.random() * 0.10);
+            else if (hourOfDay >= 11 && hourOfDay <= 16) variation = baseAqi * (-0.05 - Math.random() * 0.05);
+            else if (hourOfDay >= 17 && hourOfDay <= 21) variation = baseAqi * (0.20 + Math.random() * 0.15);
+            else variation = baseAqi * (-0.15 - Math.random() * 0.10);
             const noise = (Math.random() - 0.5) * baseAqi * 0.1;
             const value = Math.max(20, Math.round(baseAqi + variation + noise));
-
-            data.push({
-                timestamp: time.toISOString(),
-                value
-            });
+            data.push({ timestamp: time.toISOString(), value });
         }
-
         return data;
     };
 
-    // Find station info for history fetching
     const stationInfo = useMemo(() => {
         if (!selectedWardData?.nearestStationId) return null;
         const station = stations.find(s => s.id === selectedWardData.nearestStationId);
         return station ? { id: station.id, lat: station.lat, lng: station.lng } : null;
     }, [selectedWardData, stations]);
 
-    // Fetch history
     useEffect(() => {
+        if (comparisonWardIds.length > 0) {
+            const series: ChartSeries[] = [];
+            const colors = ['#8B5CF6', '#06B6D4', '#EC4899'];
+            
+            // Add primary selected ward if it exists
+            if (selectedWardId && !comparisonWardIds.includes(selectedWardId)) {
+                const data = allWardData.get(selectedWardId);
+                series.push({
+                    id: selectedWardId,
+                    name: data?.name || `Ward ${selectedWardId}`,
+                    data: generateMockTrendData(data?.aqi || overallAqi),
+                    color: colors[0]
+                });
+            }
+
+            comparisonWardIds.forEach((id, idx) => {
+                const data = allWardData.get(id);
+                series.push({
+                    id,
+                    name: data?.name || `Ward ${id}`,
+                    data: generateMockTrendData(data?.aqi || overallAqi),
+                    color: colors[(series.length) % colors.length]
+                });
+            });
+            setComparisonSeries(series);
+            return;
+        }
+
         if (!stationInfo) {
-            // Use mock data when no station is selected
             setHistory(generateMockTrendData(overallAqi));
             return;
         }
@@ -148,92 +164,88 @@ const TrendsTab = () => {
             setLoading(true);
             try {
                 const data = await getStationHistory(stationInfo.id, stationInfo.lat, stationInfo.lng);
-                if (data.length > 0) {
-                    setHistory(data);
-                } else {
-                    // Fallback to mock data if API returns empty
-                    setHistory(generateMockTrendData(overallAqi));
-                }
+                setHistory(data.length > 0 ? data : generateMockTrendData(overallAqi));
             } catch (err) {
-                console.error("Failed to load history", err);
-                // Fallback to mock data on error
                 setHistory(generateMockTrendData(overallAqi));
             } finally {
                 setLoading(false);
             }
         };
-
         loadHistory();
-    }, [stationInfo, overallAqi]);
+    }, [stationInfo, overallAqi, comparisonWardIds, selectedWardId, allWardData]);
 
-    // Calculate stats
     const stats = useMemo(() => {
         if (!history.length) return null;
-
         const values = history.map(h => h.value);
         const avg = Math.round(values.reduce((a, b) => a + b, 0) / values.length);
         const peak = Math.max(...values);
         const current = values[values.length - 1];
         const first = values[0];
-
         const change = first ? Math.round(((current - first) / first) * 100) : 0;
-
         return { avg, peak, change, current };
     }, [history]);
 
     return (
         <>
-            {/* PM2.5 Trend Chart */}
-            <div className={styles.card}>
-                <div className={styles.cardHeader}>
-                    <span className={styles.cardTitle}>
-                        {selectedWardData?.nearestStation ? `${selectedWardData.nearestStation}${selectedWardData.isEstimated ? ' (Estimated)' : ''} Trend` : 'Delhi NCR PM2.5 Trend'}
-                    </span>
-                    <div className={styles.toggleGroup}>
-                        <button className={`${styles.toggleBtn} ${styles.toggleActive}`}>24h</button>
+            {comparisonWardIds.length > 0 ? (
+                <div className={styles.card}>
+                    <div className={styles.cardHeader}>
+                        <span className={styles.cardTitle}>Location Comparison</span>
+                        <div className={styles.modelBadge}>Multi-Point Analysis</div>
+                    </div>
+                    <div style={{ height: '220px', marginBottom: '1rem' }}>
+                        <LineChart series={comparisonSeries} height={220} showArea={false} />
+                    </div>
+                    <div className={styles.comparisonLegend}>
+                        {comparisonSeries.map(s => (
+                            <div key={s.id} className={styles.legendItem}>
+                                <div className={styles.legendDot} style={{ background: s.color }} />
+                                <span className={styles.legendName}>{s.name}</span>
+                            </div>
+                        ))}
                     </div>
                 </div>
-
-                <div className={styles.chartArea} style={{ height: '150px' }}>
-                    {loading ? (
-                        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', height: '100%', color: '#888' }}>
-                            <RefreshCw className="spin" size={20} />
+            ) : (
+                <>
+                    <div className={styles.card}>
+                        <div className={styles.cardHeader}>
+                            <span className={styles.cardTitle}>
+                                {selectedWardData?.nearestStation ? `${selectedWardData.nearestStation} Trend` : 'Delhi NCR PM2.5 Trend'}
+                            </span>
+                            <div className={styles.toggleGroup}>
+                                <button className={`${styles.toggleBtn} ${styles.toggleActive}`}>24h</button>
+                            </div>
                         </div>
-                    ) : history.length > 0 ? (
-                        <LineChart
-                            data={history}
-                            height={150}
-                            color="#8B5CF6"
-                            secondaryColor="#06B6D4"
-                            showArea={true}
-                            showPoints={true}
-                        />
-                    ) : (
-                        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', height: '100%', color: '#888', fontSize: '0.8rem' }}>
-                            No historical data available for this station
+                        <div className={styles.chartArea} style={{ height: '150px' }}>
+                            {loading ? (
+                                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', height: '100%' }}>
+                                    <RefreshCw className="spin" size={20} />
+                                </div>
+                            ) : (
+                                <LineChart data={history} height={150} />
+                            )}
+                        </div>
+                    </div>
+
+                    {stats && (
+                        <div className={styles.statsGrid}>
+                            <div className={styles.statCard}>
+                                <span className={styles.statLabel}>24h Average</span>
+                                <span className={styles.statValue}>{stats.avg}</span>
+                            </div>
+                            <div className={styles.statCard}>
+                                <span className={styles.statLabel}>Peak (24h)</span>
+                                <span className={styles.statValue} style={{ color: 'var(--aqi-very-poor)' }}>{stats.peak}</span>
+                            </div>
+                            <div className={styles.statCard}>
+                                <span className={styles.statLabel}>Trend (24h)</span>
+                                <span className={styles.statValue} style={{ color: stats.change > 0 ? 'var(--aqi-very-poor)' : 'var(--aqi-good)' }}>
+                                    {stats.change > 0 ? '+' : ''}{stats.change}%
+                                </span>
+                            </div>
                         </div>
                     )}
-                </div>
-            </div>
-
-            {/* Quick Stats */}
-            {stats && (
-                <div className={styles.statsGrid}>
-                    <div className={styles.statCard}>
-                        <span className={styles.statLabel}>24h Average</span>
-                        <span className={styles.statValue}>{stats.avg}</span>
-                    </div>
-                    <div className={styles.statCard}>
-                        <span className={styles.statLabel}>Peak (24h)</span>
-                        <span className={styles.statValue} style={{ color: 'var(--aqi-very-poor)' }}>{stats.peak}</span>
-                    </div>
-                    <div className={styles.statCard}>
-                        <span className={styles.statLabel}>Trend (24h)</span>
-                        <span className={styles.statValue} style={{ color: stats.change > 0 ? 'var(--aqi-very-poor)' : 'var(--aqi-good)' }}>
-                            {stats.change > 0 ? '+' : ''}{stats.change}%
-                        </span>
-                    </div>
-                </div>
+                </>
             )}
         </>
     );

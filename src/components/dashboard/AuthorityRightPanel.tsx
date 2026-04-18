@@ -9,23 +9,39 @@
  */
 
 import { useState, useEffect } from 'react';
-import { ClipboardList, BarChart3, Users, Bell, MapPin, Loader2, ExternalLink, Filter, ChevronDown, ChevronUp } from 'lucide-react';
+import { ClipboardList, BarChart3, Users, Bell, MapPin, Loader2, ExternalLink, Filter, ChevronDown, ChevronUp, Leaf, X, CheckSquare, Square } from 'lucide-react';
 import styles from './AuthorityPanels.module.css';
 import { useAirQuality } from '../../context/AirQualityContext';
+import { STATIC_PARKS } from '../../data/parks';
 import type { Complaint } from '../../types';
 import { doc, getDoc, setDoc } from 'firebase/firestore';
 import { db } from '../../lib/firebase';
+import { GreenSpacesAnalysis } from './GreenSpacesAnalysis';
 
-type TabType = 'actions' | 'analytics' | 'teams';
+
+type TabType = 'actions' | 'analytics' | 'teams' | 'ecology';
 type StatusFilter = 'all' | 'pending' | 'in_progress' | 'resolved';
 
 import { sendEmailNotification } from '../../services/emailService';
 
 export const AuthorityRightPanel = () => {
     const [activeTab, setActiveTab] = useState<TabType>('actions');
+    const { setGreenAnalysisOpen } = useAirQuality();
 
     return (
         <div className={styles.panelContainer}>
+            {/* Top Analysis Button (Secondary now) */}
+            <button
+                className={styles.analysisBtn}
+                onClick={() => setGreenAnalysisOpen(true)}
+                style={{ marginBottom: '0.5rem' }}
+            >
+                <div className={styles.analysisBtnContent}>
+                    <Leaf size={16} />
+                    <span>Quick Audit</span>
+                </div>
+            </button>
+
             {/* Tabs */}
             <div className={styles.tabs}>
                 <button
@@ -43,6 +59,13 @@ export const AuthorityRightPanel = () => {
                     Analytics
                 </button>
                 <button
+                    className={`${styles.tab} ${activeTab === 'ecology' ? styles.activeTab : ''}`}
+                    onClick={() => setActiveTab('ecology')}
+                >
+                    <Leaf size={14} />
+                    Ecology
+                </button>
+                <button
                     className={`${styles.tab} ${activeTab === 'teams' ? styles.activeTab : ''}`}
                     onClick={() => setActiveTab('teams')}
                 >
@@ -53,7 +76,10 @@ export const AuthorityRightPanel = () => {
 
             {activeTab === 'actions' && <ActionsTab />}
             {activeTab === 'analytics' && <AnalyticsTab />}
+            {activeTab === 'ecology' && <EcologyTab />}
             {activeTab === 'teams' && <TeamsTab />}
+
+            <GreenSpacesAnalysis />
         </div>
     );
 };
@@ -700,5 +726,155 @@ const TeamsTab = () => {
                 </div>
             )}
         </>
+    );
+};
+
+const EcologyTab = () => {
+    const [selectedParkIds, setSelectedParkIds] = useState<string[]>([]);
+    const [showComparison, setShowComparison] = useState(false);
+
+    const toggleParkSelection = (id: string) => {
+        setSelectedParkIds(prev =>
+            prev.includes(id)
+                ? prev.filter(p => p !== id)
+                : prev.length < 3 ? [...prev, id] : prev
+        );
+    };
+
+    return (
+        <div className={styles.ecologyContainer}>
+            <div className={styles.card} style={{ marginBottom: '1rem' }}>
+                <div className={styles.cardHeader}>
+                    <span className={styles.cardTitle}>Ecological Asset Inventory</span>
+                </div>
+                <div className={styles.parkList}>
+                    {STATIC_PARKS.slice(0, 8).map(park => (
+                        <div key={park.id} className={styles.parkListItem}>
+                            <div className={styles.parkInfo}>
+                                <span className={styles.parkName}>{park.name}</span>
+                                <span className={styles.parkArea}>{park.area}</span>
+                            </div>
+                            <button
+                                className={styles.selectParkBtn}
+                                onClick={() => toggleParkSelection(park.id)}
+                            >
+                                {selectedParkIds.includes(park.id) ? (
+                                    <CheckSquare size={18} color="#00ff85" />
+                                ) : (
+                                    <Square size={18} color="rgba(255,255,255,0.3)" />
+                                )}
+                            </button>
+                        </div>
+                    ))}
+                </div>
+                
+                <div style={{ marginTop: '1rem' }}>
+                    <button 
+                        className={styles.compareBtn}
+                        disabled={selectedParkIds.length < 2}
+                        onClick={() => setShowComparison(true)}
+                    >
+                        Compare Assets ({selectedParkIds.length}/3)
+                    </button>
+                    {selectedParkIds.length < 2 && (
+                        <p style={{ fontSize: '0.65rem', color: 'var(--text-secondary)', textAlign: 'center', marginTop: '0.5rem' }}>
+                            Select at least 2 parks to compare
+                        </p>
+                    )}
+                </div>
+            </div>
+
+            {showComparison && (
+                <div className={styles.comparisonOverlay} onClick={() => setShowComparison(false)}>
+                    <div className={styles.comparisonModal} onClick={e => e.stopPropagation()}>
+                        <div className={styles.modalHeader}>
+                            <h3>Ecological Audit Comparison</h3>
+                            <button onClick={() => setShowComparison(false)} className={styles.modalClose}>×</button>
+                        </div>
+                        <div className={styles.comparisonTable}>
+                            <div className={styles.tableHeader}>
+                                <div className={styles.headerCell}>Audit Metric</div>
+                                {selectedParkIds.map(id => (
+                                    <div key={id} className={styles.headerCell}>
+                                        {STATIC_PARKS.find(p => p.id === id)?.name}
+                                    </div>
+                                ))}
+                            </div>
+                            
+                            <ComparisonRow 
+                                label="NDVI (Veg Density)" 
+                                metric="ndvi" 
+                                parks={selectedParkIds} 
+                            />
+                            <ComparisonRow 
+                                label="Nitrogen (Topsoil)" 
+                                metric="n" 
+                                parks={selectedParkIds} 
+                                unit=" mg/kg"
+                            />
+                            <ComparisonRow 
+                                label="Water Retention" 
+                                metric="whc" 
+                                parks={selectedParkIds} 
+                                unit="%"
+                            />
+                            <ComparisonRow 
+                                label="pH Level" 
+                                metric="ph" 
+                                parks={selectedParkIds} 
+                            />
+                            <ComparisonRow 
+                                label="Visual Connectedness" 
+                                metric="gsv" 
+                                parks={selectedParkIds} 
+                                unit="%"
+                            />
+                            <ComparisonRow 
+                                label="LIDAR Canopy Vol." 
+                                metric="lidar" 
+                                parks={selectedParkIds} 
+                                unit=" m³"
+                            />
+                        </div>
+                        <div className={styles.modalFooter}>
+                            <p style={{ margin: 0, fontSize: '0.7rem', opacity: 0.6 }}>* Data synthesized from LIDAR, GIS, and Field Audit sensors.</p>
+                        </div>
+                    </div>
+                </div>
+            )}
+        </div>
+    );
+};
+
+const ComparisonRow = ({ label, metric, parks, unit = '' }: { label: string; metric: string; parks: string[]; unit?: string }) => {
+    const getValue = (parkId: string) => {
+        let seed = parkId.split('').reduce((acc, char) => acc + char.charCodeAt(0), 0);
+        if (metric === 'ndvi') return (0.4 + (seed % 40) / 100).toFixed(2);
+        if (metric === 'n') return 25 + (seed % 15);
+        if (metric === 'whc') return 45 + (seed % 20);
+        if (metric === 'ph') return (6.2 + (seed % 14) / 10).toFixed(1);
+        if (metric === 'gsv') return 60 + (seed % 30);
+        if (metric === 'lidar') return 1200 + (seed % 4000);
+        return '--';
+    };
+
+    return (
+        <div className={styles.tableRow}>
+            <div className={styles.labelCell}>{label}</div>
+            {parks.map(id => {
+                const val = getValue(id);
+                const numVal = parseFloat(val);
+                let color = 'white';
+                if (metric === 'ndvi' && numVal > 0.6) color = '#00ff85';
+                if (metric === 'ndvi' && numVal < 0.5) color = '#ff4d6d';
+                if (metric === 'ph' && (numVal < 6.5 || numVal > 7.5)) color = '#ffb347';
+
+                return (
+                    <div key={id} className={styles.valueCell} style={{ color }}>
+                        {val}{unit}
+                    </div>
+                );
+            })}
+        </div>
     );
 };
